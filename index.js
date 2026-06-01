@@ -98,7 +98,7 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
     const analysis = await kimiClient.chat([
       {
         role: 'system',
-        content: '你是分析 agent。只读分析任务，提供深入见解。不要写代码。分析结束时给出明确的结论和建议。'
+        content: '你是分析 agent。只读分析任务，提供深入见解。不要写代码。分析结束时给出明确的结论和建议。\n\n可用能力清单（推荐 3-5 项）:\n云端[76类]: frontend backend cloud security ai-ml testing database mobile devops\nSuperpowers[14]: brainstorming test-driven-development systematic-debugging\nGStack[16]: /qa /review /browse /ship /design-review\n本地: /understand-explain /understand-diff /graphify query verify.sh oh-my-memory\nCodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_explore'
       },
       {
         role: 'user',
@@ -106,7 +106,7 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
       }
     ]);
     const recommendations = await generateRecommendations(task, kimiClient);
-    return { mode: 'plan', analysis, reason: modeAnalysis.reason, recommendations };
+    return { mode: 'plan', analysis, reason: modeAnalysis.reason, recommendations, suggested_skills: modeAnalysis.suggested_skills || [] };
   }
 
   // Build mode: existing flow
@@ -208,7 +208,7 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
     `  ${r.status === 'completed' ? '✅' : '❌'} [${r.executor}] Item ${r.idx}${r.error ? ': ' + r.error : ''}`
   ).join('\n');
 
-  return { mode: 'build', planId, title: planDoc.title, items, itemCount: planDoc.items.length, execSummary, completedCount, failedCount, fallback: fallbackUsed, recommendations };
+  return { mode: 'build', planId, title: planDoc.title, items, itemCount: planDoc.items.length, execSummary, completedCount, failedCount, fallback: fallbackUsed, recommendations, suggested_skills: planDoc.suggested_skills || [] };
 }
 
 async function generateRecommendations(planOrTask, kimiClient) {
@@ -294,7 +294,9 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             let output;
             if (result.mode === 'plan') {
               output = `📋 [Plan Mode] ${result.reason}\n\n${result.analysis}`;
-              if (result.recommendations) {
+              if (result.suggested_skills && result.suggested_skills.length > 0) {
+                output += `\n\n💡 建议后续:\n  ${result.suggested_skills.join('\n  ')}`;
+              } else if (result.recommendations) {
                 output += `\n\n💡 建议后续:\n${result.recommendations}`;
               }
             } else {
@@ -305,7 +307,9 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
               if (result.fallback) {
                 output += '\n\n⚠️ Note: Kimi was unavailable, plan created by DeepSeek (fallback).';
               }
-              if (result.recommendations) {
+              if (result.suggested_skills && result.suggested_skills.length > 0) {
+                output += `\n\n💡 建议后续:\n  ${result.suggested_skills.join('\n  ')}`;
+              } else if (result.recommendations) {
                 output += `\n\n💡 建议后续:\n${result.recommendations}`;
               }
             }
@@ -453,7 +457,16 @@ You have access to a three-layer orchestrator system. ALL tasks MUST be automati
 
 **IMPORTANT: Do NOT ask the user to use \`agent task="..."\`. Silently route every request yourself.**
 For simple questions → \`agent task="<question>"\` (auto mode → no build needed)
-For complex tasks → \`agent task="<task description>"\` (Kimi decides plan or build)`;
+For complex tasks → \`agent task="<task description>"\` (Kimi decides plan or build)
+
+**Skill Execution Rules — MUST follow after every \`agent\` call:**
+1. If output contains "suggested_skills" array → load each item:
+   - "skill X": \`skill X\`
+   - "/command": \`/command\`
+   - "codegraph_X": \`codegraph_X\`
+   - "oh-my-memory": search memory
+2. If output contains category-pointer recommendation → \`skill <pointer>\` → read skill list → pick concrete skill → load it
+3. Execute suggestions before proceeding with user's task`;
       output.system += contextBlock;
     },
 

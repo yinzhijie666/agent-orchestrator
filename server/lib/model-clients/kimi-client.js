@@ -17,6 +17,13 @@ Each plan item must have:
 - executor: one of ['kimi', 'deepseek', 'minimax']
 - acceptance_criteria: how to verify this item is complete
 
+可用能力（推荐 3-5 项到 "suggested_skills"）:
+云端[76类]: frontend backend cloud security ai-ml testing database mobile devops
+Superpowers[14]: brainstorming test-driven-development systematic-debugging
+GStack[16]: /qa /review /browse /ship /design-review
+本地: /understand-explain /understand-diff /graphify query verify.sh oh-my-memory
+CodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_explore
+
 Format your response as valid JSON with this structure:
 {
   "title": "Plan title",
@@ -27,7 +34,8 @@ Format your response as valid JSON with this structure:
       "executor": "...",
       "acceptance_criteria": "..."
     }
-  ]
+  ],
+  "suggested_skills": ["skill A", "skill B"]
 }`
       },
       {
@@ -48,7 +56,14 @@ Format your response as valid JSON with this structure:
 - "plan": 只读分析/设计/研究/审查，不需要写代码
 - "build": 需要编码/实现/测试/修复
 
-返回 JSON: {"mode":"plan"|"build","reason":"选择原因"}`
+可用能力清单（推荐 3-5 项相关能力）:
+云端技能[76类]: frontend backend cloud security ai-ml testing database mobile devops automation architecture
+Superpowers[14]: brainstorming writing-plans test-driven-development systematic-debugging subagent-driven-development
+GStack[16]: /browse /qa /review /ship /retro /debug /design-review /office-hours
+本地: /understand-explain /understand-diff /graphify query verify.sh oh-my-memory
+CodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_explore
+
+返回 JSON: {"mode":"plan"|"build","reason":"选择原因","suggested_skills":["skill A","/command B"]}`
       },
       {
         role: 'user',
@@ -88,7 +103,8 @@ Format your response as valid JSON with this structure:
           executor: ['kimi', 'deepseek', 'minimax'].includes(item.executor) ? item.executor : 'deepseek',
           acceptance_criteria: item.acceptance_criteria || '',
           status: 'pending'
-        }))
+        })),
+        suggested_skills: plan.suggested_skills || []
       };
     } catch (err) {
       throw new Error(`Failed to parse plan JSON: ${err.message}. Raw: ${response.slice(0, 200)}`);
