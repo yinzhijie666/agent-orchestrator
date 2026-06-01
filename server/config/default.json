@@ -1,0 +1,36 @@
+{
+  "server": {
+    "port": 8765,
+    "host": "127.0.0.1"
+  },
+  "milestone": {
+    "interval": 4,
+    "verification_timeout_ms": 300000
+  },
+  "models": {
+    "kimi": {
+      "api_key_env": "OPENCODE_API_KEY",
+      "base_url": "https://opencode.ai/zen/go/v1",
+      "model": "kimi-k2.6",
+      "max_tokens": 262144,
+      "temperature": 0.3,
+      "provider": "opencode-go"
+    },
+    "deepseek": {
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-v4-flash",
+      "max_tokens": 64000,
+      "temperature": 0.2,
+      "provider": "deepseek"
+    },
+    "minimax": {
+      "api_key_env": "MINIMAX_API_KEY",
+      "base_url": "https://api.minimax.chat/v1",
+      "model": "minimax-m2.7",
+      "max_tokens": 8000,
+      "temperature": 0.1,
+      "provider": "minimax"
+    }
+  }
+}

@@ -1,0 +1,260 @@
+import { Database } from "bun:sqlite";
+import { mkdir } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { randomUUID } from "node:crypto";
+
+// Config
+import config from "./config/default.json" with { type: "json" };
+
+// API Routers
+import planRouter from "./api/plan.js";
+import checkpointRouter from "./api/checkpoint.js";
+import threadRouter from "./api/thread.js";
+import statusRouter from "./api/status.js";
+
+// WebSocket
+import { setupWebSocket, broadcaster } from "./websocket/server.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Initialize database
+const DB_PATH = process.env.AGENT_ORCHESTRATOR_DB_PATH || join(__dirname, "state", "db.sqlite");
+await mkdir(dirname(DB_PATH), { recursive: true });
+
+const initDb = new Database(DB_PATH, { create: true });
+initDb.exec(`
+  CREATE TABLE IF NOT EXISTS plans (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    plan_document TEXT NOT NULL,
+    status TEXT DEFAULT 'pending',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    completed_at DATETIME,
+    milestones_total INTEGER DEFAULT 0,
+    milestones_completed INTEGER DEFAULT 0
+  );
+  CREATE TABLE IF NOT EXISTS plan_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    plan_id TEXT NOT NULL,
+    idx INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    executor TEXT NOT NULL,
+    status TEXT DEFAULT 'pending',
+    result TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    completed_at DATETIME,
+    FOREIGN KEY (plan_id) REFERENCES plans(id)
+  );
+  CREATE TABLE IF NOT EXISTS checkpoints (
+    id TEXT PRIMARY KEY,
+    plan_id TEXT NOT NULL,
+    milestone_idx INTEGER NOT NULL,
+    agent_outputs TEXT,
+    verification_status TEXT DEFAULT 'pending',
+    verification_feedback TEXT,
+    verified_by TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    verified_at DATETIME,
+    FOREIGN KEY (plan_id) REFERENCES plans(id)
+  );
+  CREATE TABLE IF NOT EXISTS agent_threads (
+    id TEXT PRIMARY KEY,
+    plan_id TEXT NOT NULL,
+    context_window TEXT,
+    layer_states TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (plan_id) REFERENCES plans(id)
+  );
+  CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    thread_id TEXT NOT NULL,
+    agent TEXT NOT NULL,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (thread_id) REFERENCES agent_threads(id)
+  );
+  CREATE TABLE IF NOT EXISTS activity_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    plan_id TEXT,
+    agent TEXT,
+    action TEXT NOT NULL,
+    details TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+`);
+initDb.close();
+console.log(`[server] Database initialized at ${DB_PATH}`);
+
+const PORT = parseInt(process.env.AGENT_ORCHESTRATOR_PORT) || config.server.port || 8765;
+const HOST = config.server.host || "127.0.0.1";
+
+// Request router
+async function handleRequest(req) {
+  const url = new URL(req.url);
+  const method = req.method;
+  const path = url.pathname;
+
+  // CORS headers
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  };
+
+  if (method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
+  try {
+    let response;
+    const params = {};
+
+    // Match routes
+    const planMatch = path.match(/^\/api\/plans\/([^\/]+)\/activate$/);
+    const planItemMatch = path.match(/^\/api\/plans\/([^\/]+)\/items\/([^\/]+)$/);
+    const planItemsMatch = path.match(/^\/api\/plans\/([^\/]+)\/items$/);
+    const planIdMatch = path.match(/^\/api\/plans\/([^\/]+)$/);
+    const checkpointVerifyMatch = path.match(/^\/api\/checkpoints\/([^\/]+)\/verify$/);
+    const checkpointIdMatch = path.match(/^\/api\/checkpoints\/([^\/]+)$/);
+    const threadMsgMatch = path.match(/^\/api\/threads\/([^\/]+)\/messages$/);
+    const threadIdMatch = path.match(/^\/api\/threads\/([^\/]+)$/);
+
+    if (path === "/api/plans" && method === "POST") {
+      response = await planRouter.createPlan(req);
+    } else if (planMatch && method === "POST") {
+      response = await planRouter.activatePlan(req, { id: planMatch[1] });
+    } else if (planItemMatch && method === "PATCH") {
+      response = await planRouter.updatePlanItem(req, { id: planItemMatch[1], idx: planItemMatch[2] });
+    } else if (planItemsMatch && method === "GET") {
+      response = planRouter.getPlanItems(req, { id: planItemsMatch[1] });
+    } else if (planIdMatch && method === "GET") {
+      response = planRouter.getPlan(req, { id: planIdMatch[1] });
+    } else if (path === "/api/checkpoints" && method === "POST") {
+      response = await checkpointRouter.createCheckpoint(req);
+    } else if (checkpointVerifyMatch && method === "PATCH") {
+      response = await checkpointRouter.verifyCheckpoint(req, { id: checkpointVerifyMatch[1] });
+    } else if (checkpointIdMatch && method === "GET") {
+      response = checkpointRouter.getCheckpoint(req, { id: checkpointIdMatch[1] });
+    } else if (path === "/api/checkpoints/pending" && method === "GET") {
+      // This route is slightly different - accept plan_id as query param
+      const planId = url.searchParams.get("plan_id");
+      if (planId) {
+        response = checkpointRouter.getPendingCheckpoints(req, { plan_id: planId });
+      } else {
+        response = new Response(JSON.stringify({ error: "plan_id query param required" }), { status: 400 });
+      }
+    } else if (path === "/api/threads" && method === "POST") {
+      response = threadRouter.createThread(req);
+    } else if (threadMsgMatch && method === "POST") {
+      response = await threadRouter.appendMessage(req, { id: threadMsgMatch[1] });
+    } else if (threadIdMatch && method === "GET") {
+      response = threadRouter.getThread(req, { id: threadIdMatch[1] });
+    } else if (path === "/api/status" && method === "GET") {
+      response = statusRouter.getStatus();
+    } else if (path === "/api/status/agents" && method === "GET") {
+      response = statusRouter.getAgentStatus();
+    } else if (path === "/" || path === "/dashboard") {
+      // Serve dashboard
+      const dashboardPath = join(__dirname, "dashboard", "index.html");
+      const file = Bun.file(dashboardPath);
+      return new Response(file, { 
+        headers: { "Content-Type": "text/html", ...corsHeaders } 
+      });
+    } else {
+      response = new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+    }
+
+    // Add CORS headers to all responses
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      response.headers.set(key, value);
+    });
+
+    return response;
+
+  } catch (err) {
+    console.error("[server] Request error:", err);
+    return new Response(JSON.stringify({ error: err.message }), { 
+      status: 500,
+      headers: corsHeaders
+    });
+  }
+}
+
+// WebSocket handlers
+const wsHandlers = {
+  open(ws) {
+    broadcaster.addClient(ws);
+    broadcaster.sendTo(ws, "connected", { message: "Welcome to Agent Orchestrator" });
+  },
+
+  message(ws, message) {
+    try {
+      const data = JSON.parse(message);
+      
+      switch(data.type) {
+        case "subscribe":
+          if (data.plan_id) {
+            if (!ws.data) ws.data = { subscribedPlans: new Set() };
+            ws.data.subscribedPlans.add(data.plan_id);
+            broadcaster.sendTo(ws, "subscribed", { plan_id: data.plan_id });
+          }
+          break;
+        case "unsubscribe":
+          if (data.plan_id && ws.data?.subscribedPlans) {
+            ws.data.subscribedPlans.delete(data.plan_id);
+          }
+          break;
+        case "ping":
+          broadcaster.sendTo(ws, "pong", { timestamp: Date.now() });
+          break;
+        default:
+          console.log(`[WS] Unknown message type: ${data.type}`);
+      }
+    } catch (err) {
+      console.error("[WS] Message parse error:", err);
+    }
+  },
+
+  close(ws) {
+    broadcaster.removeClient(ws);
+  }
+};
+
+// Start server
+const server = Bun.serve({
+  port: PORT,
+  hostname: HOST,
+  fetch: handleRequest,
+  websocket: wsHandlers,
+});
+
+console.log(`
+╔═══════════════════════════════════════════════════════════╗
+║         🧠 Agent Orchestrator Server v1.0.0               ║
+╠═══════════════════════════════════════════════════════════╣
+║  HTTP:  http://${HOST}:${PORT}                            ║
+║  WS:    ws://${HOST}:${PORT}                              ║
+║  DB:    ${DB_PATH}                                        ║
+╠═══════════════════════════════════════════════════════════╣
+║  Endpoints:                                               ║
+║    POST /api/plans          → Create plan                 ║
+║    GET  /api/plans/:id      → Get plan                    ║
+║    GET  /api/plans/:id/items → Get plan items             ║
+║    PATCH /api/plans/:id/items/:idx → Update item status   ║
+║    POST /api/plans/:id/activate → Activate plan           ║
+║    POST /api/checkpoints    → Create checkpoint           ║
+║    PATCH /api/checkpoints/:id/verify → Verify checkpoint  ║
+║    GET  /api/threads/:id    → Get thread                  ║
+║    POST /api/threads/:id/messages → Append message       ║
+║    GET  /api/status         → Server status               ║
+║    GET  /api/status/agents  → Agent availability          ║
+╠═══════════════════════════════════════════════════════════╣
+║  Dashboard: http://${HOST}:${PORT}/dashboard                ║
+╚═══════════════════════════════════════════════════════════╝
+`);
+
+export { server, broadcaster };

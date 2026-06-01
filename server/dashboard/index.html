@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Orchestrator Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0a0a0f;
+      color: #00ff88;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #00ff88;
+      text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 15px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .panel {
+      background: #111118;
+      border: 1px solid #1a1a2e;
+      border-radius: 8px;
+      padding: 15px;
+      min-height: 200px;
+    }
+    .panel h2 {
+      font-size: 14px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #1a1a2e;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .status-online { background: #00ff88; box-shadow: 0 0 5px #00ff88; }
+    .status-offline { background: #ff4444; }
+    .status-pending { background: #ffaa00; }
+    .log-entry {
+      font-size: 12px;
+      padding: 4px 0;
+      border-bottom: 1px solid #1a1a2e;
+      opacity: 0.9;
+    }
+    .log-entry:hover { opacity: 1; background: #1a1a2e; }
+    .agent-kimi { color: #ff6b6b; }
+    .agent-deepseek { color: #4ecdc4; }
+    .agent-minimax { color: #ffe66d; }
+    .status-passed { color: #00ff88; }
+    .status-failed { color: #ff4444; }
+    .status-waiting { color: #ffaa00; }
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #1a1a2e;
+      border-radius: 3px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00ff88, #00cc6a);
+      transition: width 0.5s ease;
+      border-radius: 3px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .stat-box {
+      background: #1a1a2e;
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .stat-label {
+      font-size: 10px;
+      opacity: 0.7;
+      margin-top: 4px;
+    }
+    #connection-status {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: #1a1a2e;
+    }
+    .connected { border: 1px solid #00ff88; color: #00ff88; }
+    .disconnected { border: 1px solid #ff4444; color: #ff4444; }
+  </style>
+</head>
+<body>
+  <div id="connection-status" class="disconnected">Disconnected</div>
+  
+  <h1>🧠 Agent Orchestrator Dashboard</h1>
+  
+  <div class="grid">
+    <div class="panel">
+      <h2><span class="status-dot status-online"></span> Server Status</h2>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-value" id="stat-plans">-</div>
+          <div class="stat-label">Plans</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="stat-items">-</div>
+          <div class="stat-label">Items</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="stat-checkpoints">-</div>
+          <div class="stat-label">Pending</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2><span class="status-dot status-online"></span> Active Plan</h2>
+      <div id="active-plan">No active plan</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="plan-progress" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2><span class="status-dot status-online"></span> Agent States</h2>
+      <div id="agent-states">
+        <div class="log-entry"><span class="agent-kimi">🧠 Kimi</span> <span id="kimi-status">Unknown</span></div>
+        <div class="log-entry"><span class="agent-deepseek">🔧 DeepSeek</span> <span id="deepseek-status">Unknown</span></div>
+        <div class="log-entry"><span class="agent-minimax">⚡ MiniMax</span> <span id="minimax-status">Unknown</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2><span class="status-dot status-pending"></span> Checkpoints</h2>
+      <div id="checkpoints">No checkpoints</div>
+    </div>
+
+    <div class="panel" style="grid-column: 1 / -1;">
+      <h2><span class="status-dot status-online"></span> Activity Log</h2>
+      <div id="activity-log"></div>
+    </div>
+  </div>
+
+  <script>
+    const ws = new WebSocket(`ws://${window.location.hostname}:8765`);
+    const activityLog = document.getElementById('activity-log');
+    const connectionStatus = document.getElementById('connection-status');
+
+    function addLog(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      const time = new Date().toLocaleTimeString();
+      entry.innerHTML = `<span style="opacity:0.5">[${time}]</span> ${message}`;
+      activityLog.prepend(entry);
+      
+      // Keep only last 50 entries
+      while (activityLog.children.length > 50) {
+        activityLog.removeChild(activityLog.lastChild);
+      }
+    }
+
+    ws.onopen = () => {
+      connectionStatus.textContent = 'Connected';
+      connectionStatus.className = 'connected';
+      addLog('🔗 WebSocket connected', 'success');
+      
+      // Fetch initial status
+      fetchStatus();
+    };
+
+    ws.onclose = () => {
+      connectionStatus.textContent = 'Disconnected';
+      connectionStatus.className = 'disconnected';
+      addLog('🔌 WebSocket disconnected', 'error');
+      
+      // Auto-reconnect after 3 seconds
+      setTimeout(() => {
+        addLog('🔄 Reconnecting...', 'info');
+        ws = new WebSocket(`ws://${window.location.hostname}:8765`);
+        // Re-bind event handlers
+        ws.onopen = () => {
+          connectionStatus.textContent = 'Connected';
+          connectionStatus.className = 'connected';
+          addLog('🔗 WebSocket reconnected', 'success');
+          fetchStatus();
+        };
+        ws.onclose = arguments.callee;
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            handleEvent(data);
+          } catch (err) {
+            console.error('Failed to parse message:', err);
+          }
+        };
+      }, 3000);
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        handleEvent(data);
+      } catch (err) {
+        console.error('Failed to parse message:', err);
+      }
+    };
+
+    function handleEvent(event) {
+      switch(event.type) {
+        case 'connected':
+          addLog('✅ Connected to orchestrator');
+          break;
+        case 'plan.created':
+          addLog(`📋 Plan created: ${event.payload.title || event.payload.plan_id}`);
+          fetchStatus();
+          break;
+        case 'plan.activated':
+          addLog(`🚀 Plan activated: ${event.payload.plan_id}`);
+          document.getElementById('active-plan').textContent = event.payload.title || 'Active Plan';
+          break;
+        case 'plan.completed':
+          addLog(`✅ Plan completed: ${event.payload.plan_id}`);
+          document.getElementById('active-plan').textContent = 'No active plan';
+          document.getElementById('plan-progress').style.width = '100%';
+          break;
+        case 'item.started':
+          addLog(`🔧 <span class="agent-${event.payload.agent}">${event.payload.agent}</span> started: ${event.payload.title}`);
+          break;
+        case 'item.completed':
+          addLog(`✅ <span class="agent-${event.payload.agent}">${event.payload.agent}</span> completed: ${event.payload.title}`);
+          updateProgress(event.payload.plan_id);
+          break;
+        case 'checkpoint.created':
+          addLog(`🛑 Checkpoint created, waiting for Kimi...`);
+          break;
+        case 'checkpoint.verified':
+          const statusClass = event.payload.result === 'passed' ? 'status-passed' : 'status-failed';
+          const statusIcon = event.payload.result === 'passed' ? '✅' : '❌';
+          addLog(`<span class="${statusClass}">${statusIcon} Checkpoint ${event.payload.result}</span>`);
+          break;
+        case 'model.fallback':
+          addLog(`⚠️ Fallback: <span class="agent-${event.payload.from}">${event.payload.from}</span> → <span class="agent-${event.payload.to}">${event.payload.to}</span> (${event.payload.reason})`);
+          break;
+        case 'checkpoint.auto_passed':
+          addLog(`🟡 Checkpoint auto-passed: ${event.payload.reason}`);
+          break;
+        case 'error':
+          addLog(`❌ Error: ${event.payload.message}`, 'error');
+          break;
+      }
+    }
+
+    async function fetchStatus() {
+      try {
+        const response = await fetch('/api/status');
+        const data = await response.json();
+        
+        document.getElementById('stat-plans').textContent = 
+          data.plans?.by_status?.reduce((sum, p) => sum + p.count, 0) || 0;
+        document.getElementById('stat-items').textContent = data.plans?.total_items || 0;
+        document.getElementById('stat-checkpoints').textContent = data.checkpoints?.pending || 0;
+      } catch (err) {
+        console.error('Failed to fetch status:', err);
+      }
+    }
+
+    async function updateProgress(planId) {
+      try {
+        const response = await fetch(`/api/plans/${planId}`);
+        const plan = await response.json();
+        const items = plan.items || [];
+        const completed = items.filter(i => i.status === 'completed').length;
+        const total = items.length;
+        const percent = total > 0 ? (completed / total * 100) : 0;
+        
+        document.getElementById('plan-progress').style.width = `${percent}%`;
+      } catch (err) {
+        console.error('Failed to update progress:', err);
+      }
+    }
+
+    // Ping every 30s to keep connection alive
+    setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'ping' }));
+      }
+    }, 30000);
+
+    // Fetch status every 10s
+    setInterval(fetchStatus, 10000);
+  </script>
+</body>
+</html>

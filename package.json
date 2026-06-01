@@ -1,0 +1,23 @@
+{
+  "name": "agent-orchestrator",
+  "version": "1.0.0",
+  "description": "Three-layer agent orchestration: Kimi plans, DeepSeek builds, MiniMax queries",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "bun server/index.js",
+    "dev": "bun --watch server/index.js",
+    "init-db": "bun server/state/init.js",
+    "test": "bun test"
+  },
+  "keywords": ["agent", "orchestrator", "opencode", "kimi", "deepseek", "minimax"],
+  "license": "MIT",
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.15.0",
+    "zod": "^3.0.0"
+  },
+  "devDependencies": {}
+}

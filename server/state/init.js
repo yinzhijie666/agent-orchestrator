@@ -1,0 +1,89 @@
+import { Database } from "bun:sqlite";
+import { mkdir } from "node:fs/promises";
+import { dirname } from "node:path";
+
+const DB_PATH = process.env.AGENT_ORCHESTRATOR_DB_PATH || "./server/state/db.sqlite";
+
+async function initDatabase() {
+  await mkdir(dirname(DB_PATH), { recursive: true });
+  
+  const db = new Database(DB_PATH, { create: true });
+  
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS plans (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      plan_document TEXT NOT NULL,
+      status TEXT DEFAULT 'pending',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      completed_at DATETIME,
+      milestones_total INTEGER DEFAULT 0,
+      milestones_completed INTEGER DEFAULT 0,
+      fallback_used INTEGER DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS plan_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      plan_id TEXT NOT NULL,
+      idx INTEGER NOT NULL,
+      title TEXT NOT NULL,
+      description TEXT,
+      executor TEXT NOT NULL,
+      status TEXT DEFAULT 'pending',
+      result TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      completed_at DATETIME,
+      FOREIGN KEY (plan_id) REFERENCES plans(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS checkpoints (
+      id TEXT PRIMARY KEY,
+      plan_id TEXT NOT NULL,
+      milestone_idx INTEGER NOT NULL,
+      agent_outputs TEXT,
+      verification_status TEXT DEFAULT 'pending',
+      verification_feedback TEXT,
+      verified_by TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      verified_at DATETIME,
+      FOREIGN KEY (plan_id) REFERENCES plans(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS agent_threads (
+      id TEXT PRIMARY KEY,
+      plan_id TEXT NOT NULL,
+      context_window TEXT,
+      layer_states TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (plan_id) REFERENCES plans(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      thread_id TEXT NOT NULL,
+      agent TEXT NOT NULL,
+      role TEXT NOT NULL,
+      content TEXT NOT NULL,
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (thread_id) REFERENCES agent_threads(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS activity_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      plan_id TEXT,
+      agent TEXT,
+      action TEXT NOT NULL,
+      details TEXT,
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+  
+  db.close();
+  console.log(`[init-db] Database initialized at ${DB_PATH}`);
+}
+
+initDatabase().catch(err => {
+  console.error("[init-db] Failed:", err);
+  process.exit(1);
+});

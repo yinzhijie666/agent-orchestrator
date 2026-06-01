@@ -1,0 +1,7 @@
+# Agent Orchestrator
+
+.env
+node_modules/
+server/state/db.sqlite
+*.log
+.DS_Store

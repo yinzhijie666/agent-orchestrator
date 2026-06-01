@@ -1,0 +1,5 @@
+{
+  "name": "agent-orchestrator",
+  "hooks": ["experimental.chat.system.transform"],
+  "tools": ["agent", "agent_status", "agent_checkpoint"]
+}
