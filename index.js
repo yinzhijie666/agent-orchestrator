@@ -15,6 +15,7 @@ import DeepSeekClient from './server/lib/model-clients/deepseek-client.js';
 import MiniMaxClient from './server/lib/model-clients/minimax-client.js';
 import { PlanOrchestrator } from './server/lib/plan-orchestrator.js';
 import { AutoExecutor } from './server/lib/auto-executor.js';
+import { AutoDispatcher } from './server/lib/auto-dispatcher.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MILESTONE_INTERVAL = config.milestone?.interval || 4;
@@ -264,6 +265,21 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
     dbInitError = e;
     console.warn('[AgentOrchestrator] DB initialization failed, stateful tools will return errors:', e.message);
   }
+
+  let autoDispatcher = null;
+  try {
+    const autoDispatchDisabled = process.env.AUTO_EXEC_DISPATCH === 'false' || process.env.AUTO_EXEC_DISABLED === 'true';
+    if (autoDispatchDisabled) {
+      console.log('[AgentOrchestrator] AutoDispatcher disabled by env (AUTO_EXEC_DISPATCH=false)');
+    } else {
+      autoDispatcher = new AutoDispatcher(config);
+      const startResult = await autoDispatcher.start();
+      console.log('[AgentOrchestrator] AutoDispatcher started:', startResult.started ? `D2 url=${startResult.url}` : `D1 only (${startResult.reason || startResult.error || 'no reason'})`);
+    }
+  } catch (e) {
+    console.warn('[AgentOrchestrator] AutoDispatcher init failed, agent_execute_skills will not auto-dispatch:', e.message);
+    autoDispatcher = null;
+  }
   const kimiClient = new KimiClient(config.models.kimi);
   const deepseekClient = new DeepSeekClient(config.models.deepseek);
   const minimaxClient = new MiniMaxClient(config.models.minimax);
@@ -492,6 +508,33 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             const configEnabled = AUTO_EXEC_DEFAULTS.enabled !== false;
             const autoExecEnabled = envEnabled && configEnabled && validated.length > 0;
 
+            const planContext = {
+              planId: plan.id,
+              title: planDoc.title || 'Untitled Plan',
+              goal: planDoc.goal || planDoc.title || 'See plan for details',
+            };
+            const autoExecPrompt = autoExecEnabled
+              ? AutoExecutor.buildPrompt(validated, planContext)
+              : null;
+
+            let dispatchResult = null;
+            let autoDispatched = false;
+            if (autoExecEnabled && autoDispatcher) {
+              try {
+                dispatchResult = await autoDispatcher.dispatch(autoExecPrompt, {
+                  model: process.env.AUTO_EXEC_MODEL || AUTO_EXEC_DEFAULTS.model || 'cheap',
+                  timeoutMs: AUTO_EXEC_DEFAULTS.timeout_ms || 90000,
+                });
+                autoDispatched = true;
+              } catch (e) {
+                dispatchResult = {
+                  status: 'failure',
+                  _dispatchError: e.message,
+                  summary: `Auto-dispatch failed: ${e.message}`,
+                };
+              }
+            }
+
             return {
               output: JSON.stringify({
                 plan_id: plan.id,
@@ -499,19 +542,20 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 total: validated.length,
                 auto_exec: autoExecEnabled ? {
                   mode: 'subagent',
-                  prompt: AutoExecutor.buildPrompt(validated, {
-                    planId: plan.id,
-                    title: planDoc.title || 'Untitled Plan',
-                    goal: planDoc.goal || planDoc.title || 'See plan for details',
-                  }),
+                  prompt: autoExecPrompt,
                   trigger: 'task({ subagent_type: "general", prompt: auto_exec.prompt })',
                   model: process.env.AUTO_EXEC_MODEL || AUTO_EXEC_DEFAULTS.model || 'cheap',
                 } : null,
-                next_step: autoExecEnabled
-                  ? 'Auto-execution ready. Call task with auto_exec.prompt to dispatch subagent.'
-                  : (validated.length > 0
-                    ? 'Auto-exec disabled. Manually execute each skill in P0 → P1 → P2 order.'
-                    : 'No skills suggested. Proceed with normal execution.')
+                auto_dispatched: autoDispatched,
+                dispatch_result: dispatchResult,
+                dispatcher_status: autoDispatcher ? autoDispatcher.getStatus() : null,
+                next_step: autoDispatched
+                  ? `Subagent auto-dispatched. ${dispatchResult?.summary || 'See dispatch_result.'}`
+                  : (autoExecEnabled
+                    ? 'Auto-exec enabled but dispatch failed. Fall back to manual execution.'
+                    : (validated.length > 0
+                      ? 'Auto-exec disabled. Manually execute each skill in P0 → P1 → P2 order.'
+                      : 'No skills suggested. Proceed with normal execution.'))
               }, null, 2)
             };
           } catch (err) {

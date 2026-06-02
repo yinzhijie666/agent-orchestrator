@@ -24,6 +24,7 @@ describe("agent_execute_skills tool", () => {
   beforeAll(async () => {
     await rm(TEST_DB_PATH, { force: true });
     process.env.AGENT_ORCHESTRATOR_DB_PATH = TEST_DB_PATH;
+    process.env.AUTO_EXEC_DISPATCH = "false";
     plugin = await AgentOrchestratorPlugin({ directory: __dirname });
     db = new DB(TEST_DB_PATH);
   });
@@ -139,6 +140,7 @@ describe("agent_execute_skills auto_exec integration", () => {
 
   test("auto_exec.prompt generated when enabled and skills present", async () => {
     const planId = "test-auto-exec-enabled";
+    localDb.db.prepare("DELETE FROM plans WHERE id = ?").run(planId);
     localDb.createPlan({
       id: planId,
       title: "Auto-Exec Enabled Test",
@@ -169,7 +171,7 @@ describe("agent_execute_skills auto_exec integration", () => {
     expect(parsed.auto_exec.prompt).toContain("skill brainstorming");
     expect(parsed.auto_exec.prompt).toContain("Do NOT call `agent`");
     expect(parsed.auto_exec.prompt).toContain(planId);
-    expect(parsed.next_step).toContain("Auto-execution ready");
+    expect(parsed.next_step).toMatch(/auto-dispatched|Auto-execution ready|dispatch failed/);
   });
 
   test("auto_exec null when AUTO_EXEC_SKILLS=false", async () => {
