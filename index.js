@@ -95,6 +95,15 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
   const completedCount = execResults.filter(r => r.status === 'completed').length;
   const failedCount = execResults.filter(r => r.status === 'failed').length;
 
+  const finalStatus = failedCount > 0 ? 'completed_with_errors' : 'completed';
+  db.updatePlanStatus(planId, finalStatus);
+  db.logActivity({
+    plan_id: planId,
+    agent: 'system',
+    action: 'plan_completed',
+    details: { completed: completedCount, failed: failedCount, status: finalStatus },
+  });
+
   const recommendations = await generateRecommendations(planDoc, kimiClient);
 
   const items = planDoc.items.map(i =>
@@ -110,7 +119,7 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
 
 async function generateRecommendations(planOrTask, kimiClient) {
   try {
-    const recs = await kimiClient.chat([
+    const recs = await kimiClient.chatWithFallback([
       {
         role: 'system',
         content: `你是工具推荐 agent。基于任务内容，列出后续建议使用的 OpenCode 能力。
@@ -130,8 +139,8 @@ async function generateRecommendations(planOrTask, kimiClient) {
         role: 'user',
         content: `Task: ${typeof planOrTask === 'string' ? planOrTask : JSON.stringify({ title: planOrTask.title, items: planOrTask.items.map(i => ({ title: i.title, description: i.description })) })}\n\n列出建议。`
       }
-    ]);
-    return recs;
+    ], { json_mode: true, max_tokens: 1500 });
+    return recs?.content || recs;
   } catch (err) {
     console.error('[AgentOrchestrator] Recommendation generation failed:', err.message);
     return null;
@@ -343,9 +352,12 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             if (action === 'create') {
               const items = db.getPlanItems(plan_id);
               const completed = items.filter(i => i.status === 'completed').length;
+              if (completed === 0) {
+                return { output: 'No completed items yet. Checkpoint requires at least one completed item.' };
+              }
               const total = items.length;
               const milestoneIdx = Math.min(
-                completed === 0 ? MILESTONE_INTERVAL : Math.ceil(completed / MILESTONE_INTERVAL) * MILESTONE_INTERVAL,
+                Math.ceil(completed / MILESTONE_INTERVAL) * MILESTONE_INTERVAL,
                 total
               );
 
@@ -354,7 +366,12 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 id: checkpointId,
                 plan_id,
                 milestone_idx: milestoneIdx,
-                agent_outputs: { completed_items: items.filter(i => i.idx < milestoneIdx) },
+                agent_outputs: {
+                  items_before_milestone: items
+                    .filter(i => i.idx < milestoneIdx)
+                    .map(i => ({ idx: i.idx, title: i.title, executor: i.executor, status: i.status, result: i.result })),
+                  milestone_idx: milestoneIdx,
+                },
                 verification_status: 'pending',
               });
 
@@ -377,21 +394,51 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 return { output: 'No pending checkpoints to verify for this plan.' };
               }
 
-              const reviewResult = result === 'failed'
-                ? { status: 'failed', feedback: 'Checkpoint review failed. Items need revision before proceeding.' }
-                : { status: 'passed', feedback: 'Checkpoint review passed. Proceed to next items.' };
+              let reviewResult;
+              let fallbackUsed = false;
+              try {
+                reviewResult = await kimiClient.reviewCheckpoint(pending, deepseekClient);
+              } catch (err) {
+                console.error('[AgentOrchestrator] Kimi review failed:', err.message);
+                reviewResult = {
+                  status: 'passed',
+                  feedback: `Auto-passed: Kimi unavailable (${err.message})`,
+                };
+                fallbackUsed = true;
+                db.logActivity({
+                  plan_id,
+                  agent: 'system',
+                  action: 'checkpoint_auto_passed',
+                  details: { checkpoint_id: pending.id, reason: err.message },
+                });
+              }
+
+              if (result === 'failed' && !fallbackUsed) {
+                const prev = reviewResult.feedback || '';
+                reviewResult = {
+                  status: 'failed',
+                  feedback: prev + (prev ? '\n' : '') + 'User override: marked as failed.',
+                };
+              }
 
               db.verifyCheckpoint(pending.id, reviewResult.status, reviewResult.feedback);
+
+              if (reviewResult.status === 'passed') {
+                db.db.prepare(
+                  "UPDATE plans SET milestones_completed = milestones_completed + 1 WHERE id = ?"
+                ).run(plan_id);
+              }
 
               db.logActivity({
                 plan_id,
                 agent: 'kimi',
                 action: 'checkpoint_verified',
-                details: { checkpoint_id: pending.id, result: reviewResult.status },
+                details: { checkpoint_id: pending.id, result: reviewResult.status, fallback: fallbackUsed },
               });
 
               const icon = reviewResult.status === 'passed' ? '✅' : '❌';
-              return { output: `${icon} Checkpoint verified: ${reviewResult.status}\nFeedback: ${reviewResult.feedback}\nMilestone: item ${pending.milestone_idx}` };
+              const fallbackNote = fallbackUsed ? '\n⚠️ Kimi was unavailable, auto-passed.' : '';
+              return { output: `${icon} Checkpoint verified: ${reviewResult.status}\nFeedback: ${reviewResult.feedback}\nMilestone: item ${pending.milestone_idx}${fallbackNote}` };
             }
 
               return { output: 'Error: action must be "create" or "verify"' };

@@ -53,6 +53,7 @@ async function handleRequest(req) {
 
     // Match routes
     const planMatch = path.match(/^\/api\/plans\/([^\/]+)\/activate$/);
+    const planCompleteMatch = path.match(/^\/api\/plans\/([^\/]+)\/complete$/);
     const planItemMatch = path.match(/^\/api\/plans\/([^\/]+)\/items\/([^\/]+)$/);
     const planItemsMatch = path.match(/^\/api\/plans\/([^\/]+)\/items$/);
     const planIdMatch = path.match(/^\/api\/plans\/([^\/]+)$/);
@@ -65,6 +66,8 @@ async function handleRequest(req) {
       response = await planRouter.createPlan(req);
     } else if (planMatch && method === "POST") {
       response = await planRouter.activatePlan(req, { id: planMatch[1] });
+    } else if (planCompleteMatch && method === "POST") {
+      response = await planRouter.completePlan(req, { id: planCompleteMatch[1] });
     } else if (planItemMatch && method === "PATCH") {
       response = await planRouter.updatePlanItem(req, { id: planItemMatch[1], idx: planItemMatch[2] });
     } else if (planItemsMatch && method === "GET") {

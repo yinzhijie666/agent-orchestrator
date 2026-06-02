@@ -50,12 +50,16 @@ export class SubagentRunner {
   constructor(config) {
     this.config = config;
     this.defaultTimeoutMs = config?.auto_exec?.timeout_ms || 90000;
+    this.deepseekClient = new DeepSeekClient(config.models.deepseek);
   }
 
   async run(prompt, options = {}) {
     const modelName = options.model || this.config?.auto_exec?.model || "cheap";
     const client = options.client || pickClient(this.config, modelName);
     const timeoutMs = options.timeoutMs || this.defaultTimeoutMs;
+
+    const fallbackClient = options.fallbackClient
+      || (client.provider === "minimax" ? this.deepseekClient : null);
 
     const messages = [
       { role: "system", content: SUBAGENT_SYSTEM_PROMPT },
@@ -66,7 +70,7 @@ export class SubagentRunner {
     const result = await this._chatWithTimeout(client, messages, {
       json_mode: true,
       max_tokens: options.maxTokens || 8000,
-    }, timeoutMs);
+    }, timeoutMs, fallbackClient);
     const durationMs = Date.now() - t0;
 
     const parsed = this._parseResult(result.content);
@@ -86,14 +90,14 @@ export class SubagentRunner {
     };
   }
 
-  async _chatWithTimeout(client, messages, options, timeoutMs) {
+  async _chatWithTimeout(client, messages, options, timeoutMs, fallbackClient = null) {
     let timer = null;
     const timeoutPromise = new Promise((_, reject) => {
       timer = setTimeout(() => reject(new Error(`subagent LLM call timed out after ${timeoutMs}ms`)), timeoutMs);
     });
     try {
       const result = await Promise.race([
-        client.chatWithFallback(messages, options),
+        client.chatWithFallback(messages, options, fallbackClient),
         timeoutPromise,
       ]);
       return result;

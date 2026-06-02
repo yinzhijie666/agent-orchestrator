@@ -48,23 +48,29 @@ export class AutoDispatcher {
   async dispatch(prompt, options = {}) {
     this.dispatchedTotal += 1;
 
-    if (this.d2Enabled) {
-      const health = await this.ensureHealthy();
-      if (health.ok && this.server && this.server.isHealthy()) {
-        try {
-          const result = await this._dispatchViaServer(prompt, options);
+    if (!this.d2Enabled) {
+      const result = await this.runner.run(prompt, options);
+      this.dispatchedByMode.llm += 1;
+      return { ...result, _mode: "llm" };
+    }
+
+    const health = await this.ensureHealthy();
+    if (health.ok && this.server && this.server.isHealthy()) {
+      try {
+        const result = await this._dispatchViaServer(prompt, options);
+        if (result.status !== "failure") {
           this.dispatchedByMode.server += 1;
           return { ...result, _mode: "server" };
-        } catch (e) {
-          console.warn(`[AutoDispatcher] D2 dispatch failed, falling back to D1: ${e.message}`);
-          this.dispatchedByMode.fallback += 1;
         }
+        console.warn(`[AutoDispatcher] D2 returned failure, falling back to D1`);
+      } catch (e) {
+        console.warn(`[AutoDispatcher] D2 dispatch threw, falling back to D1: ${e.message}`);
       }
     }
 
+    this.dispatchedByMode.fallback += 1;
     const result = await this.runner.run(prompt, options);
-    this.dispatchedByMode.llm += 1;
-    return { ...result, _mode: "llm" };
+    return { ...result, _mode: "llm", _fell_back_from_d2: true };
   }
 
   async ensureHealthy() {

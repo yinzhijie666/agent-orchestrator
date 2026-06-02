@@ -78,10 +78,11 @@ const checkpointRouter = {
     try {
       const checkpoint = await this.milestoneManager.verifyCheckpoint(params.id, verifyResult);
       
-      // If passed, update plan milestones
+      // If passed, update plan milestones atomically
       if (verifyResult.status === 'passed') {
-        const plan = db.getPlan(checkpoint.plan_id);
-        db.updatePlanMilestones(checkpoint.plan_id, (plan.milestones_completed || 0) + 1);
+        db.db.prepare(
+          "UPDATE plans SET milestones_completed = milestones_completed + 1 WHERE id = ?"
+        ).run(checkpoint.plan_id);
       }
 
       // Add fallback info to response

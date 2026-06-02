@@ -87,7 +87,7 @@ CodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_expl
     return mode;
   }
 
-  async reviewCheckpoint(checkpoint) {
+  async reviewCheckpoint(checkpoint, fallbackClient = null) {
     const messages = [
       {
         role: 'system',
@@ -99,8 +99,12 @@ CodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_expl
       }
     ];
 
-    const response = await this.chat(messages, { json_mode: true, max_tokens: 4000 });
-    return JSON.parse(response);
+    const result = await this.chatWithFallback(
+      messages,
+      { json_mode: true, max_tokens: 4000 },
+      fallbackClient
+    );
+    return JSON.parse(result.content);
   }
 
   parsePlan(response) {
