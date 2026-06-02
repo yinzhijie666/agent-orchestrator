@@ -136,7 +136,7 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
     `  ${r.status === 'completed' ? '✅' : '❌'} [${r.executor}] Item ${r.idx + 1}${r.error ? ': ' + r.error : ''}`
   ).join('\n');
 
-  return { mode: 'build', planId, title: planDoc.title, items, itemCount: planDoc.items.length, execSummary, completedCount, failedCount, fallback: fallbackUsed, recommendations, suggested_skills: planDoc.suggested_skills || [] };
+  return { mode: 'build', planId, title: planDoc.title, items, itemCount: planDoc.items.length, execSummary, completedCount, failedCount, fallback: fallbackUsed, recommendations, suggested_skills: planDoc.suggested_skills || {} };
 }
 
 async function generateRecommendations(planOrTask, kimiClient) {
@@ -146,14 +146,7 @@ async function generateRecommendations(planOrTask, kimiClient) {
         role: 'system',
         content: `你是工具推荐 agent。基于任务内容，列出后续建议使用的 OpenCode 能力。
 包括这些类别（每类最多选 2 个最相关的）：
-- Superpowers skills: brainstorming, writing-plans, test-driven-development, systematic-debugging, subagent-driven-development, verification-before-completion, requesting-code-review, receiving-code-review
-- GStack commands: /browse, /debug, /design-consultation, /design-review, /document-release, /office-hours, /plan-ceo-review, /plan-design-review, /plan-eng-review, /qa, /qa-only, /retro, /review, /setup-browser-cookies, /ship
-- Cloud skills: 根据技术领域匹配对应的云端技能类别，如 frontend-category-pointer, cloud-category-pointer, security-category-pointer, devops-category-pointer, data-science-category-pointer, database-category-pointer, testing-category-pointer, ai-ml-category-pointer, backend-category-pointer, mobile-category-pointer
-- CodeGraph MCP: codegraph_context, codegraph_search, codegraph_callers, codegraph_callees, codegraph_impact, codegraph_node, codegraph_explore, codegraph_files, codegraph_status
-- Understand commands: /understand-explain, /understand-diff, /understand-domain, /understand-onboard
-- Graphify: /graphify, /graphify query
-- Knowledge: oh-my-memory 搜索相关记忆, 相关 .md 文档路径
-- Automation: verify.sh, skills-manager
+${CAPABILITY_LIST}
 
 返回格式：简洁列表，每行一个建议，格式为 "- [类别] 建议内容"。不解释原因。`
       },
@@ -590,12 +583,12 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                   model: process.env.AUTO_EXEC_MODEL || AUTO_EXEC_DEFAULTS.model || 'cheap',
                 } : null,
                 auto_dispatched: autoDispatched,
-                dispatch_result: dispatchResult,
+                dispatch_result: autoDispatched ? dispatchResult : null,
                 dispatcher_status: autoDispatcher ? autoDispatcher.getStatus() : null,
                 next_step: autoDispatched
                   ? `Subagent auto-dispatched. ${dispatchResult?.summary || 'See dispatch_result.'}`
                   : (autoExecEnabled
-                    ? 'Auto-exec enabled but dispatch failed. Fall back to manual execution.'
+                    ? 'D1 subagent has no tool access. Execute skills manually in P0 → P1 → P2 order.'
                     : (validated.length > 0
                       ? 'Auto-exec disabled. Manually execute each skill in P0 → P1 → P2 order.'
                       : 'No skills suggested. Proceed with normal execution.'))
@@ -655,28 +648,34 @@ User: "Build a REST API"
 → Execute: \`codegraph_context\` first (P0), then \`/qa\` (P1)
 → Report results to user
 
-### Subagent Auto-Execution (NEW — preferred path)
-When \`agent_execute_skills\` returns an \`auto_exec.prompt\` field:
+### Subagent Auto-Execution (preferred path)
+When \`agent_execute_skills\` returns an \`auto_exec.prompt\` field AND \`auto_dispatched\` is true:
 1. **Immediately** call \`task\` with subagent_type="general" and pass the ENTIRE \`auto_exec.prompt\` as the prompt
-2. The subagent has isolated context (does NOT inherit this MANDATORY EXECUTION FLOW block, do NOT re-inject it)
+2. The subagent has isolated context (do NOT re-inject MANDATORY EXECUTION FLOW)
 3. Read the subagent's JSON return value
 4. Present \`executed_skills[]\` results to the user in P0→P1→P2 order
 5. If \`status === "failure"\`, surface the \`p0_failures\` field
-6. Do NOT manually call individual skills yourself — let the subagent handle them all
 
-Fallback (if \`auto_exec\` is null — which includes when D1 subagent has no tool access):
-- Iterate \`skills_to_execute[]\` yourself in tier order
-- Use the \`type\` field to call the appropriate tool (\`skill\`, codegraph MCP, command)
+### Fallback (when \`auto_exec\` is null or \`auto_dispatched\` is false)
+The D1 subagent has no tool access, so you must execute skills yourself:
+- Read \`skills_to_execute[]\` from the agent_execute_skills output
+- Iterate in tier order: P0 first, then P1, then P2
+- Map each skill type to the appropriate tool:
+  - \`skill\` → call the \`skill\` tool with the skill name
+  - \`command\` → run the slash command
+  - \`codegraph\` → call the codegraph MCP tool
+  - \`memory\` → search oh-my-memory
+- If a skill execution fails, log the error and continue to the next skill
+- Report all results at the end
 - P0 must succeed; P1/P2 may be skipped
 
 ### Example Auto-Execution Flow
 User: "Build a REST API"
 → \`agent task="Build a REST API"\`
 → Output contains \`💡 建议后续: P0: codegraph_context, P1: /qa\`
-→ \`agent_execute_skills\` → returns {skills_to_execute: [...], auto_exec: {prompt: "..."}}
-→ You call: \`task({ subagent_type: "general", prompt: auto_exec.prompt })\`
-→ Subagent returns JSON with executed_skills[]
-→ You report results to user`;
+→ \`agent_execute_skills\` → returns {skills_to_execute: [...], auto_exec: null, auto_dispatched: false}
+→ You execute: call \`skill codegraph_context\` first (P0), then \`/qa\` (P1)
+→ Report results to user`;
       output.system += contextBlock;
     },
 
