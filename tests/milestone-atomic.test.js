@@ -60,15 +60,21 @@ describe("Milestone atomic increment (PR2: Stage 3.3)", () => {
 describe("MilestoneManager still functional (server/api/checkpoint.js path)", () => {
   const TEST_DB2 = join(__dirname, "test-milestone-manager.sqlite");
   let localDb2;
+  let originalDbPath;
 
   beforeAll(async () => {
     await rm(TEST_DB2, { force: true });
     initSchema(TEST_DB2);
-    localDb2 = new DB(TEST_DB2);
+    originalDbPath = process.env.AGENT_ORCHESTRATOR_DB_PATH;
+    process.env.AGENT_ORCHESTRATOR_DB_PATH = TEST_DB2;
+    const { getDefaultDB } = await import("../server/lib/db.js");
+    const defaultDb = getDefaultDB();
+    defaultDb.db.close();
+    Object.assign(defaultDb, new DB(TEST_DB2));
 
-    localDb2.createPlan({ id: "p2", title: "P2", plan_document: "{}", status: "active" });
+    defaultDb.createPlan({ id: "p2", title: "P2", plan_document: "{}", status: "active" });
     for (let i = 0; i < 5; i++) {
-      localDb2.createPlanItem({
+      defaultDb.createPlanItem({
         plan_id: "p2",
         idx: i,
         title: `I${i}`,
@@ -76,10 +82,14 @@ describe("MilestoneManager still functional (server/api/checkpoint.js path)", ()
         status: i < 4 ? "completed" : "pending",
       });
     }
+    localDb2 = defaultDb;
   });
 
   afterAll(() => {
     localDb2.close();
+    if (originalDbPath) {
+      process.env.AGENT_ORCHESTRATOR_DB_PATH = originalDbPath;
+    }
   });
 
   test("shouldCheckpoint returns true at interval boundary", () => {
