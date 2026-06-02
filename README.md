@@ -98,7 +98,7 @@ export OPENCODE_API_KEY=sk-...
 | Tool | Layer | Purpose |
 |------|-------|---------|
 | `agent` | Router | Auto-route every user request. Kimi decides plan mode (analysis) or build mode (DeepSeek/MiniMax execute). |
-| `agent_execute_skills` | Parser | Extract prioritized P0/P1/P2 skills from latest plan and dispatch subagent for auto-execution. |
+| `agent_execute_skills` | Parser | Extract prioritized P0/P1/P2 skills from latest plan and **auto-dispatch** subagent via AutoDispatcher (D1: LLM API / D2: opencode server). |
 | `agent_status` | - | Get orchestration status, plan counts, agent availability. |
 | `agent_checkpoint` | Kimi | Create/verify milestone checkpoints (every 4 completed items). |
 
@@ -110,13 +110,39 @@ DEEPSEEK_API_KEY=        # DeepSeek API Key
 MINIMAX_API_KEY=         # MiniMax API Key
 AGENT_ORCHESTRATOR_PORT=8765      # Optional
 AGENT_ORCHESTRATOR_DB_PATH=       # Optional
+AUTO_EXEC_SKILLS=true    # Enable auto-execute-skills feature (default: true)
+AUTO_EXEC_DISPATCH=false # Disable AutoDispatcher auto-dispatch (default: enabled)
+AUTO_EXEC_MODEL=cheap    # Subagent model: cheap|deepseek|minimax (default: cheap)
+```
+
+## Auto-Skill-Execution (L3)
+
+`agent_execute_skills` automatically dispatches a subagent to execute the
+prioritized skill list (`P0_critical` → `P1_important` → `P2_nice_to_have`).
+The dispatch uses **AutoDispatcher** with two paths:
+
+- **D1 (default, active)**: `SubagentRunner` calls a LLM API directly via
+  `BaseModelClient` (DeepSeek → MiniMax fallback chain). Bypasses `opencode run`
+  to avoid the `Session not found` bug in opencode 1.15.13.
+- **D2 (preferred, monitoring)**: `OpencodeServer` starts a long-lived
+  `opencode serve --pure` process for health/observability. Currently a no-op
+  for actual dispatch (until upstream fixes `opencode run --attach`); the
+  dispatcher falls back to D1 transparently.
+
+The dispatcher is started automatically when the plugin loads and is stopped
+on plugin dispose. Configure via `server/config/default.json` → `auto_exec.dispatcher`.
+
+**Disable auto-dispatch** (for tests or manual control):
+```bash
+AUTO_EXEC_DISPATCH=false bun run dev
 ```
 
 ## Development
 
 ```bash
-bun run dev      # Watch mode
-bun test         # Run tests
+bun run dev          # Watch mode
+bun test             # Run unit tests (58 tests, ~5s)
+bun test tests/e2e/  # Run E2E tests (requires API key for live LLM dispatch)
 ```
 
 ## Testing Model Connectivity
