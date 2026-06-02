@@ -157,6 +157,58 @@ bun run test:models
 # ✅ KIMI: Connected (N models)  ← Requires valid API key
 ```
 
+## Health Check
+
+Verify agent-orchestrator is loaded, running, and all subsystems healthy.
+
+```bash
+# Run full system audit (includes Phase 8 agent-orchestrator checks)
+bash ~/.config/opencode/verify.sh
+```
+
+**What Phase 8 checks (9 items):**
+
+| #   | Check                               | What it catches                                                       |
+| --- | ----------------------------------- | --------------------------------------------------------------------- |
+| 8.1 | Plugin source file exists           | Missing `index.js`                                                      |
+| 8.2 | Plugin export signature valid       | "Plugin export is not a function" errors (e.g., gstack noop.ts class) |
+| 8.3 | All 4 tools enabled                 | `opencode.json` missing `agent`/`agent_status`/etc.                         |
+| 8.4 | Plugin registered in opencode.jsonc | `plugin[]` array not pointing to `~/agent-orchestrator`                   |
+| 8.5 | DB schema has 7 tables              | DB init failure / schema drift                                        |
+| 8.6 | Main opencode listening on :4096    | OpenCode serve not running                                            |
+| 8.7 | Subprocess budget ≤ 3               | Leaked D2 servers / MCP zombies (R1/R2 fix effectiveness)             |
+| 8.8 | D2 dispatcher HTTP 401 (if running) | AutoDispatcher.start() failed                                         |
+| 8.9 | 0 plugin errors in 24h logs         | Silent plugin load failures                                           |
+
+**Exit codes:**
+- `exit 0` — All Golden 28 + Phase 8 checks pass
+- `exit 1` — ≥ 1 check failed; output shows fix hints
+
+**When to run:**
+- After plugin version bump
+- After OpenCode upgrade
+- After system reboot (verify plugins re-loaded cleanly)
+- Before reporting agent-orchestrator bugs (rule out plugin load issues first)
+
+**Troubleshooting common failures:**
+
+| Failure                            | Likely cause                          | Fix                                                                |
+| ---------------------------------- | ------------------------------------- | ------------------------------------------------------------------ |
+| 8.1 plugin source missing          | `~/agent-orchestrator` not cloned     | `git clone git@github.com:yinzhijie666/agent-orchestrator.git`       |
+| 8.2 plugin export invalid          | `index.js` syntax error               | `bun test` to reproduce                                            |
+| 8.4 plugin not registered          | `opencode.jsonc` out of sync          | Add `"agent-orchestrator@~/agent-orchestrator"` to `plugin[]`         |
+| 8.5 DB schema < 7 tables           | DB init failure or partial migration  | Delete `server/state/db.sqlite`; restart OpenCode                  |
+| 8.6 main opencode not listening    | OpenCode serve crashed                | `opencode serve` (background)                                      |
+| 8.7 subprocess budget > 3          | Leaked D2 server                     | `pkill -f 'opencode serve --port 14[0-9]+ --hostname 127.0.0.1 --pure'` |
+| 8.8 D2 dispatcher unhealthy        | AutoDispatcher.start() failed         | Check plugin logs; restart OpenCode                                |
+| 8.9 plugin errors in 24h           | Silent load failure                   | `find ~/.local/share/opencode/log -name "*.log" -mtime -1 \| xargs grep agent-orch` |
+
+**Related:**
+- `~/.config/opencode/verify.sh` — runs Phase 8 as part of full audit
+- `~/.config/opencode/.gstack/audit-reports/opencode-env-audit-2026-06-02-full.md` — Golden 28 reference
+- `agent-orchestrator` commit `3cd4c42` — R1/R2 fix (dispatcher lifecycle + signal cleanup)
+- `agent-orchestrator` commit `35c2bd5` (opencode-config) — Phase 8 audit hardening
+
 ## License
 
 MIT
