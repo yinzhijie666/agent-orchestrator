@@ -78,7 +78,7 @@ export OPENCODE_API_KEY=sk-...
 - **Three-layer routing**: Kimi → DeepSeek → MiniMax based on task type
 - **Milestone checkpoints**: Every 4 plan items, Kimi reviews before continuing
 - **Real-time dashboard**: WebSocket-powered live monitoring
-- **OpenCode integration**: Native plugin with 5 tools + 3 hooks
+- **OpenCode integration**: Native plugin with 4 tools + 1 hook
 - **SQLite state**: Zero external dependencies
 
 ## API Endpoints
@@ -97,11 +97,10 @@ export OPENCODE_API_KEY=sk-...
 
 | Tool | Layer | Purpose |
 |------|-------|---------|
-| `agent_plan` | Kimi | Generate structured plans |
-| `agent_execute` | DeepSeek | Execute plan items |
-| `agent_query` | MiniMax | Read-only information retrieval |
-| `agent_status` | - | Get orchestration status |
-| `agent_checkpoint` | Kimi | Create/verify milestones |
+| `agent` | Router | Auto-route every user request. Kimi decides plan mode (analysis) or build mode (DeepSeek/MiniMax execute). |
+| `agent_execute_skills` | Parser | Extract prioritized P0/P1/P2 skills from latest plan and dispatch subagent for auto-execution. |
+| `agent_status` | - | Get orchestration status, plan counts, agent availability. |
+| `agent_checkpoint` | Kimi | Create/verify milestone checkpoints (every 4 completed items). |
 
 ## Environment Variables
 
