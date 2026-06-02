@@ -118,8 +118,10 @@ class DB {
 
   updateThread(id, updates) {
     const keys = Object.keys(updates);
+    const datetimeFields = ['updated_at', 'created_at'];
     const sql = `UPDATE agent_threads SET ${keys.map(k => `${k} = ?`).join(', ')} WHERE id = ?`;
-    this.db.prepare(sql).run(...keys.map(k => JSON.stringify(updates[k])), id);
+    const values = keys.map(k => datetimeFields.includes(k) ? updates[k] : JSON.stringify(updates[k]));
+    this.db.prepare(sql).run(...values, id);
     return this.getThread(id);
   }
 

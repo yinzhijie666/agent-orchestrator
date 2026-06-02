@@ -58,8 +58,7 @@ class BaseModelClient {
       error.message?.includes(code) || error.code === code
     );
     
-    const isHTTPError = error.status >= 500 || 
-                       error.status === 401 || 
+    const isHTTPError = error.status >= 500 ||
                        error.status === 429 ||
                        error.status === 408;
     

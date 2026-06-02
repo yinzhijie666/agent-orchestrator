@@ -3,7 +3,6 @@ import { AgentRouter } from "../lib/agent-router.js";
 import KimiClient from "../lib/model-clients/kimi-client.js";
 import DeepSeekClient from "../lib/model-clients/deepseek-client.js";
 import { PlanOrchestrator } from "../lib/plan-orchestrator.js";
-import { emitPlanActivated, emitPlanCompleted, emitPlanCreated, emitModelFallback } from "../lib/events.js";
 import config from "../config/default.json" with { type: "json" };
 
 const router = {
@@ -40,11 +39,6 @@ const router = {
     }
 
     const { planId, planDoc, fallbackUsed, fallbackInfo } = result;
-
-    emitPlanCreated(planId, planDoc);
-    if (fallbackUsed) {
-      emitModelFallback("kimi", "deepseek", "plan_generation");
-    }
 
     return new Response(JSON.stringify({
       id: planId,
@@ -101,15 +95,14 @@ const router = {
       details: {}
     });
 
-    emitPlanActivated(params.id);
-
     return new Response(JSON.stringify(plan), { status: 200 });
   },
 
   async completePlan(req, params) {
     let body = {};
     try { body = await req.json(); } catch {}
-    const status = body.status || 'completed';
+    const VALID_STATUSES = ['completed', 'completed_with_errors', 'failed', 'cancelled'];
+    const status = VALID_STATUSES.includes(body.status) ? body.status : 'completed';
     const plan = db.updatePlanStatus(params.id, status);
     if (!plan) {
       return new Response(JSON.stringify({ error: 'Plan not found' }), { status: 404 });
@@ -120,7 +113,6 @@ const router = {
       action: 'plan_completed',
       details: { status },
     });
-    emitPlanCompleted(params.id, status);
     return new Response(JSON.stringify(plan), { status: 200 });
   }
 };

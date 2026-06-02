@@ -37,18 +37,24 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
   }
 
   if (modeAnalysis.mode === 'plan') {
-    const analysis = await kimiClient.chat([
-      {
-        role: 'system',
-        content: '你是分析 agent。只读分析任务，提供深入见解。不要写代码。分析结束时给出明确的结论和建议。\n\n可用能力清单（推荐 3-5 项）:\n云端[76类]: frontend backend cloud security ai-ml testing database mobile devops\nSuperpowers[14]: brainstorming test-driven-development systematic-debugging\nGStack[16]: /qa /review /browse /ship /design-review\n本地: /understand-explain /understand-diff /graphify query verify.sh oh-my-memory\nCodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_explore'
-      },
-      {
-        role: 'user',
-        content: `Task: ${task}\n\nContext: ${context || '无'}\n\n提供详细分析。`
-      }
-    ]);
+    let analysis;
+    try {
+      const analysisResult = await kimiClient.chatWithFallback([
+        {
+          role: 'system',
+          content: '你是分析 agent。只读分析任务，提供深入见解。不要写代码。分析结束时给出明确的结论和建议。\n\n可用能力清单（推荐 3-5 项）:\n云端[76类]: frontend backend cloud security ai-ml testing database mobile devops\nSuperpowers[14]: brainstorming test-driven-development systematic-debugging\nGStack[16]: /qa /review /browse /ship /design-review\n本地: /understand-explain /understand-diff /graphify query verify.sh oh-my-memory\nCodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_explore'
+        },
+        {
+          role: 'user',
+          content: `Task: ${task}\n\nContext: ${context || '无'}\n\n提供详细分析。`
+        }
+      ], { max_tokens: 4000 }, deepseekClient);
+      analysis = analysisResult.content || analysisResult;
+    } catch (err) {
+      analysis = `分析失败: ${err.message}`;
+    }
     const recommendations = await generateRecommendations(task, kimiClient);
-    return { mode: 'plan', analysis, reason: modeAnalysis.reason, recommendations, suggested_skills: modeAnalysis.suggested_skills || [] };
+    return { mode: 'plan', analysis, reason: modeAnalysis.reason, recommendations, suggested_skills: modeAnalysis.suggested_skills || {} };
   }
 
   // Build mode: existing flow

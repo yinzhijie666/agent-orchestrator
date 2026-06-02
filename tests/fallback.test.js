@@ -51,7 +51,7 @@ describe("Fallback Mechanism", () => {
 
       const err401 = new Error("HTTP 401");
       err401.status = 401;
-      expect(client.shouldFallback(err401)).toBe(true);
+      expect(client.shouldFallback(err401)).toBe(false);
 
       const err429 = new Error("HTTP 429");
       err429.status = 429;
