@@ -13,9 +13,12 @@ import planRouter from "./api/plan.js";
 import checkpointRouter from "./api/checkpoint.js";
 import threadRouter from "./api/thread.js";
 import statusRouter from "./api/status.js";
+import internalEventRouter from "./api/internal-event.js";
 
 // WebSocket
 import { setupWebSocket, broadcaster } from "./websocket/server.js";
+import { markAsServerProcess } from "./lib/events.js";
+markAsServerProcess();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -104,6 +107,8 @@ async function handleRequest(req) {
       response = statusRouter.getStatus();
     } else if (path === "/api/status/agents" && method === "GET") {
       response = statusRouter.getAgentStatus();
+    } else if (path === "/api/internal/event" && method === "POST") {
+      response = await internalEventRouter.handleEvent(req);
     } else if (path === "/" || path === "/dashboard") {
       // Serve dashboard
       const dashboardPath = join(__dirname, "dashboard", "index.html");
