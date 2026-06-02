@@ -7,6 +7,12 @@
     "interval": 4,
     "verification_timeout_ms": 300000
   },
+  "auto_exec": {
+    "enabled": true,
+    "max_skills": 20,
+    "model": "cheap",
+    "timeout_ms": 90000
+  },
   "models": {
     "kimi": {
       "api_key_env": "OPENCODE_API_KEY",

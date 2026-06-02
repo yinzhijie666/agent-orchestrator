@@ -14,9 +14,11 @@ import KimiClient from './server/lib/model-clients/kimi-client.js';
 import DeepSeekClient from './server/lib/model-clients/deepseek-client.js';
 import MiniMaxClient from './server/lib/model-clients/minimax-client.js';
 import { PlanOrchestrator } from './server/lib/plan-orchestrator.js';
+import { AutoExecutor } from './server/lib/auto-executor.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MILESTONE_INTERVAL = config.milestone?.interval || 4;
+const AUTO_EXEC_DEFAULTS = config.auto_exec || { enabled: true, max_skills: 20, model: 'cheap' };
 
 function initSchema(database) {
   database.exec(`
@@ -425,7 +427,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
         }),
 
       agent_execute_skills: tool({
-        description: 'MUST be called after any `agent` tool call when output contains "💡 建议后续:". Returns a prioritized execution list of skills extracted from the plan\'s suggested_skills section. Do NOT skip P0 items.',
+        description: 'MUST be called after any `agent` tool call when output contains "💡 建议后续:". Returns a prioritized execution list of skills extracted from the plan\'s suggested_skills section. When AUTO_EXEC is enabled, also returns auto_exec.prompt for subagent dispatch. Do NOT skip P0 items.',
         args: z.object({
           plan_id: z.string().optional().describe('Plan ID. If omitted, uses the most recently created plan.'),
         }),
@@ -451,24 +453,42 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             }
 
             const skills = planDoc.suggested_skills || {};
-            const items = [];
+            const rawItems = [];
 
             for (const tier of ['P0_critical', 'P1_important', 'P2_nice_to_have']) {
               const list = skills[tier] || [];
               for (const entry of list) {
                 const action = parseSkillAction(entry);
-                items.push({ tier, entry, ...action });
+                rawItems.push({ tier, entry, ...action });
               }
             }
+
+            const validated = AutoExecutor.validate(rawItems, AUTO_EXEC_DEFAULTS.max_skills);
+
+            const envEnabled = process.env.AUTO_EXEC_SKILLS !== 'false';
+            const configEnabled = AUTO_EXEC_DEFAULTS.enabled !== false;
+            const autoExecEnabled = envEnabled && configEnabled && validated.length > 0;
 
             return {
               output: JSON.stringify({
                 plan_id: plan.id,
-                skills_to_execute: items,
-                total: items.length,
-                next_step: items.length > 0
-                  ? `EXECUTE each skill in P0 → P1 → P2 order. P0 (${items.filter(i => i.tier === 'P0_critical').length} items) is BLOCKING.`
-                  : 'No skills suggested. Proceed with normal execution.'
+                skills_to_execute: validated,
+                total: validated.length,
+                auto_exec: autoExecEnabled ? {
+                  mode: 'subagent',
+                  prompt: AutoExecutor.buildPrompt(validated, {
+                    planId: plan.id,
+                    title: planDoc.title || 'Untitled Plan',
+                    goal: planDoc.goal || planDoc.title || 'See plan for details',
+                  }),
+                  trigger: 'task({ subagent_type: "general", prompt: auto_exec.prompt })',
+                  model: process.env.AUTO_EXEC_MODEL || AUTO_EXEC_DEFAULTS.model || 'cheap',
+                } : null,
+                next_step: autoExecEnabled
+                  ? 'Auto-execution ready. Call task with auto_exec.prompt to dispatch subagent.'
+                  : (validated.length > 0
+                    ? 'Auto-exec disabled. Manually execute each skill in P0 → P1 → P2 order.'
+                    : 'No skills suggested. Proceed with normal execution.')
               }, null, 2)
             };
           } catch (err) {
@@ -523,7 +543,30 @@ User: "Build a REST API"
 → You MUST call: \`agent_execute_skills\`
 → Returned: 2 skills, P0 first
 → Execute: \`codegraph_context\` first (P0), then \`/qa\` (P1)
-→ Report results to user`;
+→ Report results to user
+
+### Subagent Auto-Execution (NEW — preferred path)
+When \`agent_execute_skills\` returns an \`auto_exec.prompt\` field:
+1. **Immediately** call \`task\` with subagent_type="general" and pass the ENTIRE \`auto_exec.prompt\` as the prompt
+2. The subagent has isolated context (does NOT inherit this MANDATORY EXECUTION FLOW block, do NOT re-inject it)
+3. Read the subagent's JSON return value
+4. Present \`executed_skills[]\` results to the user in P0→P1→P2 order
+5. If \`status === "failure"\`, surface the \`p0_failures\` field
+6. Do NOT manually call individual skills yourself — let the subagent handle them all
+
+Fallback (if \`auto_exec\` is null or subagent dispatch fails):
+- Iterate \`skills_to_execute[]\` yourself in tier order
+- Use the \`type\` field to call the appropriate tool (\`skill\`, codegraph MCP, command)
+- P0 must succeed; P1/P2 may be skipped
+
+### Example Auto-Execution Flow
+User: "Build a REST API"
+→ \`agent task="Build a REST API"\`
+→ Output contains \`💡 建议后续: P0: codegraph_context, P1: /qa\`
+→ \`agent_execute_skills\` → returns {skills_to_execute: [...], auto_exec: {prompt: "..."}}
+→ You call: \`task({ subagent_type: "general", prompt: auto_exec.prompt })\`
+→ Subagent returns JSON with executed_skills[]
+→ You report results to user`;
       output.system += contextBlock;
     },
 
