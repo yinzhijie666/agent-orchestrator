@@ -1,5 +1,6 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test";
 import broadcaster from "../server/websocket/broadcaster.js";
+import { markAsServerProcess } from "../server/lib/events.js";
 import {
   emitCheckpointCreated,
   emitCheckpointVerified,
@@ -16,6 +17,7 @@ describe("events module (PR3: Stage 6.1)", () => {
   let originalBroadcast;
 
   beforeAll(() => {
+    markAsServerProcess();
     originalBroadcast = broadcaster.broadcast.bind(broadcaster);
     received = [];
     broadcaster.broadcast = (type, payload) => {

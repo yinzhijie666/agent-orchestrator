@@ -32,15 +32,15 @@ class DB {
     return this.db.prepare("SELECT * FROM plans WHERE id = ?").get(id);
   }
 
-  getRecentPlan(limit = 1) {
+  getRecentPlan() {
     return this.db.prepare(
-      "SELECT * FROM plans ORDER BY created_at DESC LIMIT ?"
-    ).get(limit);
+      "SELECT * FROM plans ORDER BY created_at DESC LIMIT 1"
+    ).get();
   }
 
   updatePlanStatus(id, status) {
     const updates = { status };
-    if (status === 'completed' || status === 'failed') {
+    if (['completed', 'completed_with_errors', 'failed', 'cancelled'].includes(status)) {
       updates.completed_at = new Date().toISOString();
     }
     const keys = Object.keys(updates);
@@ -118,8 +118,10 @@ class DB {
 
   updateThread(id, updates) {
     const keys = Object.keys(updates);
+    const datetimeFields = ['updated_at', 'created_at'];
     const sql = `UPDATE agent_threads SET ${keys.map(k => `${k} = ?`).join(', ')} WHERE id = ?`;
-    this.db.prepare(sql).run(...keys.map(k => JSON.stringify(updates[k])), id);
+    const values = keys.map(k => datetimeFields.includes(k) ? updates[k] : JSON.stringify(updates[k]));
+    this.db.prepare(sql).run(...values, id);
     return this.getThread(id);
   }
 
@@ -146,6 +148,11 @@ class DB {
 
   getActivityLog(planId, limit = 100) {
     return this.db.prepare("SELECT * FROM activity_log WHERE plan_id = ? ORDER BY timestamp DESC LIMIT ?").all(planId, limit);
+  }
+
+  cleanupActivityLog(days = 30) {
+    const cutoff = new Date(Date.now() - days * 86400000).toISOString();
+    return this.db.prepare("DELETE FROM activity_log WHERE timestamp < ?").run(cutoff);
   }
 
   close() {

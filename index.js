@@ -19,7 +19,6 @@ import {
   emitPlanCompleted,
   emitPlanCreated,
 } from './server/lib/events.js';
-import PlanParser from './server/lib/plan-parser.js';
 import KimiClient from './server/lib/model-clients/kimi-client.js';
 import DeepSeekClient from './server/lib/model-clients/deepseek-client.js';
 import MiniMaxClient from './server/lib/model-clients/minimax-client.js';
@@ -46,18 +45,24 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
   }
 
   if (modeAnalysis.mode === 'plan') {
-    const analysis = await kimiClient.chat([
-      {
-        role: 'system',
-        content: '你是分析 agent。只读分析任务，提供深入见解。不要写代码。分析结束时给出明确的结论和建议。\n\n可用能力清单（推荐 3-5 项）:\n云端[76类]: frontend backend cloud security ai-ml testing database mobile devops\nSuperpowers[14]: brainstorming test-driven-development systematic-debugging\nGStack[16]: /qa /review /browse /ship /design-review\n本地: /understand-explain /understand-diff /graphify query verify.sh oh-my-memory\nCodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_explore'
-      },
-      {
-        role: 'user',
-        content: `Task: ${task}\n\nContext: ${context || '无'}\n\n提供详细分析。`
-      }
-    ]);
+    let analysis;
+    try {
+      const analysisResult = await kimiClient.chatWithFallback([
+        {
+          role: 'system',
+          content: '你是分析 agent。只读分析任务，提供深入见解。不要写代码。分析结束时给出明确的结论和建议。\n\n可用能力清单（推荐 3-5 项）:\n云端[76类]: frontend backend cloud security ai-ml testing database mobile devops\nSuperpowers[14]: brainstorming test-driven-development systematic-debugging\nGStack[16]: /qa /review /browse /ship /design-review\n本地: /understand-explain /understand-diff /graphify query verify.sh oh-my-memory\nCodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_explore'
+        },
+        {
+          role: 'user',
+          content: `Task: ${task}\n\nContext: ${context || '无'}\n\n提供详细分析。`
+        }
+      ], { max_tokens: 4000 }, deepseekClient);
+      analysis = analysisResult.content || analysisResult;
+    } catch (err) {
+      analysis = `分析失败: ${err.message}`;
+    }
     const recommendations = await generateRecommendations(task, kimiClient);
-    return { mode: 'plan', analysis, reason: modeAnalysis.reason, recommendations, suggested_skills: modeAnalysis.suggested_skills || [] };
+    return { mode: 'plan', analysis, reason: modeAnalysis.reason, recommendations, suggested_skills: modeAnalysis.suggested_skills || {} };
   }
 
   // Build mode: existing flow
@@ -122,7 +127,6 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
     details: { completed: completedCount, failed: failedCount, status: finalStatus },
   });
   emitPlanCompleted(planId, finalStatus);
-
   const recommendations = await generateRecommendations(planDoc, kimiClient);
 
   const items = planDoc.items.map(i =>
@@ -130,7 +134,7 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
   ).join('\n');
 
   const execSummary = execResults.map(r =>
-    `  ${r.status === 'completed' ? '✅' : '❌'} [${r.executor}] Item ${r.idx}${r.error ? ': ' + r.error : ''}`
+    `  ${r.status === 'completed' ? '✅' : '❌'} [${r.executor}] Item ${r.idx + 1}${r.error ? ': ' + r.error : ''}`
   ).join('\n');
 
   return { mode: 'build', planId, title: planDoc.title, items, itemCount: planDoc.items.length, execSummary, completedCount, failedCount, fallback: fallbackUsed, recommendations, suggested_skills: planDoc.suggested_skills || [] };
@@ -333,6 +337,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             output += `Plans: ${Object.values(counts).reduce((a, b) => a + b, 0) || 0} total`;
             if (counts.active) output += `, ${counts.active} active`;
             if (counts.completed) output += `, ${counts.completed} completed`;
+            if (counts.completed_with_errors) output += `, ${counts.completed_with_errors} with errors`;
             if (counts.pending) output += `, ${counts.pending} pending`;
             output += `\nItems: ${totalItems.count} total, ${completedItems.count} completed`;
             output += `\nPending Checkpoints: ${pendingCheckpoints.count}`;
@@ -340,7 +345,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             if (recentPlans.length > 0) {
               output += `\n\nRecent Plans:\n`;
               for (const p of recentPlans) {
-                const icon = p.status === 'active' ? '▶' : p.status === 'completed' ? '✅' : '📋';
+                const icon = p.status === 'active' ? '▶' : p.status === 'completed' ? '✅' : p.status === 'completed_with_errors' ? '⚠️' : '📋';
                 output += `  ${icon} ${p.title} (\`${p.id.slice(0, 8)}…\`) - ${p.status}\n`;
               }
             }
@@ -400,7 +405,6 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 action: 'checkpoint_created',
                 details: { checkpoint_id: checkpointId, milestone_idx: milestoneIdx },
               });
-
               emitCheckpointCreated(plan_id, checkpointId, milestoneIdx);
 
               return { output: `🛑 Checkpoint created at milestone ${milestoneIdx}\nID: \`${checkpointId}\`\nStatus: waiting for Kimi verification\n\nUse agent_checkpoint with action="verify" and plan_id="${plan_id}" to have Kimi review.` };
@@ -434,11 +438,14 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 });
               }
 
-              if (result === 'failed' && !fallbackUsed) {
+              if (result === 'failed') {
                 const prev = reviewResult.feedback || '';
+                const note = fallbackUsed
+                  ? 'User override: marked as failed (Kimi auto-pass overridden).'
+                  : 'User override: marked as failed.';
                 reviewResult = {
                   status: 'failed',
-                  feedback: prev + (prev ? '\n' : '') + 'User override: marked as failed.',
+                  feedback: prev + (prev ? '\n' : '') + note,
                 };
               }
 
@@ -463,7 +470,6 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
               return { output: `${icon} Checkpoint verified: ${reviewResult.status}\nFeedback: ${reviewResult.feedback}\nMilestone: item ${pending.milestone_idx}${fallbackNote}` };
             }
 
-              return { output: 'Error: action must be "create" or "verify"' };
             } catch (err) {
               return { output: `Error: ${err.message}` };
             }
@@ -489,7 +495,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             };
           }
           try {
-            const plan = plan_id ? db.getPlan(plan_id) : db.getRecentPlan(1);
+            const plan = plan_id ? db.getPlan(plan_id) : db.getRecentPlan();
 
             if (!plan) {
               return {

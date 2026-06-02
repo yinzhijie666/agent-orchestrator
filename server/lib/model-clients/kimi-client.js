@@ -88,6 +88,10 @@ CodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_expl
   }
 
   async reviewCheckpoint(checkpoint, fallbackClient = null) {
+    const cp = { ...checkpoint };
+    if (typeof cp.agent_outputs === 'string') {
+      try { cp.agent_outputs = JSON.parse(cp.agent_outputs); } catch {}
+    }
     const messages = [
       {
         role: 'system',
@@ -95,7 +99,7 @@ CodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_expl
       },
       {
         role: 'user',
-        content: `Review this checkpoint and return JSON:\n\n${JSON.stringify(checkpoint, null, 2)}\n\nResponse format: {"status": "passed" | "failed", "feedback": "detailed review"}`
+        content: `Review this checkpoint and return JSON:\n\n${JSON.stringify(cp, null, 2)}\n\nResponse format: {"status": "passed" | "failed", "feedback": "detailed review"}`
       }
     ];
 
@@ -129,7 +133,7 @@ CodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_expl
         })()
       };
     } catch (err) {
-      throw new Error(`Failed to parse plan JSON: ${err.message}. Raw: ${response.slice(0, 200)}`);
+      throw new Error(`Failed to parse plan JSON: ${err.message}. Raw: ${response.slice(0, 50)}...`);
     }
   }
 }

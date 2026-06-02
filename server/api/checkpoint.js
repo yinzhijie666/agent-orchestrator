@@ -2,12 +2,14 @@ import { randomUUID } from "node:crypto";
 import db from "../lib/db.js";
 import { MilestoneManager } from "../lib/agent-router.js";
 import KimiClient from "../lib/model-clients/kimi-client.js";
+import DeepSeekClient from "../lib/model-clients/deepseek-client.js";
 import { emitCheckpointCreated, emitCheckpointVerified } from "../lib/events.js";
 import config from "../config/default.json" with { type: "json" };
 
 const checkpointRouter = {
   milestoneManager: new MilestoneManager(),
   kimiClient: new KimiClient(config.models.kimi),
+  deepseekClient: new DeepSeekClient(config.models.deepseek),
 
   async createCheckpoint(req) {
     const body = await req.json();
@@ -43,18 +45,19 @@ const checkpointRouter = {
   async verifyCheckpoint(req, params) {
     const body = await req.json();
     const { result } = body;
+    const resultStatus = typeof result === 'string' ? result : result?.status;
+    const resultFeedback = typeof result === 'object' ? result?.feedback : undefined;
 
-    if (!result || !result.status) {
-      return new Response(JSON.stringify({ error: 'result.status required' }), { status: 400 });
+    if (!resultStatus || !['passed', 'failed'].includes(resultStatus)) {
+      return new Response(JSON.stringify({ error: 'result must be "passed"|"failed" or {status,feedback}' }), { status: 400 });
     }
 
     let verifyResult;
     let fallbackUsed = false;
-    const checkpoint = db.getCheckpoint(params.id);
+    const fetchedCheckpoint = db.getCheckpoint(params.id);
 
     try {
-      // Try Kimi review
-      verifyResult = await this.kimiClient.reviewCheckpoint(checkpoint);
+      verifyResult = await this.kimiClient.reviewCheckpoint(fetchedCheckpoint, this.deepseekClient);
     } catch (err) {
       console.error('[Fallback] Kimi review failed:', err.message);
       
@@ -66,7 +69,7 @@ const checkpointRouter = {
       fallbackUsed = true;
       
       db.logActivity({
-        plan_id: checkpoint?.plan_id,
+        plan_id: fetchedCheckpoint?.plan_id,
         agent: 'system',
         action: 'checkpoint_auto_passed',
         details: {
@@ -77,19 +80,26 @@ const checkpointRouter = {
       });
     }
 
+    // User override: if user explicitly passed 'failed', override Kimi's verdict
+    if (resultStatus === 'failed') {
+      const prev = verifyResult.feedback || '';
+      const note = fallbackUsed
+        ? '\nUser override: marked as failed (Kimi auto-pass overridden).'
+        : '\nUser override: marked as failed.';
+      verifyResult = { status: 'failed', feedback: prev + note };
+    }
+
     try {
-      const checkpoint = await this.milestoneManager.verifyCheckpoint(params.id, verifyResult);
-      
-      // If passed, update plan milestones atomically
+      const verifiedCheckpoint = await this.milestoneManager.verifyCheckpoint(params.id, verifyResult);
+
       if (verifyResult.status === 'passed') {
         db.db.prepare(
           "UPDATE plans SET milestones_completed = milestones_completed + 1 WHERE id = ?"
-        ).run(checkpoint.plan_id);
+        ).run(verifiedCheckpoint.plan_id);
       }
 
-      // Add fallback info to response
       const response = {
-        ...checkpoint,
+        ...verifiedCheckpoint,
         fallback: fallbackUsed,
         fallback_reason: fallbackUsed ? 'kimi_unavailable' : null
       };

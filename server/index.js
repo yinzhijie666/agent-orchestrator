@@ -2,8 +2,6 @@ import { Database } from "bun:sqlite";
 import { mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { randomUUID } from "node:crypto";
-
 // Config
 import config from "./config/default.json" with { type: "json" };
 import { SCHEMA_SQL } from "./lib/db-schema.js";
@@ -13,9 +11,12 @@ import planRouter from "./api/plan.js";
 import checkpointRouter from "./api/checkpoint.js";
 import threadRouter from "./api/thread.js";
 import statusRouter from "./api/status.js";
+import internalEventRouter from "./api/internal-event.js";
 
 // WebSocket
 import { setupWebSocket, broadcaster } from "./websocket/server.js";
+import { markAsServerProcess } from "./lib/events.js";
+markAsServerProcess();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -27,6 +28,12 @@ const initDb = new Database(DB_PATH, { create: true });
 initDb.exec(SCHEMA_SQL);
 initDb.close();
 console.log(`[server] Database initialized at ${DB_PATH}`);
+
+import { DB } from "./lib/db.js";
+const _db = new DB(DB_PATH);
+const cleaned = _db.cleanupActivityLog();
+if (cleaned.changes > 0) console.log(`[server] Cleaned up ${cleaned.changes} old activity_log entries`);
+_db.close();
 
 const PORT = parseInt(process.env.AGENT_ORCHESTRATOR_PORT) || config.server.port || 8765;
 const HOST = config.server.host || "127.0.0.1";
@@ -98,6 +105,8 @@ async function handleRequest(req) {
       response = statusRouter.getStatus();
     } else if (path === "/api/status/agents" && method === "GET") {
       response = statusRouter.getAgentStatus();
+    } else if (path === "/api/internal/event" && method === "POST") {
+      response = await internalEventRouter.handleEvent(req);
     } else if (path === "/" || path === "/dashboard") {
       // Serve dashboard
       const dashboardPath = join(__dirname, "dashboard", "index.html");
@@ -161,4 +170,4 @@ console.log(`
 ╚═══════════════════════════════════════════════════════════╝
 `);
 
-export { server, broadcaster };
+export { server };

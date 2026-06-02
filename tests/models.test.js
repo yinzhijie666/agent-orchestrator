@@ -125,9 +125,13 @@ describe("Fallback Mechanism", () => {
     expect(client.shouldFallback(err)).toBe(true);
   });
 
-  test("shouldFallback returns true for HTTP 401/429/408", () => {
+  test("shouldFallback returns true for HTTP 429/408, false for 401", () => {
     const client = new BaseModelClient(testConfig);
-    for (const code of [401, 429, 408]) {
+    const err401 = new Error("Auth error");
+    err401.status = 401;
+    expect(client.shouldFallback(err401)).toBe(false);
+
+    for (const code of [429, 408]) {
       const err = new Error(`HTTP ${code}`);
       err.status = code;
       expect(client.shouldFallback(err)).toBe(true);

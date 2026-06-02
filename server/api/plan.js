@@ -63,10 +63,12 @@ const router = {
     }
 
     const items = db.getPlanItems(params.id);
+    let planDoc;
+    try { planDoc = JSON.parse(plan.plan_document); } catch { planDoc = {}; }
     return new Response(JSON.stringify({
       ...plan,
       items,
-      plan_document: JSON.parse(plan.plan_document)
+      plan_document: planDoc
     }), { status: 200 });
   },
 
@@ -109,7 +111,8 @@ const router = {
   async completePlan(req, params) {
     let body = {};
     try { body = await req.json(); } catch {}
-    const status = body.status || 'completed';
+    const VALID_STATUSES = ['completed', 'completed_with_errors', 'failed', 'cancelled'];
+    const status = VALID_STATUSES.includes(body.status) ? body.status : 'completed';
     const plan = db.updatePlanStatus(params.id, status);
     if (!plan) {
       return new Response(JSON.stringify({ error: 'Plan not found' }), { status: 404 });
