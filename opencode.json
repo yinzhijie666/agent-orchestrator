@@ -1,3 +1,9 @@
 {
-  "tools": ["agent", "agent_status", "agent_checkpoint", "agent_execute_skills"]
+  "$schema": "https://opencode.ai/config.json",
+  "tools": {
+    "agent": true,
+    "agent_status": true,
+    "agent_checkpoint": true,
+    "agent_execute_skills": true
+  }
 }

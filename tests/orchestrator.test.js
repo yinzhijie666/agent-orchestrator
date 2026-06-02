@@ -168,10 +168,11 @@ describe("Phase 4: Plugin Structure", () => {
   test("opencode.json has required fields", async () => {
     const config = await import("../opencode.json", { with: { type: "json" } });
     expect(config.default.tools).toBeDefined();
-    expect(config.default.tools).toContain("agent");
-    expect(config.default.tools).toContain("agent_status");
-    expect(config.default.tools).toContain("agent_checkpoint");
-    expect(config.default.tools).toContain("agent_execute_skills");
+    expect(typeof config.default.tools).toBe("object");
+    expect(config.default.tools.agent).toBe(true);
+    expect(config.default.tools.agent_status).toBe(true);
+    expect(config.default.tools.agent_checkpoint).toBe(true);
+    expect(config.default.tools.agent_execute_skills).toBe(true);
   });
 
   test("index.js exports plugin class", async () => {
