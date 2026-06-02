@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import db from "../lib/db.js";
 import { MilestoneManager } from "../lib/agent-router.js";
 import KimiClient from "../lib/model-clients/kimi-client.js";
+import { emitCheckpointCreated, emitCheckpointVerified } from "../lib/events.js";
 import config from "../config/default.json" with { type: "json" };
 
 const checkpointRouter = {
@@ -18,7 +19,8 @@ const checkpointRouter = {
 
     try {
       const checkpoint = this.milestoneManager.createCheckpoint(plan_id, milestone_idx);
-      
+      emitCheckpointCreated(plan_id, checkpoint.id, milestone_idx);
+
       return new Response(JSON.stringify(checkpoint), { status: 201 });
     } catch (err) {
       console.error('[API] createCheckpoint error:', err);
@@ -91,6 +93,8 @@ const checkpointRouter = {
         fallback: fallbackUsed,
         fallback_reason: fallbackUsed ? 'kimi_unavailable' : null
       };
+
+      emitCheckpointVerified(params.id, verifyResult.status);
 
       return new Response(JSON.stringify(response), { status: 200 });
     } catch (err) {

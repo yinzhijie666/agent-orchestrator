@@ -3,6 +3,7 @@ import { AgentRouter } from "../lib/agent-router.js";
 import KimiClient from "../lib/model-clients/kimi-client.js";
 import DeepSeekClient from "../lib/model-clients/deepseek-client.js";
 import { PlanOrchestrator } from "../lib/plan-orchestrator.js";
+import { emitPlanActivated, emitPlanCompleted, emitPlanCreated, emitModelFallback } from "../lib/events.js";
 import config from "../config/default.json" with { type: "json" };
 
 const router = {
@@ -39,6 +40,11 @@ const router = {
     }
 
     const { planId, planDoc, fallbackUsed, fallbackInfo } = result;
+
+    emitPlanCreated(planId, planDoc);
+    if (fallbackUsed) {
+      emitModelFallback("kimi", "deepseek", "plan_generation");
+    }
 
     return new Response(JSON.stringify({
       id: planId,
@@ -95,6 +101,8 @@ const router = {
       details: {}
     });
 
+    emitPlanActivated(params.id);
+
     return new Response(JSON.stringify(plan), { status: 200 });
   },
 
@@ -112,6 +120,7 @@ const router = {
       action: 'plan_completed',
       details: { status },
     });
+    emitPlanCompleted(params.id, status);
     return new Response(JSON.stringify(plan), { status: 200 });
   }
 };

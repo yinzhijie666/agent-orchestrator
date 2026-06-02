@@ -3,6 +3,7 @@ import broadcaster from "./broadcaster.js";
 function setupWebSocket() {
   return {
     async open(ws) {
+      ws.data = { subscribedPlans: new Set() };
       broadcaster.addClient(ws);
       broadcaster.sendTo(ws, 'connected', { message: 'Welcome to Agent Orchestrator' });
     },
@@ -10,7 +11,7 @@ function setupWebSocket() {
     async message(ws, message) {
       try {
         const data = JSON.parse(message);
-        
+
         switch(data.type) {
           case 'subscribe':
             if (data.plan_id) {
@@ -36,15 +37,6 @@ function setupWebSocket() {
 
     async close(ws) {
       broadcaster.removeClient(ws);
-    },
-
-    // Helper to broadcast plan-specific events only to subscribed clients
-    broadcastPlanEvent(planId, type, payload) {
-      broadcaster.clients.forEach(client => {
-        if (client.readyState === 1 && client.data.subscribedPlans.has(planId)) {
-          broadcaster.sendTo(client, type, payload);
-        }
-      });
     }
   };
 }
