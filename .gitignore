@@ -5,3 +5,7 @@ node_modules/
 server/state/db.sqlite
 *.log
 .DS_Store
+tests/*.sqlite
+tests/*.sqlite.*
+tests/e2e/.tmp/
+tests/e2e/logs/
