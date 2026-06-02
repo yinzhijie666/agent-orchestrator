@@ -52,12 +52,18 @@ describe("E2E: AutoDispatcher (D1 LLM path)", () => {
     if (!hasAnyKey) {
       console.warn("[E2E] No MINIMAX_API_KEY or DEEPSEEK_API_KEY; some tests will be skipped");
     }
+    await cleanupLeakedServers();
     dispatcher = new AutoDispatcher(cfg);
     await dispatcher.start();
   });
 
   afterAll(async () => {
-    if (dispatcher) await dispatcher.stop();
+    if (dispatcher) {
+      try { await dispatcher.stop(); } catch (e) {
+        console.warn("[E2E] dispatcher.stop() error (non-fatal):", e.message);
+      }
+    }
+    await cleanupLeakedServers();
   });
 
   test("D1. dispatcher initializes with D2 disabled", () => {
@@ -166,3 +172,13 @@ describe("E2E: AutoDispatcher (D1 LLM path)", () => {
     });
   }
 });
+
+async function cleanupLeakedServers() {
+  try {
+    const { execSync } = await import("node:child_process");
+    execSync("pkill -f 'opencode serve --port 14[0-9][0-9][0-9] --hostname 127.0.0.1 --pure' 2>/dev/null", { stdio: "ignore" });
+    await new Promise(r => setTimeout(r, 200));
+  } catch (e) {
+    console.warn("[E2E] cleanupLeakedServers:", e.message);
+  }
+}

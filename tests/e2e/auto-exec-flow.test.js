@@ -82,10 +82,25 @@ describe("E2E: Skill Auto-Execution Flow", () => {
 
   afterAll(async () => {
     if (serverProcess) {
-      serverProcess.kill();
-      await new Promise(r => setTimeout(r, 500));
-      console.log("[E2E] Server stopped");
+      try {
+        serverProcess.kill("SIGTERM");
+        await Promise.race([
+          serverProcess.exited,
+          new Promise(r => setTimeout(() => r(false), 3000)),
+        ]);
+        if (serverProcess.exitCode === null) {
+          serverProcess.kill("SIGKILL");
+        }
+        console.log("[E2E] Server stopped");
+      } catch (e) {
+        console.warn("[E2E] Server stop error (non-fatal):", e.message);
+      }
+      serverProcess = null;
     }
+    try {
+      const { execSync } = await import("node:child_process");
+      execSync("pkill -f 'opencode serve --port 8767' 2>/dev/null", { stdio: "ignore" });
+    } catch {}
   });
 
   test("S1. server /api/status responds", async () => {

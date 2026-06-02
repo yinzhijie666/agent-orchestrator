@@ -18,6 +18,8 @@ export class AutoDispatcher {
     this.d2Enabled = false;
     this.dispatchedTotal = 0;
     this.dispatchedByMode = { llm: 0, server: 0, fallback: 0 };
+    this.restartAttempts = 0;
+    this._maxRestartAttempts = 3;
   }
 
   async start() {
@@ -46,20 +48,60 @@ export class AutoDispatcher {
   async dispatch(prompt, options = {}) {
     this.dispatchedTotal += 1;
 
-    if (this.d2Enabled && this.server && this.server.isHealthy()) {
-      try {
-        const result = await this._dispatchViaServer(prompt, options);
-        this.dispatchedByMode.server += 1;
-        return { ...result, _mode: "server" };
-      } catch (e) {
-        console.warn(`[AutoDispatcher] D2 dispatch failed, falling back to D1: ${e.message}`);
-        this.dispatchedByMode.fallback += 1;
+    if (this.d2Enabled) {
+      const health = await this.ensureHealthy();
+      if (health.ok && this.server && this.server.isHealthy()) {
+        try {
+          const result = await this._dispatchViaServer(prompt, options);
+          this.dispatchedByMode.server += 1;
+          return { ...result, _mode: "server" };
+        } catch (e) {
+          console.warn(`[AutoDispatcher] D2 dispatch failed, falling back to D1: ${e.message}`);
+          this.dispatchedByMode.fallback += 1;
+        }
       }
     }
 
     const result = await this.runner.run(prompt, options);
     this.dispatchedByMode.llm += 1;
     return { ...result, _mode: "llm" };
+  }
+
+  async ensureHealthy() {
+    if (!this._isServerPreferred()) {
+      return { ok: true, reason: "D2 not required by config (prefer=run/disabled)" };
+    }
+    if (this.server && this.server.isHealthy()) {
+      return { ok: true, restarted: false };
+    }
+    if (this.restartAttempts >= this._maxRestartAttempts) {
+      console.warn(`[AutoDispatcher] Max restart attempts (${this._maxRestartAttempts}) reached, disabling D2`);
+      this.d2Enabled = false;
+      return { ok: false, reason: "max restart attempts reached", restartAttempts: this.restartAttempts };
+    }
+    this.restartAttempts += 1;
+    console.log(`[AutoDispatcher] Server unhealthy, attempting restart ${this.restartAttempts}/${this._maxRestartAttempts}`);
+    if (this.server) {
+      try { await this.server.stop({ force: true }); } catch (e) {
+        console.warn(`[AutoDispatcher] Old server stop during restart: ${e.message}`);
+      }
+      this.server = null;
+    }
+    try {
+      this.server = new OpencodeServer({
+        portRange: this.config?.auto_exec?.dispatcher?.server?.port_range || [14096, 14097, 14098, 14099],
+        startupTimeoutMs: this.config?.auto_exec?.dispatcher?.server?.startup_timeout_ms || 15000,
+        usePure: this.config?.auto_exec?.dispatcher?.server?.use_pure !== false,
+        binary: "opencode",
+      });
+      const info = await this.server.start();
+      this.d2Enabled = true;
+      return { ok: true, restarted: true, ...info, restartAttempts: this.restartAttempts };
+    } catch (e) {
+      this.d2Enabled = false;
+      this.server = null;
+      return { ok: false, error: e.message, restartAttempts: this.restartAttempts };
+    }
   }
 
   async _dispatchViaServer(prompt, options) {

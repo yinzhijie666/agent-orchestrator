@@ -267,6 +267,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
   }
 
   let autoDispatcher = null;
+  let autoDispatcherTransient = false;
   try {
     const autoDispatchDisabled = process.env.AUTO_EXEC_DISPATCH === 'false' || process.env.AUTO_EXEC_DISABLED === 'true';
     if (autoDispatchDisabled) {
@@ -274,10 +275,19 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
     } else {
       autoDispatcher = new AutoDispatcher(config);
       const startResult = await autoDispatcher.start();
-      console.log('[AgentOrchestrator] AutoDispatcher started:', startResult.started ? `D2 url=${startResult.url}` : `D1 only (${startResult.reason || startResult.error || 'no reason'})`);
+      if (startResult.started) {
+        autoDispatcherTransient = true;
+        console.log('[AgentOrchestrator] AutoDispatcher started: D2 url=' + startResult.url);
+        attachDispatcherSignalHandlers(autoDispatcher);
+      } else {
+        console.log('[AgentOrchestrator] AutoDispatcher running in D1-only mode:', startResult.reason || startResult.error || 'no reason');
+      }
     }
   } catch (e) {
     console.warn('[AgentOrchestrator] AutoDispatcher init failed, agent_execute_skills will not auto-dispatch:', e.message);
+    if (autoDispatcher) {
+      try { await autoDispatcher.stop(); } catch {}
+    }
     autoDispatcher = null;
   }
   const kimiClient = new KimiClient(config.models.kimi);
@@ -639,7 +649,29 @@ User: "Build a REST API"
 
     dispose: async () => {
       if (db) db.close();
-      if (autoDispatcher) await autoDispatcher.stop();
+      if (autoDispatcher) {
+        try { await autoDispatcher.stop(); } catch (e) {
+          console.warn('[AgentOrchestrator] dispatcher stop error during dispose:', e.message);
+        }
+        autoDispatcher = null;
+      }
     },
   };
 };
+
+const _attachedDispatchers = new WeakSet();
+function attachDispatcherSignalHandlers(dispatcher) {
+  if (!dispatcher || _attachedDispatchers.has(dispatcher)) return;
+  _attachedDispatchers.add(dispatcher);
+  const stop = async () => {
+    try { await dispatcher.stop(); } catch {}
+  };
+  for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+    try { process.on(sig, stop); } catch {}
+  }
+  process.on('exit', () => {
+    if (dispatcher.server?.process?.exitCode === null) {
+      try { dispatcher.server.process.kill('SIGKILL'); } catch {}
+    }
+  });
+}

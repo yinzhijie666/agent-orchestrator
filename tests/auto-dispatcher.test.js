@@ -134,4 +134,60 @@ describe("AutoDispatcher", () => {
     expect(d.dispatchedTotal).toBe(3);
     expect(d.getStatus().dispatchedByMode.llm).toBe(3);
   });
+
+  test("ensureHealthy returns true when no server preferred (D1-only mode)", async () => {
+    const cfg = makeConfig();
+    cfg.auto_exec.dispatcher.prefer = "run";
+    const d = new AutoDispatcher(cfg);
+    await d.start();
+    expect(d.d2Enabled).toBe(false);
+    const r = await d.ensureHealthy();
+    expect(r.ok).toBe(true);
+    expect(r.reason).toContain("D2 not required");
+  });
+
+  test("ensureHealthy attempts restart when server is unhealthy", async () => {
+    const cfg = makeConfig();
+    const d = new AutoDispatcher(cfg);
+    await d.start();
+    if (!d.d2Enabled) {
+      return;
+    }
+    expect(d.server.isHealthy()).toBe(true);
+    if (d.server.process && d.server.process.exitCode === null) {
+      d.server.process.kill("SIGKILL");
+      try { await d.server.process.exited; } catch {}
+    }
+    d.server.invalidateHealth();
+    expect(d.server.isHealthy()).toBe(false);
+    const r = await d.ensureHealthy();
+    expect(r.ok).toBe(true);
+    expect(r.restarted).toBe(true);
+    expect(d.d2Enabled).toBe(true);
+    expect(d.server.isHealthy()).toBe(true);
+    expect(d.restartAttempts).toBe(1);
+    await d.stop();
+  });
+
+  test("ensureHealthy gives up after max restart attempts", async () => {
+    const cfg = makeConfig();
+    const d = new AutoDispatcher(cfg);
+    d._maxRestartAttempts = 1;
+    await d.start();
+    if (!d.d2Enabled) {
+      return;
+    }
+    if (d.server.process) d.server.process.kill("SIGKILL");
+    try { await d.server.process.exited; } catch {}
+    d.server.invalidateHealth();
+    const r1 = await d.ensureHealthy();
+    expect(r1.restarted).toBe(true);
+    if (d.server.process) d.server.process.kill("SIGKILL");
+    try { await d.server.process.exited; } catch {}
+    d.server.invalidateHealth();
+    const r2 = await d.ensureHealthy();
+    expect(r2.restartAttempts).toBeGreaterThanOrEqual(1);
+    expect(r2.ok).toBe(false);
+    expect(d.d2Enabled).toBe(false);
+  });
 });
