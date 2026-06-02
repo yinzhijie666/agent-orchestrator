@@ -87,7 +87,7 @@ const router = {
 
   async activatePlan(req, params) {
     const plan = db.updatePlanStatus(params.id, 'active');
-    
+
     db.logActivity({
       plan_id: params.id,
       agent: 'system',
@@ -95,6 +95,23 @@ const router = {
       details: {}
     });
 
+    return new Response(JSON.stringify(plan), { status: 200 });
+  },
+
+  async completePlan(req, params) {
+    let body = {};
+    try { body = await req.json(); } catch {}
+    const status = body.status || 'completed';
+    const plan = db.updatePlanStatus(params.id, status);
+    if (!plan) {
+      return new Response(JSON.stringify({ error: 'Plan not found' }), { status: 404 });
+    }
+    db.logActivity({
+      plan_id: params.id,
+      agent: 'system',
+      action: 'plan_completed',
+      details: { status },
+    });
     return new Response(JSON.stringify(plan), { status: 200 });
   }
 };
