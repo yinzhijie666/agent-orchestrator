@@ -57,10 +57,12 @@ const router = {
     }
 
     const items = db.getPlanItems(params.id);
+    let planDoc;
+    try { planDoc = JSON.parse(plan.plan_document); } catch { planDoc = {}; }
     return new Response(JSON.stringify({
       ...plan,
       items,
-      plan_document: JSON.parse(plan.plan_document)
+      plan_document: planDoc
     }), { status: 200 });
   },
 

@@ -32,10 +32,10 @@ class DB {
     return this.db.prepare("SELECT * FROM plans WHERE id = ?").get(id);
   }
 
-  getRecentPlan(limit = 1) {
+  getRecentPlan() {
     return this.db.prepare(
-      "SELECT * FROM plans ORDER BY created_at DESC LIMIT ?"
-    ).get(limit);
+      "SELECT * FROM plans ORDER BY created_at DESC LIMIT 1"
+    ).get();
   }
 
   updatePlanStatus(id, status) {
@@ -148,6 +148,11 @@ class DB {
 
   getActivityLog(planId, limit = 100) {
     return this.db.prepare("SELECT * FROM activity_log WHERE plan_id = ? ORDER BY timestamp DESC LIMIT ?").all(planId, limit);
+  }
+
+  cleanupActivityLog(days = 30) {
+    const cutoff = new Date(Date.now() - days * 86400000).toISOString();
+    return this.db.prepare("DELETE FROM activity_log WHERE timestamp < ?").run(cutoff);
   }
 
   close() {

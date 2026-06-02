@@ -116,7 +116,7 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
   ).join('\n');
 
   const execSummary = execResults.map(r =>
-    `  ${r.status === 'completed' ? '✅' : '❌'} [${r.executor}] Item ${r.idx}${r.error ? ': ' + r.error : ''}`
+    `  ${r.status === 'completed' ? '✅' : '❌'} [${r.executor}] Item ${r.idx + 1}${r.error ? ': ' + r.error : ''}`
   ).join('\n');
 
   return { mode: 'build', planId, title: planDoc.title, items, itemCount: planDoc.items.length, execSummary, completedCount, failedCount, fallback: fallbackUsed, recommendations, suggested_skills: planDoc.suggested_skills || [] };
@@ -319,6 +319,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             output += `Plans: ${Object.values(counts).reduce((a, b) => a + b, 0) || 0} total`;
             if (counts.active) output += `, ${counts.active} active`;
             if (counts.completed) output += `, ${counts.completed} completed`;
+            if (counts.completed_with_errors) output += `, ${counts.completed_with_errors} with errors`;
             if (counts.pending) output += `, ${counts.pending} pending`;
             output += `\nItems: ${totalItems.count} total, ${completedItems.count} completed`;
             output += `\nPending Checkpoints: ${pendingCheckpoints.count}`;
@@ -326,7 +327,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             if (recentPlans.length > 0) {
               output += `\n\nRecent Plans:\n`;
               for (const p of recentPlans) {
-                const icon = p.status === 'active' ? '▶' : p.status === 'completed' ? '✅' : '📋';
+                const icon = p.status === 'active' ? '▶' : p.status === 'completed' ? '✅' : p.status === 'completed_with_errors' ? '⚠️' : '📋';
                 output += `  ${icon} ${p.title} (\`${p.id.slice(0, 8)}…\`) - ${p.status}\n`;
               }
             }
@@ -475,7 +476,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             };
           }
           try {
-            const plan = plan_id ? db.getPlan(plan_id) : db.getRecentPlan(1);
+            const plan = plan_id ? db.getPlan(plan_id) : db.getRecentPlan();
 
             if (!plan) {
               return {

@@ -52,13 +52,6 @@ export class PlanOrchestrator {
       });
     });
 
-    db.createThread({
-      id: randomUUID(),
-      plan_id: planId,
-      context_window: {},
-      layer_states: { kimi: {}, deepseek: {}, minimax: {} },
-    });
-
     if (fallbackUsed) {
       db.logActivity({
         plan_id: planId,

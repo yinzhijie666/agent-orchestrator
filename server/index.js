@@ -28,6 +28,12 @@ initDb.exec(SCHEMA_SQL);
 initDb.close();
 console.log(`[server] Database initialized at ${DB_PATH}`);
 
+import { DB } from "./lib/db.js";
+const _db = new DB(DB_PATH);
+const cleaned = _db.cleanupActivityLog();
+if (cleaned.changes > 0) console.log(`[server] Cleaned up ${cleaned.changes} old activity_log entries`);
+_db.close();
+
 const PORT = parseInt(process.env.AGENT_ORCHESTRATOR_PORT) || config.server.port || 8765;
 const HOST = config.server.host || "127.0.0.1";
 

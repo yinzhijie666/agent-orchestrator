@@ -192,7 +192,7 @@ describe("DeepSeek Prompts", () => {
   test("parseExecutionResult falls back for non-JSON", () => {
     const client = new DeepSeekClient(mockConfig);
     const result = client.parseExecutionResult("Plain text output");
-    expect(result.status).toBe("completed");
+    expect(result.status).toBe("failed");
     expect(result.result).toBe("Plain text output");
   });
 });

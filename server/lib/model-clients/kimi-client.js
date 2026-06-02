@@ -133,7 +133,7 @@ CodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_expl
         })()
       };
     } catch (err) {
-      throw new Error(`Failed to parse plan JSON: ${err.message}. Raw: ${response.slice(0, 200)}`);
+      throw new Error(`Failed to parse plan JSON: ${err.message}. Raw: ${response.slice(0, 50)}...`);
     }
   }
 }

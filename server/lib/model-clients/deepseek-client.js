@@ -69,7 +69,7 @@ Be thorough but concise. Always report completion status.`
       };
     } catch {
       return {
-        status: 'completed',
+        status: 'failed',
         result: response,
         deviations: []
       };

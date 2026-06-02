@@ -24,8 +24,8 @@ class WebSocketBroadcaster {
     let sent = 0;
     this.clients.forEach(client => {
       if (client.readyState === 1) { // WebSocket.OPEN
-        client.send(message);
-        sent++;
+        try { client.send(message); sent++; }
+        catch (e) { console.warn('[WS] send failed:', e.message); }
       }
     });
 
