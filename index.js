@@ -470,7 +470,6 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
               return { output: `${icon} Checkpoint verified: ${reviewResult.status}\nFeedback: ${reviewResult.feedback}\nMilestone: item ${pending.milestone_idx}${fallbackNote}` };
             }
 
-              return { output: 'Error: action must be "create" or "verify"' };
             } catch (err) {
               return { output: `Error: ${err.message}` };
             }

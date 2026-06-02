@@ -2,8 +2,6 @@ import { Database } from "bun:sqlite";
 import { mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { randomUUID } from "node:crypto";
-
 // Config
 import config from "./config/default.json" with { type: "json" };
 import { SCHEMA_SQL } from "./lib/db-schema.js";
@@ -172,4 +170,4 @@ console.log(`
 ╚═══════════════════════════════════════════════════════════╝
 `);
 
-export { server, broadcaster };
+export { server };
