@@ -11,7 +11,18 @@
     "enabled": true,
     "max_skills": 20,
     "model": "cheap",
-    "timeout_ms": 90000
+    "timeout_ms": 90000,
+    "dispatcher": {
+      "prefer": "auto",
+      "server": {
+        "port_range": [14096, 14097, 14098, 14099],
+        "startup_timeout_ms": 15000,
+        "use_pure": true
+      },
+      "run": {
+        "format": "json"
+      }
+    }
   },
   "models": {
     "kimi": {
