@@ -125,3 +125,78 @@ describe("getRecentPlan db method", () => {
     localDb.close();
   });
 });
+
+describe("agent_execute_skills auto_exec integration", () => {
+  let localDb;
+
+  beforeAll(() => {
+    localDb = new DB(TEST_DB_PATH);
+  });
+
+  afterAll(() => {
+    localDb.close();
+  });
+
+  test("auto_exec.prompt generated when enabled and skills present", async () => {
+    const planId = "test-auto-exec-enabled";
+    localDb.createPlan({
+      id: planId,
+      title: "Auto-Exec Enabled Test",
+      plan_document: JSON.stringify({
+        title: "Auto-Exec Enabled Test",
+        items: [],
+        suggested_skills: {
+          P0_critical: ["codegraph_context", "skill brainstorming"],
+          P1_important: ["/qa"],
+          P2_nice_to_have: ["codegraph_search"]
+        }
+      }),
+      status: "active",
+      created_at: new Date(Date.now() + 2000).toISOString()
+    });
+
+    delete process.env.AUTO_EXEC_SKILLS;
+    const result = await plugin.tool.agent_execute_skills.execute({ plan_id: planId });
+    const parsed = JSON.parse(result.output);
+
+    expect(parsed.auto_exec).not.toBeNull();
+    expect(parsed.auto_exec.mode).toBe("subagent");
+    expect(parsed.auto_exec.prompt).toBeTruthy();
+    expect(parsed.auto_exec.trigger).toContain("subagent_type");
+    expect(parsed.auto_exec.model).toBe("cheap");
+    expect(parsed.auto_exec.prompt).toContain("P0_critical");
+    expect(parsed.auto_exec.prompt).toContain("codegraph_context");
+    expect(parsed.auto_exec.prompt).toContain("skill brainstorming");
+    expect(parsed.auto_exec.prompt).toContain("Do NOT call `agent`");
+    expect(parsed.auto_exec.prompt).toContain(planId);
+    expect(parsed.next_step).toContain("Auto-execution ready");
+  });
+
+  test("auto_exec null when AUTO_EXEC_SKILLS=false", async () => {
+    const planId = "test-auto-exec-disabled";
+    localDb.createPlan({
+      id: planId,
+      title: "Auto-Exec Disabled Test",
+      plan_document: JSON.stringify({
+        title: "Auto-Exec Disabled Test",
+        items: [],
+        suggested_skills: {
+          P0_critical: ["codegraph_context"],
+          P1_important: [],
+          P2_nice_to_have: []
+        }
+      }),
+      status: "active",
+      created_at: new Date(Date.now() + 3000).toISOString()
+    });
+
+    process.env.AUTO_EXEC_SKILLS = "false";
+    const result = await plugin.tool.agent_execute_skills.execute({ plan_id: planId });
+    const parsed = JSON.parse(result.output);
+
+    expect(parsed.auto_exec).toBeNull();
+    expect(parsed.skills_to_execute.length).toBeGreaterThan(0);
+    expect(parsed.next_step).toContain("Manually execute");
+    delete process.env.AUTO_EXEC_SKILLS;
+  });
+});
