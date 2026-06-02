@@ -632,10 +632,11 @@ After every \`agent\` call:
    - 🟢 \`P2_nice_to_have\` → EXECUTE last or skip at your discretion
 
 3. **Map entry types to actions**:
-   - \`skill X\` → call \`skill X\`
+   - \`skill X\` → call \`skill X\` tool
    - \`/command\` → run that slash command
-   - \`codegraph_X\` → call the codegraph tool
+   - \`codegraph_X\` → call the codegraph MCP tool
    - \`oh-my-memory search\` → search memory vault
+   - \`skills-manager\` → run skills-manager.sh with appropriate subcommand
 
 4. **Never** silently ignore \`suggested_skills\`. They are part of the plan output.
 

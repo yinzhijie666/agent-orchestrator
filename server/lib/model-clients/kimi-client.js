@@ -3,7 +3,7 @@ import BaseModelClient from "./base-client.js";
 const CAPABILITY_LIST = `云端[76类]: frontend backend cloud security ai-ml testing database mobile devops
 Superpowers[14]: brainstorming writing-plans test-driven-development systematic-debugging subagent-driven-development verification-before-completion requesting-code-review receiving-code-review
 GStack[16]: /qa /review /browse /ship /design-review /debug /retro /document-release /plan-eng-review /design-consultation /office-hours /plan-ceo-review /plan-design-review /qa-only /setup-browser-cookies /ship
-本地: /understand-explain /understand-diff /graphify query verify.sh oh-my-memory
+本地: /understand-explain /understand-diff /understand-domain /understand-onboard /graphify query verify.sh oh-my-memory skills-manager
 CodeGraph[9]: codegraph_context codegraph_search codegraph_callers codegraph_callees codegraph_impact codegraph_node codegraph_explore codegraph_files codegraph_status`;
 
 export { CAPABILITY_LIST };
