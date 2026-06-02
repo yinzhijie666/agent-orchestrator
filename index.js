@@ -252,13 +252,18 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
   const dbDir = join(__dirname, 'server', 'state');
   const dbPath = process.env.AGENT_ORCHESTRATOR_DB_PATH || join(dbDir, 'db.sqlite');
 
-  await mkdir(dirname(dbPath), { recursive: true });
-
-  const database = new Database(dbPath, { create: true });
-  initSchema(database);
-  database.close();
-
-  const db = new DB(dbPath);
+  let db = null;
+  let dbInitError = null;
+  try {
+    await mkdir(dirname(dbPath), { recursive: true });
+    const database = new Database(dbPath, { create: true });
+    initSchema(database);
+    database.close();
+    db = new DB(dbPath);
+  } catch (e) {
+    dbInitError = e;
+    console.warn('[AgentOrchestrator] DB initialization failed, stateful tools will return errors:', e.message);
+  }
   const kimiClient = new KimiClient(config.models.kimi);
   const deepseekClient = new DeepSeekClient(config.models.deepseek);
   const minimaxClient = new MiniMaxClient(config.models.minimax);
@@ -307,6 +312,9 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
         description: 'View orchestrator status: plans count, item progress, checkpoint state, model API key availability.',
         args: z.object({}),
         execute: async () => {
+          if (!db) {
+            return { output: `Error: database unavailable (${dbInitError?.message || 'unknown'})` };
+          }
           try {
             const planCounts = db.db.prepare(
               "SELECT status, COUNT(*) as count FROM plans GROUP BY status"
@@ -364,6 +372,9 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
           result: z.string().optional().describe('Verification result: "passed" or "failed" (for verify action)'),
         }),
         execute: async ({ action, plan_id, result }) => {
+          if (!db) {
+            return { output: `Error: database unavailable (${dbInitError?.message || 'unknown'})` };
+          }
           try {
             if (action === 'create') {
               const items = db.getPlanItems(plan_id);
@@ -432,6 +443,18 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
           plan_id: z.string().optional().describe('Plan ID. If omitted, uses the most recently created plan.'),
         }),
         execute: async ({ plan_id }) => {
+          if (!db) {
+            return {
+              output: JSON.stringify({
+                plan_id: null,
+                skills_to_execute: [],
+                total: 0,
+                auto_exec: null,
+                auto_dispatched: false,
+                error: `database unavailable: ${dbInitError?.message || 'unknown'}`,
+              }),
+            };
+          }
           try {
             const plan = plan_id ? db.getPlan(plan_id) : db.getRecentPlan(1);
 
@@ -571,7 +594,8 @@ User: "Build a REST API"
     },
 
     dispose: async () => {
-      db.close();
+      if (db) db.close();
+      if (autoDispatcher) await autoDispatcher.stop();
     },
   };
 };

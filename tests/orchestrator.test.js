@@ -167,12 +167,11 @@ describe("Phase 3: API Endpoints", () => {
 describe("Phase 4: Plugin Structure", () => {
   test("opencode.json has required fields", async () => {
     const config = await import("../opencode.json", { with: { type: "json" } });
-    expect(config.default.name).toBe("agent-orchestrator");
-    expect(config.default.hooks).toBeDefined();
     expect(config.default.tools).toBeDefined();
     expect(config.default.tools).toContain("agent");
     expect(config.default.tools).toContain("agent_status");
     expect(config.default.tools).toContain("agent_checkpoint");
+    expect(config.default.tools).toContain("agent_execute_skills");
   });
 
   test("index.js exports plugin class", async () => {

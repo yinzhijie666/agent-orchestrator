@@ -1,6 +1,7 @@
 import { Database } from "bun:sqlite";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { mkdirSync } from "node:fs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = process.env.AGENT_ORCHESTRATOR_DB_PATH || join(__dirname, "..", "state", "db.sqlite");
@@ -8,7 +9,13 @@ const DB_PATH = process.env.AGENT_ORCHESTRATOR_DB_PATH || join(__dirname, "..", 
 class DB {
   constructor(dbPath) {
     const path = dbPath || process.env.AGENT_ORCHESTRATOR_DB_PATH || join(__dirname, "..", "state", "db.sqlite");
-    this.db = new Database(path);
+    const dir = dirname(path);
+    if (dir && dir !== '.' && dir !== '/') {
+      try {
+        mkdirSync(dir, { recursive: true });
+      } catch {}
+    }
+    this.db = new Database(path, { create: true });
   }
 
   // Plans
@@ -146,5 +153,14 @@ class DB {
   }
 }
 
-export default new DB();
+let _default = null;
+export function getDefaultDB() {
+  if (!_default) _default = new DB();
+  return _default;
+}
+export default new Proxy({}, {
+  get(_, prop) {
+    return getDefaultDB()[prop];
+  }
+});
 export { DB };
