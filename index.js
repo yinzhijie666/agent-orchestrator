@@ -560,7 +560,15 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                   model: process.env.AUTO_EXEC_MODEL || AUTO_EXEC_DEFAULTS.model || 'cheap',
                   timeoutMs: AUTO_EXEC_DEFAULTS.timeout_ms || 90000,
                 });
-                autoDispatched = true;
+                // D1 subagent has no tool access — check if any skills actually completed
+                const completedSkills = (dispatchResult.executed_skills || [])
+                  .filter(s => s.result === 'completed');
+                if (completedSkills.length > 0) {
+                  autoDispatched = true;
+                } else {
+                  console.log('[AgentOrchestrator] D1 dispatch returned no completed skills, falling back to manual execution');
+                  autoDispatched = false;
+                }
               } catch (e) {
                 dispatchResult = {
                   status: 'failure',
@@ -575,7 +583,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 plan_id: plan.id,
                 skills_to_execute: validated,
                 total: validated.length,
-                auto_exec: autoExecEnabled ? {
+                auto_exec: (autoExecEnabled && autoDispatched) ? {
                   mode: 'subagent',
                   prompt: autoExecPrompt,
                   trigger: 'Call the task tool with subagent_type="general" and prompt=auto_exec.prompt',
@@ -656,7 +664,7 @@ When \`agent_execute_skills\` returns an \`auto_exec.prompt\` field:
 5. If \`status === "failure"\`, surface the \`p0_failures\` field
 6. Do NOT manually call individual skills yourself — let the subagent handle them all
 
-Fallback (if \`auto_exec\` is null or subagent dispatch fails):
+Fallback (if \`auto_exec\` is null — which includes when D1 subagent has no tool access):
 - Iterate \`skills_to_execute[]\` yourself in tier order
 - Use the \`type\` field to call the appropriate tool (\`skill\`, codegraph MCP, command)
 - P0 must succeed; P1/P2 may be skipped

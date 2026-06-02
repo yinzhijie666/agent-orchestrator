@@ -26,7 +26,7 @@ Execution rules:
 - P0 items: must all succeed; if any P0 fails, report failure and stop.
 - P1 items: try, but skip on failure and continue.
 - P2 items: optional, may skip.
-- Do NOT call the orchestrator's "agent" or "agent_execute_skills" tool (recursion prevention).
+- Do NOT call \`agent\` or \`agent_execute_skills\` (recursion prevention).
 - If a skill requires an external tool you do not have, report it as skipped with reason.
 
 Output schema (strict JSON, no markdown fencing):

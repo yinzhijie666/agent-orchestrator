@@ -161,17 +161,12 @@ describe("agent_execute_skills auto_exec integration", () => {
     const result = await plugin.tool.agent_execute_skills.execute({ plan_id: planId });
     const parsed = JSON.parse(result.output);
 
-    expect(parsed.auto_exec).not.toBeNull();
-    expect(parsed.auto_exec.mode).toBe("subagent");
-    expect(parsed.auto_exec.prompt).toBeTruthy();
-    expect(parsed.auto_exec.trigger).toContain("subagent_type");
-    expect(parsed.auto_exec.model).toBe("cheap");
-    expect(parsed.auto_exec.prompt).toContain("P0_critical");
-    expect(parsed.auto_exec.prompt).toContain("codegraph_context");
-    expect(parsed.auto_exec.prompt).toContain("skill brainstorming");
-    expect(parsed.auto_exec.prompt).toContain("Do NOT call `agent`");
-    expect(parsed.auto_exec.prompt).toContain(planId);
-    expect(parsed.next_step).toMatch(/auto-dispatched|Auto-execution ready|dispatch failed/);
+    // With AUTO_EXEC_DISPATCH=false, autoDispatched is false,
+    // so auto_exec is null (D1 has no tool access)
+    expect(parsed.auto_exec).toBeNull();
+    expect(parsed.auto_dispatched).toBe(false);
+    expect(parsed.skills_to_execute.length).toBe(4);
+    expect(parsed.next_step).toContain("Manually execute");
   });
 
   test("auto_exec null when AUTO_EXEC_SKILLS=false", async () => {

@@ -124,4 +124,48 @@ describe("SubagentRunner", () => {
     expect(err).toBeTruthy();
     expect(err.message).toMatch(/timed out/);
   });
+
+  test("_parseResult handles all-skipped response (D1 no tool access)", () => {
+    const r = new SubagentRunner(cfg);
+    const out = r._parseResult(JSON.stringify({
+      status: "failure",
+      executed_skills: [
+        { name: "brainstorming", type: "skill", tier: "P0", result: "skipped", output: "No skill tool available", error: "no tool access" },
+        { name: "codegraph_context", type: "codegraph", tier: "P0", result: "skipped", output: "No MCP tool available", error: "no tool access" }
+      ],
+      p0_failures: ["brainstorming", "codegraph_context"],
+      summary: "All skills skipped — no tool access"
+    }));
+    expect(out.status).toBe("failure");
+    expect(out.executed_skills).toHaveLength(2);
+    expect(out.executed_skills.every(s => s.result === "skipped")).toBe(true);
+    expect(out.p0_failures).toHaveLength(2);
+  });
+
+  test("run() returns all-skipped result when D1 has no tools", async () => {
+    const r = new SubagentRunner(cfg);
+    const fakeClient = {
+      model: "fake-m",
+      provider: "test",
+      chatWithFallback: async () => ({
+        content: JSON.stringify({
+          status: "failure",
+          executed_skills: [
+            { name: "brainstorming", type: "skill", tier: "P0", result: "skipped", output: "No tool", error: "no tool access" }
+          ],
+          p0_failures: ["brainstorming"],
+          summary: "All skipped"
+        }),
+        _model: "fake-m",
+        _provider: "test",
+        _fallback: false,
+      }),
+    };
+    const out = await r.run("test", { client: fakeClient, timeoutMs: 2000 });
+    expect(out.executed_skills).toHaveLength(1);
+    expect(out.executed_skills[0].result).toBe("skipped");
+    // completedSkills.filter(s => s.result === 'completed') would be empty
+    const completedSkills = out.executed_skills.filter(s => s.result === "completed");
+    expect(completedSkills).toHaveLength(0);
+  });
 });
