@@ -13,22 +13,21 @@
       "base_url": "https://opencode.ai/zen/go/v1",
       "model": "kimi-k2.6",
       "max_tokens": 262144,
-      "temperature": 0.3,
+      "thinking": { "type": "enabled" },
       "provider": "opencode-go"
     },
     "deepseek": {
       "api_key_env": "DEEPSEEK_API_KEY",
       "base_url": "https://api.deepseek.com/v1",
       "model": "deepseek-v4-flash",
-      "max_tokens": 64000,
-      "temperature": 0.2,
+      "max_tokens": 384000,
       "provider": "deepseek"
     },
     "minimax": {
       "api_key_env": "MINIMAX_API_KEY",
       "base_url": "https://api.minimax.chat/v1",
-      "model": "minimax-m2.7",
-      "max_tokens": 8000,
+      "model": "MiniMax-M3",
+      "max_tokens": 128000,
       "temperature": 0.1,
       "provider": "minimax"
     }

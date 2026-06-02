@@ -5,7 +5,7 @@ class KimiClient extends BaseModelClient {
     super(config);
   }
 
-  async generatePlan(prompt, context = '') {
+  async generatePlan(prompt, context = '', fallbackClient = null) {
     const messages = [
       {
         role: 'system',
@@ -17,7 +17,10 @@ Each plan item must have:
 - executor: one of ['kimi', 'deepseek', 'minimax']
 - acceptance_criteria: how to verify this item is complete
 
-可用能力（推荐 3-5 项到 "suggested_skills"）:
+可用能力（按 P0/P1/P2 优先级推荐 5-8 项到 "suggested_skills"）:
+P0(必选): 与任务直接相关
+P1(推荐): 增强质量
+P2(可选): 验证/补充
 云端[76类]: frontend backend cloud security ai-ml testing database mobile devops
 Superpowers[14]: brainstorming test-driven-development systematic-debugging
 GStack[16]: /qa /review /browse /ship /design-review
@@ -35,7 +38,7 @@ Format your response as valid JSON with this structure:
       "acceptance_criteria": "..."
     }
   ],
-  "suggested_skills": ["skill A", "skill B"]
+  "suggested_skills": {"P0_critical":["..."],"P1_important":["..."],"P2_nice_to_have":["..."]}
 }`
       },
       {
@@ -44,11 +47,14 @@ Format your response as valid JSON with this structure:
       }
     ];
 
-    const response = await this.chat(messages, { json_mode: true, max_tokens: 8000 });
-    return this.parsePlan(response);
+    const result = await this.chatWithFallback(messages, { json_mode: true, max_tokens: 8000 }, fallbackClient);
+    const plan = this.parsePlan(result.content);
+    plan._fallback = result._fallback;
+    plan._fallback_reason = result._fallback_reason;
+    return plan;
   }
 
-  async analyzeTaskMode(task, context = '') {
+  async analyzeTaskMode(task, context = '', fallbackClient = null) {
     const messages = [
       {
         role: 'system',
@@ -56,14 +62,17 @@ Format your response as valid JSON with this structure:
 - "plan": 只读分析/设计/研究/审查，不需要写代码
 - "build": 需要编码/实现/测试/修复
 
-可用能力清单（推荐 3-5 项相关能力）:
-云端技能[76类]: frontend backend cloud security ai-ml testing database mobile devops automation architecture
-Superpowers[14]: brainstorming writing-plans test-driven-development systematic-debugging subagent-driven-development
-GStack[16]: /browse /qa /review /ship /retro /debug /design-review /office-hours
+可用能力（按 P0/P1/P2 优先级推荐 5-8 项）:
+P0(必选): 与当前任务直接相关
+P1(推荐): 增强质量
+P2(可选): 验证/补充
+云端[76类]: frontend backend cloud security ai-ml testing database mobile devops
+Superpowers[14]: brainstorming writing-plans test-driven-development systematic-debugging
+GStack[16]: /qa /review /browse /ship /retro /debug /design-review
 本地: /understand-explain /understand-diff /graphify query verify.sh oh-my-memory
 CodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_explore
 
-返回 JSON: {"mode":"plan"|"build","reason":"选择原因","suggested_skills":["skill A","/command B"]}`
+返回 JSON: {"mode":"plan"|"build","reason":"选择原因","suggested_skills":{"P0_critical":["...","..."],"P1_important":["...","..."],"P2_nice_to_have":["...","..."]}}`
       },
       {
         role: 'user',
@@ -71,8 +80,11 @@ CodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_expl
       }
     ];
 
-    const response = await this.chat(messages, { json_mode: true, max_tokens: 500 });
-    return JSON.parse(response);
+    const result = await this.chatWithFallback(messages, { json_mode: true, max_tokens: 500 }, fallbackClient);
+    const mode = JSON.parse(result.content);
+    mode._fallback = result._fallback;
+    mode._fallback_reason = result._fallback_reason;
+    return mode;
   }
 
   async reviewCheckpoint(checkpoint) {
@@ -104,7 +116,13 @@ CodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_expl
           acceptance_criteria: item.acceptance_criteria || '',
           status: 'pending'
         })),
-        suggested_skills: plan.suggested_skills || []
+        suggested_skills: (() => {
+          const s = plan.suggested_skills;
+          if (!s) return {};
+          if (Array.isArray(s)) return { P1_important: s };
+          if (s.P0_critical || s.P1_important || s.P2_nice_to_have) return s;
+          return {};
+        })()
       };
     } catch (err) {
       throw new Error(`Failed to parse plan JSON: ${err.message}. Raw: ${response.slice(0, 200)}`);

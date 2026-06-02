@@ -28,6 +28,22 @@ Be thorough but concise. Always report completion status.`
     return this.parseExecutionResult(response);
   }
 
+  async generatePlan(prompt, context = '') {
+    const messages = [
+      {
+        role: 'system',
+        content: 'You are an expert planning agent. Generate a structured plan in JSON format with title and items array.',
+      },
+      {
+        role: 'user',
+        content: `Task: ${prompt}\nContext: ${context}\n\nGenerate a structured plan.`
+      }
+    ];
+
+    const response = await this.chat(messages, { json_mode: true, max_tokens: 8000 });
+    return JSON.parse(response);
+  }
+
   async generateCode(specification, language = 'javascript') {
     const messages = [
       {

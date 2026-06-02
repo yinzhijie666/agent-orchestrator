@@ -7,6 +7,8 @@ class BaseModelClient {
     this.maxTokens = config.max_tokens;
     this.temperature = config.temperature;
     this.provider = config.provider || 'unknown';
+    this.thinking = config.thinking;
+    this.reasoningEffort = config.reasoning_effort;
   }
 
   async chat(messages, options = {}) {
@@ -24,8 +26,10 @@ class BaseModelClient {
         model: this.model,
         messages,
         max_tokens: options.max_tokens || this.maxTokens,
-        temperature: options.temperature || this.temperature,
+        temperature: this.temperature,
         response_format: options.json_mode ? { type: 'json_object' } : undefined,
+        ...(this.thinking && { thinking: this.thinking }),
+        ...(this.reasoningEffort && { reasoning_effort: this.reasoningEffort }),
       }),
     });
 

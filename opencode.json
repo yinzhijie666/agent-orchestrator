@@ -1,5 +1,5 @@
 {
   "name": "agent-orchestrator",
   "hooks": ["experimental.chat.system.transform"],
-  "tools": ["agent", "agent_status", "agent_checkpoint"]
+  "tools": ["agent", "agent_status", "agent_checkpoint", "agent_execute_skills"]
 }

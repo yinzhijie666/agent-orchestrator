@@ -1,6 +1,6 @@
 # Agent Orchestrator
 
-> Three-layer agent orchestration: **Kimi K2.6** plans, **DeepSeek V4 Flash** builds, **MiniMax M2.7** queries.
+> Three-layer agent orchestration: **Kimi K2.6** plans, **DeepSeek V4 Flash** builds, **MiniMax M3** queries.
 
 ## Quick Start
 
@@ -29,7 +29,7 @@ open http://127.0.0.1:8765/dashboard
 |-------|----------|----------|--------|
 | **Kimi K2.6** | Moonshot | `https://api.moonshot.cn/v1` | ⏳ Waiting for API Key verification |
 | **DeepSeek V4 Flash** | DeepSeek | `https://api.deepseek.com/v1` | ✅ Connected (2 models) |
-| **MiniMax M2.7** | MiniMax | `https://api.minimax.chat/v1` | ✅ Connected (8 models) |
+| **MiniMax M3** | MiniMax | `https://api.minimax.chat/v1` | ✅ Connected (8 models) |
 
 ### Kimi Configuration (OpenCode GO)
 
@@ -69,7 +69,7 @@ export OPENCODE_API_KEY=sk-...
                         │
          ┌──────────────┼──────────────┐
          ▼              ▼              ▼
-    Kimi K2.6   DeepSeek V4    MiniMax M2.7
+    Kimi K2.6   DeepSeek V4    MiniMax M3
     (Planning)  (Execution)    (Query)
 ```
 

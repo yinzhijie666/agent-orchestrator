@@ -14,14 +14,21 @@ class DB {
   // Plans
   createPlan(plan) {
     const stmt = this.db.prepare(
-      "INSERT INTO plans (id, title, plan_document, status, milestones_total, fallback_used) VALUES (?, ?, ?, ?, ?, ?)"
+      "INSERT INTO plans (id, title, plan_document, status, created_at, milestones_total, fallback_used) VALUES (?, ?, ?, ?, ?, ?, ?)"
     );
-    stmt.run(plan.id, plan.title, plan.plan_document, plan.status || 'pending', plan.milestones_total || 0, plan.fallback_used || 0);
+    const createdAt = plan.created_at || new Date().toISOString();
+    stmt.run(plan.id, plan.title, plan.plan_document, plan.status || 'pending', createdAt, plan.milestones_total || 0, plan.fallback_used || 0);
     return this.getPlan(plan.id);
   }
 
   getPlan(id) {
     return this.db.prepare("SELECT * FROM plans WHERE id = ?").get(id);
+  }
+
+  getRecentPlan(limit = 1) {
+    return this.db.prepare(
+      "SELECT * FROM plans ORDER BY created_at DESC LIMIT ?"
+    ).get(limit);
   }
 
   updatePlanStatus(id, status) {

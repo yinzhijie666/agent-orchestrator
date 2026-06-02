@@ -13,6 +13,7 @@ import PlanParser from './server/lib/plan-parser.js';
 import KimiClient from './server/lib/model-clients/kimi-client.js';
 import DeepSeekClient from './server/lib/model-clients/deepseek-client.js';
 import MiniMaxClient from './server/lib/model-clients/minimax-client.js';
+import { PlanOrchestrator } from './server/lib/plan-orchestrator.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MILESTONE_INTERVAL = config.milestone?.interval || 4;
@@ -110,59 +111,14 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
   }
 
   // Build mode: existing flow
-  let planDoc;
-  let fallbackUsed = false;
-
-  try {
-    planDoc = await kimiClient.generatePlan(task, context);
-  } catch (err) {
-    console.error('[AgentOrchestrator] Kimi failed, trying DeepSeek:', err.message);
-    try {
-      planDoc = await deepseekClient.generatePlan(task, context);
-      fallbackUsed = true;
-    } catch (fallbackErr) {
-      throw new Error(`Both Kimi and DeepSeek failed: ${err.message}; ${fallbackErr.message}`);
-    }
-  }
-
-  const validation = PlanParser.validate(planDoc);
-  if (!validation.valid) {
-    throw new Error(`Invalid plan: ${validation.errors.join(', ')}`);
-  }
-
-  const planId = randomUUID();
-  db.createPlan({
-    id: planId,
-    title: planDoc.title,
-    plan_document: JSON.stringify(planDoc),
+  const { planId, planDoc, fallbackUsed } = await PlanOrchestrator.generateAndPersist({
+    prompt: task,
+    context,
+    kimiClient,
+    deepseekClient,
+    db,
     status: 'active',
-    milestones_total: Math.ceil(planDoc.items.length / MILESTONE_INTERVAL),
-    fallback_used: fallbackUsed,
-  });
-
-  planDoc.items.forEach(item => {
-    db.createPlanItem({
-      plan_id: planId,
-      idx: item.idx,
-      title: item.title,
-      description: item.description,
-      executor: item.executor,
-      status: 'pending',
-    });
-  });
-
-  db.createThread({
-    id: randomUUID(),
-    plan_id: planId,
-    context_window: {},
-    layer_states: { kimi: {}, deepseek: {}, minimax: {} },
-  });
-
-  db.logActivity({
-    plan_id: planId,
-    agent: fallbackUsed ? 'deepseek' : 'kimi',
-    action: 'plan_created',
-    details: { title: planDoc.title, items_count: planDoc.items.length, fallback: fallbackUsed },
+    milestoneInterval: MILESTONE_INTERVAL,
   });
 
   // Auto-execution pump: execute items sequentially by assigned agent
@@ -241,6 +197,31 @@ async function generateRecommendations(planOrTask, kimiClient) {
   }
 }
 
+function formatSuggestedSkills(skills) {
+  let out = '\n\n💡 建议后续:';
+  if (skills.P0_critical?.length) {
+    out += '\n🔴 P0 (必选):\n  ' + skills.P0_critical.join('\n  ');
+  }
+  if (skills.P1_important?.length) {
+    out += '\n🟡 P1 (推荐):\n  ' + skills.P1_important.join('\n  ');
+  }
+  if (skills.P2_nice_to_have?.length) {
+    out += '\n🟢 P2 (可选):\n  ' + skills.P2_nice_to_have.join('\n  ');
+  }
+  return out;
+}
+
+function parseSkillAction(entry) {
+  if (typeof entry !== "string") return { type: "unknown", value: String(entry) };
+  if (entry.startsWith("skill ")) return { type: "skill", value: entry.slice(6).trim() };
+  if (entry.startsWith("/")) return { type: "command", value: entry };
+  if (entry.startsWith("codegraph_")) return { type: "codegraph", value: entry };
+  if (entry.includes("oh-my-memory") || entry.includes("search memory")) {
+    return { type: "memory", value: entry };
+  }
+  return { type: "unknown", value: entry };
+}
+
 function loadEnvFile(envPath) {
   try {
     const text = readFileSync(envPath, 'utf-8');
@@ -294,8 +275,8 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             let output;
             if (result.mode === 'plan') {
               output = `📋 [Plan Mode] ${result.reason}\n\n${result.analysis}`;
-              if (result.suggested_skills && result.suggested_skills.length > 0) {
-                output += `\n\n💡 建议后续:\n  ${result.suggested_skills.join('\n  ')}`;
+              if (result.suggested_skills && typeof result.suggested_skills === 'object') {
+                output += formatSuggestedSkills(result.suggested_skills);
               } else if (result.recommendations) {
                 output += `\n\n💡 建议后续:\n${result.recommendations}`;
               }
@@ -307,8 +288,8 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
               if (result.fallback) {
                 output += '\n\n⚠️ Note: Kimi was unavailable, plan created by DeepSeek (fallback).';
               }
-              if (result.suggested_skills && result.suggested_skills.length > 0) {
-                output += `\n\n💡 建议后续:\n  ${result.suggested_skills.join('\n  ')}`;
+              if (result.suggested_skills && typeof result.suggested_skills === 'object') {
+                output += formatSuggestedSkills(result.suggested_skills);
               } else if (result.recommendations) {
                 output += `\n\n💡 建议后续:\n${result.recommendations}`;
               }
@@ -436,37 +417,113 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
               return { output: `${icon} Checkpoint verified: ${reviewResult.status}\nFeedback: ${reviewResult.feedback}\nMilestone: item ${pending.milestone_idx}` };
             }
 
-            return { output: 'Error: action must be "create" or "verify"' };
+              return { output: 'Error: action must be "create" or "verify"' };
+            } catch (err) {
+              return { output: `Error: ${err.message}` };
+            }
+          },
+        }),
+
+      agent_execute_skills: tool({
+        description: 'MUST be called after any `agent` tool call when output contains "💡 建议后续:". Returns a prioritized execution list of skills extracted from the plan\'s suggested_skills section. Do NOT skip P0 items.',
+        args: z.object({
+          plan_id: z.string().optional().describe('Plan ID. If omitted, uses the most recently created plan.'),
+        }),
+        execute: async ({ plan_id }) => {
+          try {
+            const plan = plan_id ? db.getPlan(plan_id) : db.getRecentPlan(1);
+
+            if (!plan) {
+              return {
+                output: JSON.stringify({
+                  plan_id: null,
+                  skills_to_execute: [],
+                  next_step: 'No plan found. Run `agent` first to create one.'
+                })
+              };
+            }
+
+            let planDoc;
+            try {
+              planDoc = JSON.parse(plan.plan_document);
+            } catch {
+              planDoc = {};
+            }
+
+            const skills = planDoc.suggested_skills || {};
+            const items = [];
+
+            for (const tier of ['P0_critical', 'P1_important', 'P2_nice_to_have']) {
+              const list = skills[tier] || [];
+              for (const entry of list) {
+                const action = parseSkillAction(entry);
+                items.push({ tier, entry, ...action });
+              }
+            }
+
+            return {
+              output: JSON.stringify({
+                plan_id: plan.id,
+                skills_to_execute: items,
+                total: items.length,
+                next_step: items.length > 0
+                  ? `EXECUTE each skill in P0 → P1 → P2 order. P0 (${items.filter(i => i.tier === 'P0_critical').length} items) is BLOCKING.`
+                  : 'No skills suggested. Proceed with normal execution.'
+              }, null, 2)
+            };
           } catch (err) {
             return { output: `Error: ${err.message}` };
           }
         },
       }),
-    },
+      },
 
     "experimental.chat.system.transform": async (_input, output) => {
       const contextBlock = `
 
-## Agent Orchestrator
+## Agent Orchestrator — MANDATORY EXECUTION FLOW
 
 You have access to a three-layer orchestrator system. ALL tasks MUST be automatically routed through \`agent\`:
 
+### Tools Available
 - \`agent\`: AUTO-ROUTE every user request through this tool. Kimi decides plan mode (analysis) or build mode (execution)
+- \`agent_execute_skills\`: Load and execute skills from the latest plan's suggested_skills. **MUST be called after every \`agent\` call.**
 - \`agent_status\`: Check orchestrator state, progress, and model availability
 - \`agent_checkpoint\`: Manage milestone reviews (every 4 items, Kimi reviews before continuing)
 
+### Routing Rule
 **IMPORTANT: Do NOT ask the user to use \`agent task="..."\`. Silently route every request yourself.**
-For simple questions → \`agent task="<question>"\` (auto mode → no build needed)
-For complex tasks → \`agent task="<task description>"\` (Kimi decides plan or build)
+- Simple questions → \`agent task="<question>"\` (auto mode → no build needed)
+- Complex tasks → \`agent task="<task description>"\` (Kimi decides plan or build)
 
-**Skill Execution Rules — MUST follow after every \`agent\` call:**
-1. If output contains "suggested_skills" array → load each item:
-   - "skill X": \`skill X\`
-   - "/command": \`/command\`
-   - "codegraph_X": \`codegraph_X\`
-   - "oh-my-memory": search memory
-2. If output contains category-pointer recommendation → \`skill <pointer>\` → read skill list → pick concrete skill → load it
-3. Execute suggestions before proceeding with user's task`;
+### MANDATORY SKILL EXECUTION FLOW — DO NOT SKIP
+After every \`agent\` call:
+
+1. **Check the output**: Does it contain \`💡 建议后续:\`?
+   - **YES** → Call \`agent_execute_skills\` IMMEDIATELY (do not skip, do not ask user)
+   - **NO** → Continue normal execution
+
+2. **Process the returned skills** in this strict order:
+   - 🔴 \`P0_critical\` → EXECUTE FIRST (blocking, never skip)
+   - 🟡 \`P1_important\` → EXECUTE after P0 completes
+   - 🟢 \`P2_nice_to_have\` → EXECUTE last or skip at your discretion
+
+3. **Map entry types to actions**:
+   - \`skill X\` → call \`skill X\`
+   - \`/command\` → run that slash command
+   - \`codegraph_X\` → call the codegraph tool
+   - \`oh-my-memory search\` → search memory vault
+
+4. **Never** silently ignore \`suggested_skills\`. They are part of the plan output.
+
+### Example Flow
+User: "Build a REST API"
+→ Agent tool call: \`agent task="Build a REST API"\`
+→ Output contains \`💡 建议后续: P0: codegraph_context, P1: /qa\`
+→ You MUST call: \`agent_execute_skills\`
+→ Returned: 2 skills, P0 first
+→ Execute: \`codegraph_context\` first (P0), then \`/qa\` (P1)
+→ Report results to user`;
       output.system += contextBlock;
     },
 

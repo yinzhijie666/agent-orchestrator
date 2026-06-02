@@ -1,9 +1,8 @@
-import { randomUUID } from "node:crypto";
 import db from "../lib/db.js";
-import PlanParser from "../lib/plan-parser.js";
 import { AgentRouter } from "../lib/agent-router.js";
 import KimiClient from "../lib/model-clients/kimi-client.js";
 import DeepSeekClient from "../lib/model-clients/deepseek-client.js";
+import { PlanOrchestrator } from "../lib/plan-orchestrator.js";
 import config from "../config/default.json" with { type: "json" };
 
 const router = {
@@ -19,95 +18,27 @@ const router = {
       return new Response(JSON.stringify({ error: 'prompt is required' }), { status: 400 });
     }
 
-    let planDoc;
-    let fallbackUsed = false;
-    let fallbackInfo = null;
-
+    let result;
     try {
-      // Generate plan using Kimi
-      planDoc = await this.kimiClient.generatePlan(prompt, context);
+      result = await PlanOrchestrator.generateAndPersist({
+        prompt,
+        context,
+        kimiClient: this.kimiClient,
+        deepseekClient: this.deepseekClient,
+        db,
+        status: 'pending',
+        milestoneInterval: config.milestone.interval,
+      });
     } catch (err) {
-      console.error('[Fallback] Kimi failed:', err.message);
-      
-      // Fallback to DeepSeek
-      try {
-        console.log('[Fallback] Trying DeepSeek...');
-        planDoc = await this.deepseekClient.generatePlan(prompt, context);
-        fallbackUsed = true;
-        fallbackInfo = {
-          from: 'kimi',
-          to: 'deepseek',
-          reason: err.message,
-          timestamp: new Date().toISOString()
-        };
-      } catch (fallbackErr) {
-        console.error('[Fallback] DeepSeek also failed:', fallbackErr.message);
-        return new Response(JSON.stringify({
-          error: 'Both Kimi and DeepSeek failed',
-          kimi_error: err.message,
-          deepseek_error: fallbackErr.message
-        }), { status: 500 });
-      }
+      console.error('[Fallback] All models failed:', err.message);
+      const status = err.details ? 400 : 500;
+      return new Response(JSON.stringify({
+        error: status === 400 ? 'Invalid plan' : 'Plan generation failed',
+        details: err.details || err.message
+      }), { status });
     }
 
-    const validation = PlanParser.validate(planDoc);
-
-    if (!validation.valid) {
-      return new Response(JSON.stringify({ error: 'Invalid plan', details: validation.errors }), { status: 400 });
-    }
-
-    const planId = randomUUID();
-    
-    // Save to database
-    db.createPlan({
-      id: planId,
-      title: planDoc.title,
-      plan_document: JSON.stringify(planDoc),
-      status: 'pending',
-      milestones_total: Math.ceil(planDoc.items.length / config.milestone.interval),
-      fallback_used: fallbackUsed
-    });
-
-    // Create plan items
-    planDoc.items.forEach(item => {
-      db.createPlanItem({
-        plan_id: planId,
-        idx: item.idx,
-        title: item.title,
-        description: item.description,
-        executor: item.executor,
-        status: 'pending'
-      });
-    });
-
-    // Create agent thread
-    db.createThread({
-      id: randomUUID(),
-      plan_id: planId,
-      context_window: {},
-      layer_states: { kimi: {}, deepseek: {}, minimax: {} }
-    });
-
-    // Log fallback if used
-    if (fallbackUsed) {
-      db.logActivity({
-        plan_id: planId,
-        agent: 'system',
-        action: 'model_fallback',
-        details: fallbackInfo
-      });
-    }
-
-    db.logActivity({
-      plan_id: planId,
-      agent: fallbackUsed ? 'deepseek' : 'kimi',
-      action: 'plan_created',
-      details: { 
-        title: planDoc.title, 
-        items_count: planDoc.items.length,
-        fallback: fallbackUsed 
-      }
-    });
+    const { planId, planDoc, fallbackUsed, fallbackInfo } = result;
 
     return new Response(JSON.stringify({
       id: planId,
