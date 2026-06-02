@@ -10,7 +10,7 @@
 ## 项目特定规则
 
 - 改 `index.js` / `server/*` 前必须先写测试
-- DB schema 变更要同步更新 `init.js` 和 `migrate.js`
+- DB schema 变更要同步更新 `server/index.js:25-90` 中的 `initDb.exec(...)`
 - API key 只能在 `.env` 读，不要硬编码
 - 提示词改动需要更新 `tests/prompts.test.js` 中的断言
 - 三层模型调用走 `BaseModelClient.chatWithFallback()`，不要直接 `fetch()`
@@ -32,6 +32,6 @@ Each entry type maps to:
 
 ## Routing Rule
 
-- All user requests → silently call `agent task="<request>"` first
-- Do NOT ask the user to call `agent` themselves
-- For simple questions, agent will choose `plan` mode automatically
+- 所有用户请求 → 静默调用 `agent task="<request>"` 优先
+- 不要让用户自己调 `agent`
+- 简单问题, agent 会自动选 `plan` 模式
