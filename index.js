@@ -10,16 +10,7 @@ import config from './server/config/default.json' with { type: 'json' };
 import { SCHEMA_SQL } from './server/lib/db-schema.js';
 import { DB } from './server/lib/db.js';
 import { AgentRouter } from './server/lib/agent-router.js';
-import {
-  emitCheckpointCreated,
-  emitCheckpointVerified,
-  emitItemCompleted,
-  emitItemStarted,
-  emitModelFallback,
-  emitPlanCompleted,
-  emitPlanCreated,
-} from './server/lib/events.js';
-import PlanParser from './server/lib/plan-parser.js';
+
 import KimiClient from './server/lib/model-clients/kimi-client.js';
 import DeepSeekClient from './server/lib/model-clients/deepseek-client.js';
 import MiniMaxClient from './server/lib/model-clients/minimax-client.js';
@@ -71,11 +62,6 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
     milestoneInterval: MILESTONE_INTERVAL,
   });
 
-  emitPlanCreated(planId, planDoc);
-  if (fallbackUsed) {
-    emitModelFallback('kimi', 'deepseek', 'plan_generation');
-  }
-
   // Auto-execution pump: execute items sequentially by assigned agent
   const execResults = [];
   for (const item of planDoc.items) {
@@ -83,7 +69,6 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
 
     db.updatePlanItemStatus(planId, item.idx, 'active');
     db.logActivity({ plan_id: planId, agent: item.executor, action: 'item_started', details: { idx: item.idx, title: item.title } });
-    emitItemStarted(planId, item);
 
     try {
       let result;
@@ -92,20 +77,17 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
         result = res.result || res.status;
         db.updatePlanItemStatus(planId, item.idx, 'completed', result);
         db.logActivity({ plan_id: planId, agent: 'deepseek', action: 'item_completed', details: { idx: item.idx, title: item.title } });
-        emitItemCompleted(planId, item, 'completed');
       } else if (item.executor === 'minimax') {
         const query = `${item.title}: ${item.description || item.acceptance_criteria || ''}`;
         result = await minimaxClient.searchCode(query, context);
         db.updatePlanItemStatus(planId, item.idx, 'completed', result);
         db.logActivity({ plan_id: planId, agent: 'minimax', action: 'item_completed', details: { idx: item.idx, title: item.title } });
-        emitItemCompleted(planId, item, 'completed');
       }
       execResults.push({ idx: item.idx, executor: item.executor, status: 'completed' });
     } catch (err) {
       console.error(`[AgentOrchestrator] Item ${item.idx} (${item.executor}) failed:`, err.message);
       db.updatePlanItemStatus(planId, item.idx, 'failed', err.message);
       db.logActivity({ plan_id: planId, agent: item.executor, action: 'item_failed', details: { idx: item.idx, title: item.title, error: err.message } });
-      emitItemCompleted(planId, item, 'failed');
       execResults.push({ idx: item.idx, executor: item.executor, status: 'failed', error: err.message });
     }
   }
@@ -121,8 +103,6 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
     action: 'plan_completed',
     details: { completed: completedCount, failed: failedCount, status: finalStatus },
   });
-  emitPlanCompleted(planId, finalStatus);
-
   const recommendations = await generateRecommendations(planDoc, kimiClient);
 
   const items = planDoc.items.map(i =>
@@ -401,8 +381,6 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 details: { checkpoint_id: checkpointId, milestone_idx: milestoneIdx },
               });
 
-              emitCheckpointCreated(plan_id, checkpointId, milestoneIdx);
-
               return { output: `🛑 Checkpoint created at milestone ${milestoneIdx}\nID: \`${checkpointId}\`\nStatus: waiting for Kimi verification\n\nUse agent_checkpoint with action="verify" and plan_id="${plan_id}" to have Kimi review.` };
             }
 
@@ -434,11 +412,14 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 });
               }
 
-              if (result === 'failed' && !fallbackUsed) {
+              if (result === 'failed') {
                 const prev = reviewResult.feedback || '';
+                const note = fallbackUsed
+                  ? 'User override: marked as failed (Kimi auto-pass overridden).'
+                  : 'User override: marked as failed.';
                 reviewResult = {
                   status: 'failed',
-                  feedback: prev + (prev ? '\n' : '') + 'User override: marked as failed.',
+                  feedback: prev + (prev ? '\n' : '') + note,
                 };
               }
 
@@ -459,7 +440,6 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
 
               const icon = reviewResult.status === 'passed' ? '✅' : '❌';
               const fallbackNote = fallbackUsed ? '\n⚠️ Kimi was unavailable, auto-passed.' : '';
-              emitCheckpointVerified(pending.id, reviewResult.status);
               return { output: `${icon} Checkpoint verified: ${reviewResult.status}\nFeedback: ${reviewResult.feedback}\nMilestone: item ${pending.milestone_idx}${fallbackNote}` };
             }
 

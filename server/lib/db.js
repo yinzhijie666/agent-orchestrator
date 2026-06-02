@@ -40,7 +40,7 @@ class DB {
 
   updatePlanStatus(id, status) {
     const updates = { status };
-    if (status === 'completed' || status === 'failed') {
+    if (['completed', 'completed_with_errors', 'failed', 'cancelled'].includes(status)) {
       updates.completed_at = new Date().toISOString();
     }
     const keys = Object.keys(updates);
