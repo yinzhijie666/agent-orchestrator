@@ -17,9 +17,9 @@ const DEFAULT_MAX_SKILLS = 20;
 const TIER_ORDER = ['P0_critical', 'P1_important', 'P2_nice_to_have'];
 
 const TIER_LABELS = {
-  P0_critical: 'P0_critical (BLOCKING - must succeed all before proceeding)',
-  P1_important: 'P1_important (Sequential, skip on failure)',
-  P2_nice_to_have: 'P2_nice_to_have (May be skipped if time-constrained)',
+  P0_critical: 'P0 (BLOCKING - must succeed all before proceeding)',
+  P1_important: 'P1 (Sequential, skip on failure)',
+  P2_nice_to_have: 'P2 (May be skipped if time-constrained)',
 };
 
 export class AutoExecutor {
@@ -104,7 +104,7 @@ You are a skill auto-execution agent. Execute the following skills in strict pri
 1. Execute P0 items in listed order; if ANY P0 item fails, STOP immediately and report
 2. P1 items: try in listed order, skip on failure, continue to next
 3. P2 items: may be skipped if time-constrained or context-polluted
-4. After each skill, record: {tier, entry, type, status: success|failure|skipped, output, error}
+4. After each skill, record: {name, type, tier, result: completed|failed|skipped, output, error}
 5. Return a single JSON object as your final response (no other text)
 
 ## Required JSON Output Schema
@@ -114,15 +114,15 @@ Return ONLY this JSON object (no prose before or after):
   "status": "success" | "partial" | "failure",
   "executed_skills": [
     {
-      "tier": "P0_critical",
-      "entry": "codegraph_context",
+      "name": "codegraph_context",
       "type": "codegraph",
-      "status": "success",
+      "tier": "P0",
+      "result": "completed",
       "output": "<brief summary of what was produced>",
       "error": null
     }
   ],
-  "p0_failures": 0,
+  "p0_failures": [],
   "summary": "Executed N/M skills (X P0, Y P1, Z P2 skipped)"
 }
 `);

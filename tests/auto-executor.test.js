@@ -14,8 +14,8 @@ describe("AutoExecutor.buildPrompt", () => {
       { tier: "P0_critical", entry: "codegraph_context", type: "codegraph", value: "codegraph_context" },
     ];
     const prompt = AutoExecutor.buildPrompt(skills, PLAN_CTX);
-    const p0Idx = prompt.indexOf("P0_critical");
-    const p1Idx = prompt.indexOf("P1_important");
+    const p0Idx = prompt.indexOf("P0 (BLOCKING");
+    const p1Idx = prompt.indexOf("P1 (Sequential");
     expect(p0Idx).toBeGreaterThan(-1);
     expect(p1Idx).toBeGreaterThan(p0Idx);
   });
@@ -25,9 +25,9 @@ describe("AutoExecutor.buildPrompt", () => {
       { tier: "P0_critical", entry: "codegraph_context", type: "codegraph", value: "codegraph_context" },
     ];
     const prompt = AutoExecutor.buildPrompt(skills, PLAN_CTX);
-    expect(prompt).toContain("P0_critical");
-    expect(prompt).not.toContain("P1_important (Sequential");
-    expect(prompt).not.toContain("P2_nice_to_have (May be skipped");
+    expect(prompt).toContain("P0 (BLOCKING");
+    expect(prompt).not.toContain("P1 (Sequential");
+    expect(prompt).not.toContain("P2 (May be skipped");
   });
 
   test("includes plan context (id, title, goal)", () => {

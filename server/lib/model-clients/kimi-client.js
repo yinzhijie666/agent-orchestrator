@@ -1,5 +1,13 @@
 import BaseModelClient from "./base-client.js";
 
+const CAPABILITY_LIST = `云端[76类]: frontend backend cloud security ai-ml testing database mobile devops
+Superpowers[14]: brainstorming writing-plans test-driven-development systematic-debugging subagent-driven-development verification-before-completion requesting-code-review receiving-code-review
+GStack[16]: /qa /review /browse /ship /design-review /debug /retro /document-release /plan-eng-review /design-consultation /office-hours /plan-ceo-review /plan-design-review /qa-only /setup-browser-cookies /ship
+本地: /understand-explain /understand-diff /graphify query verify.sh oh-my-memory
+CodeGraph[9]: codegraph_context codegraph_search codegraph_callers codegraph_callees codegraph_impact codegraph_node codegraph_explore codegraph_files codegraph_status`;
+
+export { CAPABILITY_LIST };
+
 class KimiClient extends BaseModelClient {
   constructor(config) {
     super(config);
@@ -21,11 +29,7 @@ Each plan item must have:
 P0(必选): 与任务直接相关
 P1(推荐): 增强质量
 P2(可选): 验证/补充
-云端[76类]: frontend backend cloud security ai-ml testing database mobile devops
-Superpowers[14]: brainstorming test-driven-development systematic-debugging
-GStack[16]: /qa /review /browse /ship /design-review
-本地: /understand-explain /understand-diff /graphify query verify.sh oh-my-memory
-CodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_explore
+${CAPABILITY_LIST}
 
 Format your response as valid JSON with this structure:
 {
@@ -66,11 +70,7 @@ Format your response as valid JSON with this structure:
 P0(必选): 与当前任务直接相关
 P1(推荐): 增强质量
 P2(可选): 验证/补充
-云端[76类]: frontend backend cloud security ai-ml testing database mobile devops
-Superpowers[14]: brainstorming writing-plans test-driven-development systematic-debugging
-GStack[16]: /qa /review /browse /ship /retro /debug /design-review
-本地: /understand-explain /understand-diff /graphify query verify.sh oh-my-memory
-CodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_explore
+${CAPABILITY_LIST}
 
 返回 JSON: {"mode":"plan"|"build","reason":"选择原因","suggested_skills":{"P0_critical":["...","..."],"P1_important":["...","..."],"P2_nice_to_have":["...","..."]}}`
       },
@@ -80,7 +80,7 @@ CodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_expl
       }
     ];
 
-    const result = await this.chatWithFallback(messages, { json_mode: true, max_tokens: 500 }, fallbackClient);
+    const result = await this.chatWithFallback(messages, { json_mode: true, max_tokens: 1000 }, fallbackClient);
     const mode = JSON.parse(result.content);
     mode._fallback = result._fallback;
     mode._fallback_reason = result._fallback_reason;

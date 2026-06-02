@@ -9,7 +9,6 @@ import { randomUUID } from 'node:crypto';
 import config from './server/config/default.json' with { type: 'json' };
 import { SCHEMA_SQL } from './server/lib/db-schema.js';
 import { DB } from './server/lib/db.js';
-import { AgentRouter } from './server/lib/agent-router.js';
 import {
   emitCheckpointCreated,
   emitCheckpointVerified,
@@ -19,7 +18,7 @@ import {
   emitPlanCompleted,
   emitPlanCreated,
 } from './server/lib/events.js';
-import KimiClient from './server/lib/model-clients/kimi-client.js';
+import KimiClient, { CAPABILITY_LIST } from './server/lib/model-clients/kimi-client.js';
 import DeepSeekClient from './server/lib/model-clients/deepseek-client.js';
 import MiniMaxClient from './server/lib/model-clients/minimax-client.js';
 import { PlanOrchestrator } from './server/lib/plan-orchestrator.js';
@@ -162,7 +161,7 @@ async function generateRecommendations(planOrTask, kimiClient) {
         role: 'user',
         content: `Task: ${typeof planOrTask === 'string' ? planOrTask : JSON.stringify({ title: planOrTask.title, items: planOrTask.items.map(i => ({ title: i.title, description: i.description })) })}\n\n列出建议。`
       }
-    ], { json_mode: true, max_tokens: 1500 });
+    ], { max_tokens: 1500 });
     return recs?.content || recs;
   } catch (err) {
     console.error('[AgentOrchestrator] Recommendation generation failed:', err.message);
@@ -171,6 +170,11 @@ async function generateRecommendations(planOrTask, kimiClient) {
 }
 
 function formatSuggestedSkills(skills) {
+  if (!skills || typeof skills !== 'object') return '';
+  const hasSkills = (skills.P0_critical?.length || 0) +
+                    (skills.P1_important?.length || 0) +
+                    (skills.P2_nice_to_have?.length || 0);
+  if (hasSkills === 0) return '';
   let out = '\n\n💡 建议后续:';
   if (skills.P0_critical?.length) {
     out += '\n🔴 P0 (必选):\n  ' + skills.P0_critical.join('\n  ');
@@ -278,8 +282,9 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             let output;
             if (result.mode === 'plan') {
               output = `📋 [Plan Mode] ${result.reason}\n\n${result.analysis}`;
-              if (result.suggested_skills && typeof result.suggested_skills === 'object') {
-                output += formatSuggestedSkills(result.suggested_skills);
+              const skillsOutput = formatSuggestedSkills(result.suggested_skills);
+              if (skillsOutput) {
+                output += skillsOutput;
               } else if (result.recommendations) {
                 output += `\n\n💡 建议后续:\n${result.recommendations}`;
               }
@@ -291,8 +296,9 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
               if (result.fallback) {
                 output += '\n\n⚠️ Note: Kimi was unavailable, plan created by DeepSeek (fallback).';
               }
-              if (result.suggested_skills && typeof result.suggested_skills === 'object') {
-                output += formatSuggestedSkills(result.suggested_skills);
+              const skillsOutput = formatSuggestedSkills(result.suggested_skills);
+              if (skillsOutput) {
+                output += skillsOutput;
               } else if (result.recommendations) {
                 output += `\n\n💡 建议后续:\n${result.recommendations}`;
               }
@@ -419,10 +425,16 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 return { output: 'No pending checkpoints to verify for this plan.' };
               }
 
+              const plan = db.getPlan(plan_id);
+              const enrichedCheckpoint = {
+                ...pending,
+                plan_title: plan?.title || 'Unknown Plan',
+              };
+
               let reviewResult;
               let fallbackUsed = false;
               try {
-                reviewResult = await kimiClient.reviewCheckpoint(pending, deepseekClient);
+                reviewResult = await kimiClient.reviewCheckpoint(enrichedCheckpoint, deepseekClient);
               } catch (err) {
                 console.error('[AgentOrchestrator] Kimi review failed:', err.message);
                 reviewResult = {
@@ -566,7 +578,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 auto_exec: autoExecEnabled ? {
                   mode: 'subagent',
                   prompt: autoExecPrompt,
-                  trigger: 'task({ subagent_type: "general", prompt: auto_exec.prompt })',
+                  trigger: 'Call the task tool with subagent_type="general" and prompt=auto_exec.prompt',
                   model: process.env.AUTO_EXEC_MODEL || AUTO_EXEC_DEFAULTS.model || 'cheap',
                 } : null,
                 auto_dispatched: autoDispatched,

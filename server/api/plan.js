@@ -1,5 +1,4 @@
 import db from "../lib/db.js";
-import { AgentRouter } from "../lib/agent-router.js";
 import KimiClient from "../lib/model-clients/kimi-client.js";
 import DeepSeekClient from "../lib/model-clients/deepseek-client.js";
 import { PlanOrchestrator } from "../lib/plan-orchestrator.js";
@@ -7,7 +6,6 @@ import { emitPlanActivated, emitPlanCompleted, emitPlanCreated, emitModelFallbac
 import config from "../config/default.json" with { type: "json" };
 
 const router = {
-  agentRouter: new AgentRouter(),
   kimiClient: new KimiClient(config.models.kimi),
   deepseekClient: new DeepSeekClient(config.models.deepseek),
 
