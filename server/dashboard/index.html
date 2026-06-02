@@ -165,7 +165,7 @@
   </div>
 
   <script>
-    const ws = new WebSocket(`ws://${window.location.hostname}:8765`);
+    let ws;
     const activityLog = document.getElementById('activity-log');
     const connectionStatus = document.getElementById('connection-status');
 
@@ -175,58 +175,43 @@
       const time = new Date().toLocaleTimeString();
       entry.innerHTML = `<span style="opacity:0.5">[${time}]</span> ${message}`;
       activityLog.prepend(entry);
-      
+
       // Keep only last 50 entries
       while (activityLog.children.length > 50) {
         activityLog.removeChild(activityLog.lastChild);
       }
     }
 
-    ws.onopen = () => {
-      connectionStatus.textContent = 'Connected';
-      connectionStatus.className = 'connected';
-      addLog('🔗 WebSocket connected', 'success');
-      
-      // Fetch initial status
-      fetchStatus();
-    };
+    function connectWebSocket() {
+      const wsPort = window.location.port || '8765';
+      const wsUrl = `ws://${window.location.hostname}:${wsPort}`;
+      ws = new WebSocket(wsUrl);
 
-    ws.onclose = () => {
-      connectionStatus.textContent = 'Disconnected';
-      connectionStatus.className = 'disconnected';
-      addLog('🔌 WebSocket disconnected', 'error');
-      
-      // Auto-reconnect after 3 seconds
-      setTimeout(() => {
-        addLog('🔄 Reconnecting...', 'info');
-        ws = new WebSocket(`ws://${window.location.hostname}:8765`);
-        // Re-bind event handlers
-        ws.onopen = () => {
-          connectionStatus.textContent = 'Connected';
-          connectionStatus.className = 'connected';
-          addLog('🔗 WebSocket reconnected', 'success');
-          fetchStatus();
-        };
-        ws.onclose = arguments.callee;
-        ws.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            handleEvent(data);
-          } catch (err) {
-            console.error('Failed to parse message:', err);
-          }
-        };
-      }, 3000);
-    };
+      ws.onopen = () => {
+        connectionStatus.textContent = 'Connected';
+        connectionStatus.className = 'connected';
+        addLog('🔗 WebSocket connected', 'success');
+        fetchStatus();
+      };
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        handleEvent(data);
-      } catch (err) {
-        console.error('Failed to parse message:', err);
-      }
-    };
+      ws.onclose = () => {
+        connectionStatus.textContent = 'Disconnected';
+        connectionStatus.className = 'disconnected';
+        addLog('🔌 WebSocket disconnected', 'error');
+        setTimeout(connectWebSocket, 3000);
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          handleEvent(data);
+        } catch (err) {
+          console.error('Failed to parse message:', err);
+        }
+      };
+    }
+
+    connectWebSocket();
 
     function handleEvent(event) {
       switch(event.type) {
@@ -242,19 +227,21 @@
           document.getElementById('active-plan').textContent = event.payload.title || 'Active Plan';
           break;
         case 'plan.completed':
-          addLog(`✅ Plan completed: ${event.payload.plan_id}`);
+          addLog(`✅ Plan completed: ${event.payload.plan_id} (${event.payload.status || 'completed'})`);
           document.getElementById('active-plan').textContent = 'No active plan';
           document.getElementById('plan-progress').style.width = '100%';
+          fetchStatus();
           break;
         case 'item.started':
           addLog(`🔧 <span class="agent-${event.payload.agent}">${event.payload.agent}</span> started: ${event.payload.title}`);
           break;
         case 'item.completed':
-          addLog(`✅ <span class="agent-${event.payload.agent}">${event.payload.agent}</span> completed: ${event.payload.title}`);
+          const itemIcon = event.payload.status === 'failed' ? '❌' : '✅';
+          addLog(`${itemIcon} <span class="agent-${event.payload.agent}">${event.payload.agent}</span> ${event.payload.status}: ${event.payload.title}`);
           updateProgress(event.payload.plan_id);
           break;
         case 'checkpoint.created':
-          addLog(`🛑 Checkpoint created, waiting for Kimi...`);
+          addLog(`🛑 Checkpoint created at milestone ${event.payload.milestone_idx}, waiting for Kimi...`);
           break;
         case 'checkpoint.verified':
           const statusClass = event.payload.result === 'passed' ? 'status-passed' : 'status-failed';
@@ -277,13 +264,33 @@
       try {
         const response = await fetch('/api/status');
         const data = await response.json();
-        
-        document.getElementById('stat-plans').textContent = 
+
+        document.getElementById('stat-plans').textContent =
           data.plans?.by_status?.reduce((sum, p) => sum + p.count, 0) || 0;
         document.getElementById('stat-items').textContent = data.plans?.total_items || 0;
         document.getElementById('stat-checkpoints').textContent = data.checkpoints?.pending || 0;
+
+        await fetchAgentStates();
       } catch (err) {
         console.error('Failed to fetch status:', err);
+      }
+    }
+
+    async function fetchAgentStates() {
+      try {
+        const res = await fetch('/api/status/agents');
+        const data = await res.json();
+        if (data.agents) {
+          const fmt = (avail) => avail ? '✅ Available' : '❌ No API key';
+          const kimiEl = document.getElementById('kimi-status');
+          const dsEl = document.getElementById('deepseek-status');
+          const mmEl = document.getElementById('minimax-status');
+          if (kimiEl) kimiEl.textContent = fmt(data.agents.kimi?.available);
+          if (dsEl) dsEl.textContent = fmt(data.agents.deepseek?.available);
+          if (mmEl) mmEl.textContent = fmt(data.agents.minimax?.available);
+        }
+      } catch (err) {
+        // ignore
       }
     }
 
@@ -295,7 +302,7 @@
         const completed = items.filter(i => i.status === 'completed').length;
         const total = items.length;
         const percent = total > 0 ? (completed / total * 100) : 0;
-        
+
         document.getElementById('plan-progress').style.width = `${percent}%`;
       } catch (err) {
         console.error('Failed to update progress:', err);
@@ -304,7 +311,7 @@
 
     // Ping every 30s to keep connection alive
     setInterval(() => {
-      if (ws.readyState === WebSocket.OPEN) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'ping' }));
       }
     }, 30000);
