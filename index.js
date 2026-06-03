@@ -37,7 +37,7 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
   // Step 0: Kimi decides plan or build mode
   let modeAnalysis;
   try {
-    modeAnalysis = await kimiClient.analyzeTaskMode(task, context);
+    modeAnalysis = await kimiClient.analyzeTaskMode(task, context, deepseekClient);
   } catch (err) {
     console.error('[AgentOrchestrator] Mode analysis failed, defaulting to build:', err.message);
     modeAnalysis = { mode: 'build', reason: `Fallback: ${err.message}` };
@@ -60,7 +60,7 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
     } catch (err) {
       analysis = `分析失败: ${err.message}`;
     }
-    const recommendations = await generateRecommendations(task, kimiClient);
+    const recommendations = await generateRecommendations(task, kimiClient, deepseekClient);
     return { mode: 'plan', analysis, reason: modeAnalysis.reason, recommendations, suggested_skills: modeAnalysis.suggested_skills || {} };
   }
 
@@ -126,7 +126,7 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
     details: { completed: completedCount, failed: failedCount, status: finalStatus },
   });
   emitPlanCompleted(planId, finalStatus);
-  const recommendations = await generateRecommendations(planDoc, kimiClient);
+  const recommendations = await generateRecommendations(planDoc, kimiClient, deepseekClient);
 
   const items = planDoc.items.map(i =>
     `${i.idx + 1}. [${i.executor}] ${i.title}${i.description ? ': ' + i.description : ''}`
@@ -139,7 +139,7 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
   return { mode: 'build', planId, title: planDoc.title, items, itemCount: planDoc.items.length, execSummary, completedCount, failedCount, fallback: fallbackUsed, recommendations, suggested_skills: planDoc.suggested_skills || {} };
 }
 
-async function generateRecommendations(planOrTask, kimiClient) {
+async function generateRecommendations(planOrTask, kimiClient, deepseekClient) {
   try {
     const recs = await kimiClient.chatWithFallback([
       {
@@ -154,7 +154,7 @@ ${CAPABILITY_LIST}
         role: 'user',
         content: `Task: ${typeof planOrTask === 'string' ? planOrTask : JSON.stringify({ title: planOrTask.title, items: planOrTask.items.map(i => ({ title: i.title, description: i.description })) })}\n\n列出建议。`
       }
-    ], { max_tokens: 1500 });
+    ], { max_tokens: 1500 }, deepseekClient);
     return recs?.content || recs;
   } catch (err) {
     console.error('[AgentOrchestrator] Recommendation generation failed:', err.message);
@@ -545,31 +545,9 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
               ? AutoExecutor.buildPrompt(validated, planContext)
               : null;
 
-            let dispatchResult = null;
-            let autoDispatched = false;
-            if (autoExecEnabled && autoDispatcher) {
-              try {
-                dispatchResult = await autoDispatcher.dispatch(autoExecPrompt, {
-                  model: process.env.AUTO_EXEC_MODEL || AUTO_EXEC_DEFAULTS.model || 'cheap',
-                  timeoutMs: AUTO_EXEC_DEFAULTS.timeout_ms || 90000,
-                });
-                // D1 subagent has no tool access — check if any skills actually completed
-                const completedSkills = (dispatchResult.executed_skills || [])
-                  .filter(s => s.result === 'completed');
-                if (completedSkills.length > 0) {
-                  autoDispatched = true;
-                } else {
-                  console.log('[AgentOrchestrator] D1 dispatch returned no completed skills, falling back to manual execution');
-                  autoDispatched = false;
-                }
-              } catch (e) {
-                dispatchResult = {
-                  status: 'failure',
-                  _dispatchError: e.message,
-                  summary: `Auto-dispatch failed: ${e.message}`,
-                };
-              }
-            }
+            // D1 subagent has no tool access — skip dispatch, use fallback path
+            const autoDispatched = false;
+            const dispatchResult = null;
 
             return {
               output: JSON.stringify({
@@ -602,82 +580,28 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
       },
 
     "experimental.chat.system.transform": async (_input, output) => {
-      const contextBlock = `
+      output.system += `
 
 ## Agent Orchestrator — MANDATORY EXECUTION FLOW
 
-You have access to a three-layer orchestrator system. ALL tasks MUST be automatically routed through \`agent\`:
-
-### Tools Available
-- \`agent\`: AUTO-ROUTE every user request through this tool. Kimi decides plan mode (analysis) or build mode (execution)
-- \`agent_execute_skills\`: Load and execute skills from the latest plan's suggested_skills. **MUST be called after every \`agent\` call.**
-- \`agent_status\`: Check orchestrator state, progress, and model availability
-- \`agent_checkpoint\`: Manage milestone reviews (every 4 items, Kimi reviews before continuing)
+### Tools
+- \`agent\`: AUTO-ROUTE every user request. Kimi decides plan/build mode.
+- \`agent_execute_skills\`: MUST be called after every \`agent\` call when output contains "💡 建议后续:".
+- \`agent_status\`: Check orchestrator state.
+- \`agent_checkpoint\`: Manage milestone reviews.
 
 ### Routing Rule
-**IMPORTANT: Do NOT ask the user to use \`agent task="..."\`. Silently route every request yourself.**
-- Simple questions → \`agent task="<question>"\` (auto mode → no build needed)
-- Complex tasks → \`agent task="<task description>"\` (Kimi decides plan or build)
+Do NOT ask user to use \`agent task="..."\`. Silently route every request.
 
-### MANDATORY SKILL EXECUTION FLOW — DO NOT SKIP
+### Skill Execution Flow
 After every \`agent\` call:
+1. Check output for "💡 建议后续:"
+2. If present → call \`agent_execute_skills\` immediately
+3. Execute returned skills in tier order: P0 (blocking) → P1 (important) → P2 (optional)
+4. Map types: \`skill X\` → skill tool, \`/command\` → slash command, \`codegraph_X\` → MCP tool, \`memory\` → oh-my-memory
 
-1. **Check the output**: Does it contain \`💡 建议后续:\`?
-   - **YES** → Call \`agent_execute_skills\` IMMEDIATELY (do not skip, do not ask user)
-   - **NO** → Continue normal execution
-
-2. **Process the returned skills** in this strict order:
-   - 🔴 \`P0_critical\` → EXECUTE FIRST (blocking, never skip)
-   - 🟡 \`P1_important\` → EXECUTE after P0 completes
-   - 🟢 \`P2_nice_to_have\` → EXECUTE last or skip at your discretion
-
-3. **Map entry types to actions**:
-   - \`skill X\` → call \`skill X\` tool
-   - \`/command\` → run that slash command
-   - \`codegraph_X\` → call the codegraph MCP tool
-   - \`oh-my-memory search\` → search memory vault
-   - \`skills-manager\` → run skills-manager.sh with appropriate subcommand
-
-4. **Never** silently ignore \`suggested_skills\`. They are part of the plan output.
-
-### Example Flow
-User: "Build a REST API"
-→ Agent tool call: \`agent task="Build a REST API"\`
-→ Output contains \`💡 建议后续: P0: codegraph_context, P1: /qa\`
-→ You MUST call: \`agent_execute_skills\`
-→ Returned: 2 skills, P0 first
-→ Execute: \`codegraph_context\` first (P0), then \`/qa\` (P1)
-→ Report results to user
-
-### Subagent Auto-Execution (preferred path)
-When \`agent_execute_skills\` returns an \`auto_exec.prompt\` field AND \`auto_dispatched\` is true:
-1. **Immediately** call \`task\` with subagent_type="general" and pass the ENTIRE \`auto_exec.prompt\` as the prompt
-2. The subagent has isolated context (do NOT re-inject MANDATORY EXECUTION FLOW)
-3. Read the subagent's JSON return value
-4. Present \`executed_skills[]\` results to the user in P0→P1→P2 order
-5. If \`status === "failure"\`, surface the \`p0_failures\` field
-
-### Fallback (when \`auto_exec\` is null or \`auto_dispatched\` is false)
-The D1 subagent has no tool access, so you must execute skills yourself:
-- Read \`skills_to_execute[]\` from the agent_execute_skills output
-- Iterate in tier order: P0 first, then P1, then P2
-- Map each skill type to the appropriate tool:
-  - \`skill\` → call the \`skill\` tool with the skill name
-  - \`command\` → run the slash command
-  - \`codegraph\` → call the codegraph MCP tool
-  - \`memory\` → search oh-my-memory
-- If a skill execution fails, log the error and continue to the next skill
-- Report all results at the end
-- P0 must succeed; P1/P2 may be skipped
-
-### Example Auto-Execution Flow
-User: "Build a REST API"
-→ \`agent task="Build a REST API"\`
-→ Output contains \`💡 建议后续: P0: codegraph_context, P1: /qa\`
-→ \`agent_execute_skills\` → returns {skills_to_execute: [...], auto_exec: null, auto_dispatched: false}
-→ You execute: call \`skill codegraph_context\` first (P0), then \`/qa\` (P1)
-→ Report results to user`;
-      output.system += contextBlock;
+### Fallback (when auto_exec is null)
+Execute skills yourself using the type field. P0 must succeed; P1/P2 may be skipped.`;
     },
 
     dispose: async () => {
