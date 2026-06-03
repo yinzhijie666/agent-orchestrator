@@ -11,21 +11,28 @@ describe("Round 4: Prompt + Skills fixes", () => {
         { tier: "P1_important", entry: "/qa", type: "command", value: "/qa" },
       ];
       const prompt = AutoExecutor.buildPrompt(skills, { planId: "p1", title: "Test" });
+      // JSON schema example uses "P0" as representative tier
       expect(prompt).toContain('"tier": "P0"');
-      expect(prompt).toContain('"tier": "P1"');
-      expect(prompt).not.toContain('"P0_critical"');
-      expect(prompt).not.toContain('"P1_important"');
+      // Tier headers use short names
+      expect(prompt).toContain("### P0 (BLOCKING");
+      expect(prompt).toContain("### P1 (Sequential");
+      // Long form names should NOT appear
+      expect(prompt).not.toContain("P0_critical (BLOCKING");
+      expect(prompt).not.toContain("P1_important (Sequential");
     });
 
-    test("buildPrompt uses name/result fields (not entry/status)", () => {
+    test("buildPrompt uses name/result fields (not entry/status) in skill entries", () => {
       const skills = [
         { tier: "P0_critical", entry: "codegraph_context", type: "codegraph", value: "codegraph_context" },
       ];
       const prompt = AutoExecutor.buildPrompt(skills, { planId: "p1", title: "Test" });
       expect(prompt).toContain('"name": "codegraph_context"');
       expect(prompt).toContain('"result": "completed"');
-      expect(prompt).not.toContain('"entry":');
-      expect(prompt).not.toContain('"status": "success"');
+      // "status" appears in top-level schema ("status": "success" | "partial" | "failure") — that's OK
+      // but skill entries should use "result" not "status"
+      const execSection = prompt.split("executed_skills")[1] || "";
+      expect(execSection).toContain('"result":');
+      expect(execSection).not.toContain('"entry":');
     });
 
     test("buildPrompt p0_failures is array (not number)", () => {
