@@ -33,9 +33,34 @@ if [ -L ~/.understand-anything-plugin ] && [ -d ~/.understand-anything-plugin ];
   if [ -d ~/.understand-anything-plugin/packages/core/src ] && [ -f ~/.understand-anything-plugin/packages/core/package.json ]; then
     CORE_TS_COUNT=$(find ~/.understand-anything-plugin/packages/core/src -name "*.ts" 2>/dev/null | wc -l)
     SKILL_COUNT=$(find ~/.understand-anything-plugin/skills -name "SKILL.md" 2>/dev/null | wc -l)
-    echo "  ✅ Understand-Anything: 源码已部署（core: $CORE_TS_COUNT .ts, skills: $SKILL_COUNT）"
+    echo "  ✅ 源码已部署（core: $CORE_TS_COUNT .ts, skills: $SKILL_COUNT）"
   else
-    echo "  ⚠️  Understand-Anything: 符号链接存在但源码不完整"
+    echo "  ⚠️  符号链接存在但源码不完整"
+    WARNINGS=$((WARNINGS+1))
+  fi
+
+  # 检查构建状态
+  BUILD_OK=true
+  if [ -d ~/.understand-anything-plugin/packages/core/dist ] && [ -f ~/.understand-anything-plugin/packages/core/dist/index.js ]; then
+    CORE_DIST_SIZE=$(du -sh ~/.understand-anything-plugin/packages/core/dist 2>/dev/null | cut -f1)
+    echo "  ✅ core 已构建（dist: $CORE_DIST_SIZE）"
+  else
+    echo "  ⚠️  core 未构建（缺少 dist/index.js）"
+    BUILD_OK=false
+  fi
+
+  if [ -d ~/.understand-anything-plugin/dist ] && [ -f ~/.understand-anything-plugin/dist/index.js ]; then
+    SKILL_DIST_SIZE=$(du -sh ~/.understand-anything-plugin/dist 2>/dev/null | cut -f1)
+    echo "  ✅ skill 已构建（dist: $SKILL_DIST_SIZE）"
+  else
+    echo "  ⚠️  skill 未构建（缺少 dist/index.js）"
+    BUILD_OK=false
+  fi
+
+  if [ "$BUILD_OK" = true ]; then
+    echo "  ✅ 构建状态: 完整"
+  else
+    echo "  ⚠️  构建状态: 部分完成"
     WARNINGS=$((WARNINGS+1))
   fi
 
