@@ -9,14 +9,17 @@ set -e
 ERRORS=0
 WARNINGS=0
 
+# 添加 bun 全局安装路径到 PATH（包含 codegraph 等 CLI 工具）
+export PATH="$HOME/.bun/install/global/node_modules/.bin:$HOME/.bun/bin:$PATH"
+
 echo "=== 完整工作流前置检查 ==="
 echo ""
 
 # 1. 检查 CodeGraph
 echo "[1/6] 检查 CodeGraph..."
 if command -v codegraph &>/dev/null; then
-  VERSION=$(codegraph --version 2>/dev/null || echo "unknown")
-  echo "  ✅ CodeGraph: v$VERSION"
+  VERSION=$(codegraph --version 2>/dev/null | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+  echo "  ✅ CodeGraph: $VERSION"
 else
   echo "  ❌ CodeGraph: 未安装"
   echo "     安装命令: bun install -g @colbymchenry/codegraph"
@@ -26,20 +29,29 @@ fi
 # 2. 检查 Understand-Anything
 echo "[2/6] 检查 Understand-Anything..."
 if [ -L ~/.understand-anything-plugin ] && [ -d ~/.understand-anything-plugin ]; then
-  echo "  ✅ Understand-Anything: 插件已安装"
+  # 检查源码包
+  if [ -d ~/.understand-anything-plugin/packages/core/src ] && [ -f ~/.understand-anything-plugin/packages/core/package.json ]; then
+    CORE_TS_COUNT=$(find ~/.understand-anything-plugin/packages/core/src -name "*.ts" 2>/dev/null | wc -l)
+    SKILL_COUNT=$(find ~/.understand-anything-plugin/skills -name "SKILL.md" 2>/dev/null | wc -l)
+    echo "  ✅ Understand-Anything: 源码已部署（core: $CORE_TS_COUNT .ts, skills: $SKILL_COUNT）"
+  else
+    echo "  ⚠️  Understand-Anything: 符号链接存在但源码不完整"
+    WARNINGS=$((WARNINGS+1))
+  fi
 
-  # 检查技能链接
+  # 检查技能文件可用性
   UA_SKILLS_OK=true
   for skill in understand understand-chat understand-dashboard understand-diff \
                understand-domain understand-explain understand-knowledge understand-onboard; do
-    if [ ! -L ~/.agents/skills/$skill ] && [ ! -d ~/.agents/skills/$skill ]; then
-      echo "  ⚠️  技能链接缺失: $skill"
+    if [ ! -f ~/.config/opencode/skills/understand/$skill/SKILL.md ] && \
+       [ ! -f ~/.understand-anything-plugin/skills/$skill/SKILL.md ]; then
+      echo "  ⚠️  技能文件缺失: $skill"
       UA_SKILLS_OK=false
     fi
   done
 
   if [ "$UA_SKILLS_OK" = true ]; then
-    echo "  ✅ 技能链接: 完整"
+    echo "  ✅ 技能文件: 完整"
   else
     WARNINGS=$((WARNINGS+1))
   fi
