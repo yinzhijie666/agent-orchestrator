@@ -7,6 +7,24 @@
 - 改动最小化，不要"顺手"优化
 - 多步任务先列计划再执行
 
+## 完整工作流前置检查 (MUST)
+
+执行"完整工作流"前必须先运行前置检查，确保所有 skills、工具、MCP 能够正常工作：
+
+```bash
+bash scripts/workflow-preflight-check.sh
+```
+
+**检查项：**
+- [ ] CodeGraph 已安装（`codegraph --version`）
+- [ ] Understand-Anything 已安装（`~/.understand-anything-plugin` 存在）
+- [ ] Graphify 已安装（`graphify --version`）
+- [ ] GStack-OpenCode 已安装（16 个技能）
+- [ ] Superpowers 已安装（14 个技能）
+- [ ] CodeGraph 索引已初始化（`.codegraph/` 存在）
+
+**只有前置检查通过（无错误）后才执行完整工作流。**警告可继续，但部分功能可能受限。
+
 ## 项目特定规则
 
 - 改 `index.js` / `server/*` 前必须先写测试
