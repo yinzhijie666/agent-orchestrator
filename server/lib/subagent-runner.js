@@ -8,9 +8,9 @@ import MiniMaxClient from "./model-clients/minimax-client.js";
 
 const MODEL_MAP = {
   deepseek: (config) => new DeepSeekClient(config.models.deepseek),
-  minimax: (config) => new MiniMaxClient(config.models.minimax),
-  cheap: (config) => new MiniMaxClient(config.models.minimax),
-  default: (config) => new MiniMaxClient(config.models.minimax),
+  minimax: (config) => new DeepSeekClient(config.models.minimax),  // DeepSeek V4 Flash Free via OpenCode Zen
+  cheap: (config) => new DeepSeekClient(config.models.minimax),    // DeepSeek V4 Flash Free via OpenCode Zen
+  default: (config) => new DeepSeekClient(config.models.minimax),  // DeepSeek V4 Flash Free via OpenCode Zen
 };
 
 function pickClient(config, modelName) {
@@ -47,12 +47,28 @@ Output schema (strict JSON, no markdown fencing):
 }`;
 
 export class SubagentRunner {
+  /**
+   * @param {Object} config - Full plugin config
+   * @param {Object} config.auto_exec - Auto-execution settings
+   * @param {Object} config.models - Model configurations
+   */
   constructor(config) {
     this.config = config;
     this.defaultTimeoutMs = config?.auto_exec?.timeout_ms || 90000;
     this.deepseekClient = new DeepSeekClient(config.models.deepseek);
   }
 
+  /**
+   * Run a subagent with the given prompt.
+   * @param {string} prompt - The instruction prompt for the subagent
+   * @param {Object} [options={}] - Execution options
+   * @param {string} [options.model] - Model name (default: "cheap")
+   * @param {Object} [options.client] - Pre-configured model client
+   * @param {number} [options.timeoutMs] - Timeout in milliseconds
+   * @param {Object} [options.fallbackClient] - Fallback model client
+   * @param {number} [options.maxTokens] - Max output tokens (default: 8000)
+   * @returns {Promise<{success: boolean, result: Object, durationMs: number, model: string, fallback: boolean}>}
+   */
   async run(prompt, options = {}) {
     const modelName = options.model || this.config?.auto_exec?.model || "cheap";
     const client = options.client || pickClient(this.config, modelName);
