@@ -16,6 +16,7 @@ import internalEventRouter from "./api/internal-event.js";
 // WebSocket
 import { setupWebSocket, broadcaster } from "./websocket/server.js";
 import { markAsServerProcess } from "./lib/events.js";
+import { authenticate } from "./lib/auth.js";
 markAsServerProcess();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -28,12 +29,6 @@ const initDb = new Database(DB_PATH, { create: true });
 initDb.exec(SCHEMA_SQL);
 initDb.close();
 console.log(`[server] Database initialized at ${DB_PATH}`);
-
-import { DB } from "./lib/db.js";
-const _db = new DB(DB_PATH);
-const cleaned = _db.cleanupActivityLog();
-if (cleaned.changes > 0) console.log(`[server] Cleaned up ${cleaned.changes} old activity_log entries`);
-_db.close();
 
 const PORT = parseInt(process.env.AGENT_ORCHESTRATOR_PORT) || config.server.port || 8765;
 const HOST = config.server.host || "127.0.0.1";
@@ -53,6 +48,17 @@ async function handleRequest(req) {
 
   if (method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
+  // Auth check (skip dashboard and OPTIONS)
+  if (path !== "/" && path !== "/dashboard") {
+    const authError = authenticate(req);
+    if (authError) {
+      return new Response(JSON.stringify({ error: authError.error }), {
+        status: authError.status,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
   }
 
     try {
