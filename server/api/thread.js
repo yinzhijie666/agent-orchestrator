@@ -3,10 +3,10 @@ import db from "../lib/db.js";
 
 const threadRouter = {
   async createThread(req) {
-    const body = req.json ? await req.json() : {};
-    // Note: threads are created automatically when plans are created
-    // This endpoint is for manual thread creation if needed
-    return new Response(JSON.stringify({ message: 'Threads are auto-created with plans' }), { status: 200 });
+    return new Response(JSON.stringify({
+      error: 'Threads are auto-created with plans. Use POST /api/plans instead.',
+      hint: 'Thread creation is not supported as a standalone operation.'
+    }), { status: 405 });
   },
 
   getThread(req, params) {

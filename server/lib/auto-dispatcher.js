@@ -110,18 +110,6 @@ export class AutoDispatcher {
     }
   }
 
-  async _dispatchViaServer(prompt, options) {
-    return {
-      status: "failure",
-      mode: "server",
-      executed_skills: [],
-      p0_failures: [],
-      summary: "D2 server dispatch is disabled (opencode 1.15.13 run --attach bug); D1 will be used instead",
-      _serverUrl: this.server?.url,
-      _note: "Server is running for health/observability; actual dispatch falls back to D1",
-    };
-  }
-
   async stop() {
     if (!this.server) {
       return { stopped: false, reason: "no server" };

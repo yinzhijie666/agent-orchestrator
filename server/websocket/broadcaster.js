@@ -14,7 +14,7 @@ class WebSocketBroadcaster {
     console.log(`[WS] Client disconnected. Total: ${this.clients.size}`);
   }
 
-  broadcast(type, payload) {
+  broadcast(type, payload, planId = null) {
     const message = JSON.stringify({
       type,
       payload,
@@ -23,10 +23,10 @@ class WebSocketBroadcaster {
 
     let sent = 0;
     this.clients.forEach(client => {
-      if (client.readyState === 1) { // WebSocket.OPEN
-        try { client.send(message); sent++; }
-        catch (e) { console.warn('[WS] send failed:', e.message); }
-      }
+      if (client.readyState !== 1) return;
+      if (planId && client.data?.subscribedPlans?.size > 0 && !client.data.subscribedPlans.has(planId)) return;
+      try { client.send(message); sent++; }
+      catch (e) { console.warn('[WS] send failed:', e.message); }
     });
 
     console.log(`[WS] Broadcasted "${type}" to ${sent} clients`);

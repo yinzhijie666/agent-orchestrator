@@ -48,7 +48,7 @@ describe("Kimi Prompts", () => {
     const systemMsg = sentMessages[0].messages[0].content;
     expect(systemMsg).toContain("Superpowers[14]");
     expect(systemMsg).toContain("GStack[16]");
-    expect(systemMsg).toContain("CodeGraph[9]");
+    expect(systemMsg).toContain("CodeGraph[16]");
     expect(systemMsg).toContain("云端[76类]");
   });
 

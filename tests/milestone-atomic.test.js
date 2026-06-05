@@ -5,7 +5,7 @@ import { rm } from "node:fs/promises";
 import { Database } from "bun:sqlite";
 import { DB } from "../server/lib/db.js";
 import { SCHEMA_SQL } from "../server/lib/db-schema.js";
-import { AgentRouter, MilestoneManager } from "../server/lib/agent-router.js";
+import { MilestoneManager } from "../server/lib/milestone-manager.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

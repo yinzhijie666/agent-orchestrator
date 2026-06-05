@@ -10,7 +10,8 @@ describe("Round 4: Prompt + Skills fixes", () => {
         { tier: "P0_critical", entry: "codegraph_context", type: "codegraph", value: "codegraph_context" },
         { tier: "P1_important", entry: "/qa", type: "command", value: "/qa" },
       ];
-      const prompt = AutoExecutor.buildPrompt(skills, { planId: "p1", title: "Test" });
+      const result = AutoExecutor.buildPrompt(skills, { planId: "p1", title: "Test" });
+      const prompt = result.prompt || result;
       // JSON schema example uses "P0" as representative tier
       expect(prompt).toContain('"tier": "P0"');
       // Tier headers use short names
@@ -25,7 +26,8 @@ describe("Round 4: Prompt + Skills fixes", () => {
       const skills = [
         { tier: "P0_critical", entry: "codegraph_context", type: "codegraph", value: "codegraph_context" },
       ];
-      const prompt = AutoExecutor.buildPrompt(skills, { planId: "p1", title: "Test" });
+      const result = AutoExecutor.buildPrompt(skills, { planId: "p1", title: "Test" });
+      const prompt = result.prompt || result;
       expect(prompt).toContain('"name": "codegraph_context"');
       expect(prompt).toContain('"result": "completed"');
       // "status" appears in top-level schema ("status": "success" | "partial" | "failure") — that's OK
@@ -39,7 +41,8 @@ describe("Round 4: Prompt + Skills fixes", () => {
       const skills = [
         { tier: "P0_critical", entry: "test", type: "skill", value: "test" },
       ];
-      const prompt = AutoExecutor.buildPrompt(skills, { planId: "p1", title: "Test" });
+      const result = AutoExecutor.buildPrompt(skills, { planId: "p1", title: "Test" });
+      const prompt = result.prompt || result;
       expect(prompt).toContain('"p0_failures": []');
       expect(prompt).not.toContain('"p0_failures": 0');
     });
@@ -48,7 +51,8 @@ describe("Round 4: Prompt + Skills fixes", () => {
       const skills = [
         { tier: "P0_critical", entry: "a", type: "skill", value: "a" },
       ];
-      const prompt = AutoExecutor.buildPrompt(skills, { planId: "p1", title: "Test" });
+      const result = AutoExecutor.buildPrompt(skills, { planId: "p1", title: "Test" });
+      const prompt = result.prompt || result;
       expect(prompt).toContain("P0 (BLOCKING");
       expect(prompt).not.toContain("P0_critical (BLOCKING");
     });
@@ -63,7 +67,7 @@ describe("Round 4: Prompt + Skills fixes", () => {
     test("contains all expected capability categories", () => {
       expect(CAPABILITY_LIST).toContain("Superpowers[14]");
       expect(CAPABILITY_LIST).toContain("GStack[16]");
-      expect(CAPABILITY_LIST).toContain("CodeGraph[9]");
+      expect(CAPABILITY_LIST).toContain("CodeGraph[16]");
       expect(CAPABILITY_LIST).toContain("云端[76类]");
     });
 
@@ -88,7 +92,7 @@ describe("Round 4: Prompt + Skills fixes", () => {
       await client.generatePlan("Test");
       const systemMsg = capturedMessages[0].content;
       expect(systemMsg).toContain("Superpowers[14]");
-      expect(systemMsg).toContain("CodeGraph[9]");
+      expect(systemMsg).toContain("CodeGraph[16]");
     });
 
     test("analyzeTaskMode uses CAPABILITY_LIST", async () => {
@@ -105,7 +109,7 @@ describe("Round 4: Prompt + Skills fixes", () => {
       await client.analyzeTaskMode("Test");
       const systemMsg = capturedMessages[0].content;
       expect(systemMsg).toContain("Superpowers[14]");
-      expect(systemMsg).toContain("CodeGraph[9]");
+      expect(systemMsg).toContain("CodeGraph[16]");
     });
   });
 

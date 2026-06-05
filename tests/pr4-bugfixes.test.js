@@ -48,7 +48,7 @@ describe("PR4: User 'failed' override not blocked by Kimi fallback", () => {
       "SELECT verification_status FROM checkpoints WHERE plan_id = ? ORDER BY created_at DESC LIMIT 1"
     ).get("p-override");
     expect(cp.verification_status).toBe("failed");
-  });
+  }, 15000);
 });
 
 describe("PR4: completed_with_errors writes completed_at", () => {

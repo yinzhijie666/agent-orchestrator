@@ -11,6 +11,11 @@
 //
 // Subagents dispatched from this prompt do NOT inherit system.transform
 // modifications or session context, so the prompt must be self-contained.
+//
+// HYBRID MODE: Only AUTO-classified skills are sent to subagent.
+// INTERACTIVE and TOOL_REQUIRED skills are returned separately for main session execution.
+
+import { createDefaultClassifier } from './skill-classifier.js';
 
 const DEFAULT_MAX_SKILLS = 20;
 
@@ -55,10 +60,12 @@ export class AutoExecutor {
 
   /**
    * Build a self-contained subagent prompt from a list of parsed skills.
+   * HYBRID MODE: Filters out INTERACTIVE and TOOL_REQUIRED skills,
+   * only includes AUTO skills in the subagent prompt.
    *
    * @param {Array<{tier: string, entry: string, type: string, value: string}>} skills
    * @param {{planId: string, title: string, goal?: string}} planContext
-   * @returns {string} complete subagent prompt
+   * @returns {{prompt: string|null, autoSkills: Array, manualSkills: Array}} prompt + classified skills
    */
   static buildPrompt(skills, planContext) {
     const ctx = planContext || {};
@@ -66,9 +73,31 @@ export class AutoExecutor {
     const title = ctx.title || 'Untitled Plan';
     const goal = ctx.goal || title;
 
-    // Group skills by tier, preserving order
-    const grouped = { P0_critical: [], P1_important: [], P2_nice_to_have: [] };
+    // Classify skills and split into auto vs manual
+    const classifier = createDefaultClassifier();
+    const autoSkills = [];
+    const manualSkills = [];
+
     for (const s of skills) {
+      const skillName = s.value || s.entry;
+      const classification = classifier.classify(skillName, classifier.skillEntries.find(e => e.name === skillName)?.path || '');
+      const enriched = { ...s, category: classification.category };
+
+      if (classification.category === 'AUTO') {
+        autoSkills.push(enriched);
+      } else {
+        manualSkills.push(enriched);
+      }
+    }
+
+    // If no AUTO skills, return null prompt
+    if (autoSkills.length === 0) {
+      return { prompt: null, autoSkills: [], manualSkills };
+    }
+
+    // Group AUTO skills by tier, preserving order
+    const grouped = { P0_critical: [], P1_important: [], P2_nice_to_have: [] };
+    for (const s of autoSkills) {
       const tier = grouped[s.tier] ? s.tier : 'P2_nice_to_have';
       grouped[tier].push(s);
     }
@@ -127,7 +156,7 @@ Return ONLY this JSON object (no prose before or after):
 }
 `);
 
-    return sections.join('');
+    return { prompt: sections.join(''), autoSkills, manualSkills };
   }
 
   /**

@@ -1,7 +1,8 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test";
 import db from "../server/lib/db.js";
-import { AgentRouter, MilestoneManager } from "../server/lib/agent-router.js";
+import { MilestoneManager } from "../server/lib/milestone-manager.js";
 import PlanParser from "../server/lib/plan-parser.js";
+import KimiClient from "../server/lib/model-clients/kimi-client.js";
 
 describe("Phase 1: Infrastructure", () => {
   test("Database initialized", () => {
@@ -22,26 +23,30 @@ describe("Phase 1: Infrastructure", () => {
 });
 
 describe("Phase 2: Core Libraries", () => {
-  let router;
   let milestoneManager;
+  let kimiClient;
 
   beforeAll(() => {
-    router = new AgentRouter();
     milestoneManager = new MilestoneManager(4);
+    kimiClient = new KimiClient({
+      api_key_env: "KIMI_API_KEY",
+      base_url: "http://127.0.0.1:1",
+      model: "kimi",
+      max_tokens: 100,
+      provider: "kimi",
+    });
   });
 
-  test("Agent Router routes tasks correctly", () => {
-    expect(router.route("planning")).toBe("kimi");
-    expect(router.route("coding")).toBe("deepseek");
-    expect(router.route("search")).toBe("minimax");
-    expect(router.route("unknown")).toBe("kimi"); // default
+  test("KimiClient.analyzeTaskMode routes tasks correctly", async () => {
+    kimiClient.chat = async () => JSON.stringify({ mode: "build", reason: "coding" });
+    const result = await kimiClient.analyzeTaskMode("Build a feature");
+    expect(result.mode).toBe("build");
   });
 
-  test("Agent Router delegation rules", () => {
-    expect(router.canDelegate("kimi", "coding")).toBe(true);
-    expect(router.canDelegate("kimi", "search")).toBe(true);
-    expect(router.canDelegate("deepseek", "search")).toBe(true);
-    expect(router.canDelegate("minimax", "coding")).toBe(false);
+  test("KimiClient.analyzeTaskMode returns plan for analysis tasks", async () => {
+    kimiClient.chat = async () => JSON.stringify({ mode: "plan", reason: "research" });
+    const result = await kimiClient.analyzeTaskMode("Research a topic");
+    expect(result.mode).toBe("plan");
   });
 
   test("Plan Parser validates correctly", () => {

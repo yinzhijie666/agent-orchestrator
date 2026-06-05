@@ -120,9 +120,19 @@ class DB {
     const keys = Object.keys(updates);
     const datetimeFields = ['updated_at', 'created_at'];
     const sql = `UPDATE agent_threads SET ${keys.map(k => `${k} = ?`).join(', ')} WHERE id = ?`;
-    const values = keys.map(k => datetimeFields.includes(k) ? updates[k] : JSON.stringify(updates[k]));
+    const values = keys.map(k => {
+      if (datetimeFields.includes(k)) return updates[k];
+      if (typeof updates[k] === 'string') return updates[k];
+      return JSON.stringify(updates[k]);
+    });
     this.db.prepare(sql).run(...values, id);
     return this.getThread(id);
+  }
+
+  getRecentPlans(limit = 10) {
+    return this.db.prepare(
+      "SELECT * FROM plans ORDER BY created_at DESC LIMIT ?"
+    ).all(limit);
   }
 
   // Messages

@@ -15,7 +15,10 @@ class PlanParser {
     const errors = [];
 
     if (!plan.title) errors.push('Plan must have a title');
-    if (!Array.isArray(plan.items)) errors.push('Plan must have items array');
+    if (!Array.isArray(plan.items)) {
+      errors.push('Plan must have items array');
+      return { valid: false, errors };
+    }
     if (plan.items.length === 0) errors.push('Plan must have at least one item');
 
     plan.items.forEach((item, idx) => {

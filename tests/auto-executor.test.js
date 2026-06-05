@@ -13,7 +13,8 @@ describe("AutoExecutor.buildPrompt", () => {
       { tier: "P1_important", entry: "/qa", type: "command", value: "/qa" },
       { tier: "P0_critical", entry: "codegraph_context", type: "codegraph", value: "codegraph_context" },
     ];
-    const prompt = AutoExecutor.buildPrompt(skills, PLAN_CTX);
+    const result = AutoExecutor.buildPrompt(skills, PLAN_CTX);
+    const prompt = result.prompt;
     const p0Idx = prompt.indexOf("P0 (BLOCKING");
     const p1Idx = prompt.indexOf("P1 (Sequential");
     expect(p0Idx).toBeGreaterThan(-1);
@@ -24,7 +25,8 @@ describe("AutoExecutor.buildPrompt", () => {
     const skills = [
       { tier: "P0_critical", entry: "codegraph_context", type: "codegraph", value: "codegraph_context" },
     ];
-    const prompt = AutoExecutor.buildPrompt(skills, PLAN_CTX);
+    const result = AutoExecutor.buildPrompt(skills, PLAN_CTX);
+    const prompt = result.prompt;
     expect(prompt).toContain("P0 (BLOCKING");
     expect(prompt).not.toContain("P1 (Sequential");
     expect(prompt).not.toContain("P2 (May be skipped");
@@ -34,7 +36,8 @@ describe("AutoExecutor.buildPrompt", () => {
     const skills = [
       { tier: "P0_critical", entry: "codegraph_context", type: "codegraph", value: "codegraph_context" },
     ];
-    const prompt = AutoExecutor.buildPrompt(skills, PLAN_CTX);
+    const result = AutoExecutor.buildPrompt(skills, PLAN_CTX);
+    const prompt = result.prompt;
     expect(prompt).toContain("Plan ID: plan-42");
     expect(prompt).toContain("Title: Test Plan");
     expect(prompt).toContain("Goal: Test the auto-executor");
@@ -44,7 +47,8 @@ describe("AutoExecutor.buildPrompt", () => {
     const skills = [
       { tier: "P0_critical", entry: "codegraph_context", type: "codegraph", value: "codegraph_context" },
     ];
-    const prompt = AutoExecutor.buildPrompt(skills, PLAN_CTX);
+    const result = AutoExecutor.buildPrompt(skills, PLAN_CTX);
+    const prompt = result.prompt;
     expect(prompt).toContain("Do NOT call `agent`");
     expect(prompt).toContain("recursion prevention");
     expect(prompt).toContain("agent_execute_skills");
@@ -54,7 +58,8 @@ describe("AutoExecutor.buildPrompt", () => {
     const skills = [
       { tier: "P0_critical", entry: "codegraph_context", type: "codegraph", value: "codegraph_context" },
     ];
-    const prompt = AutoExecutor.buildPrompt(skills, PLAN_CTX);
+    const result = AutoExecutor.buildPrompt(skills, PLAN_CTX);
+    const prompt = result.prompt;
     expect(prompt).toContain('"plan_id"');
     expect(prompt).toContain('"executed_skills"');
     expect(prompt).toContain('"p0_failures"');

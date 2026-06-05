@@ -49,7 +49,7 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
       const analysisResult = await kimiClient.chatWithFallback([
         {
           role: 'system',
-          content: '你是分析 agent。只读分析任务，提供深入见解。不要写代码。分析结束时给出明确的结论和建议。\n\n可用能力清单（推荐 3-5 项）:\n云端[76类]: frontend backend cloud security ai-ml testing database mobile devops\nSuperpowers[14]: brainstorming test-driven-development systematic-debugging\nGStack[16]: /qa /review /browse /ship /design-review\n本地: /understand-explain /understand-diff /graphify query verify.sh oh-my-memory\nCodeGraph[9]: codegraph_context codegraph_search codegraph_impact codegraph_explore'
+          content: '你是分析 agent。只读分析任务，提供深入见解。不要写代码。分析结束时给出明确的结论和建议。\n\n可用能力清单（推荐 3-5 项）:\n云端[76类]: frontend backend cloud security ai-ml testing database mobile devops\nSuperpowers[14]: brainstorming test-driven-development systematic-debugging\nGStack[16]: /qa /review /browse /ship /design-review\n本地: /understand-explain /understand-diff /graphify query verify.sh oh-my-memory\nCodeGraph[16]: codegraph_context codegraph_query codegraph_callers codegraph_callees codegraph_impact codegraph_files codegraph_status codegraph_init codegraph_index codegraph_sync codegraph_serve codegraph_unlock codegraph_affected codegraph_install codegraph_uninstall'
         },
         {
           role: 'user',
@@ -78,6 +78,10 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
   emitPlanCreated(planId, planDoc);
   if (fallbackUsed) {
     emitModelFallback('kimi', 'deepseek', 'plan_generation');
+  }
+
+  if (!db) {
+    return { mode: 'build', planId: null, title: 'Error: DB unavailable', items: '', itemCount: 0, execSummary: '❌ Database unavailable', completedCount: 0, failedCount: 0, fallback: false, recommendations: null, suggested_skills: {} };
   }
 
   // Auto-execution pump: execute items sequentially by assigned agent
@@ -234,7 +238,6 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
   }
 
   let autoDispatcher = null;
-  let autoDispatcherTransient = false;
   try {
     const autoDispatchDisabled = process.env.AUTO_EXEC_DISPATCH === 'false' || process.env.AUTO_EXEC_DISABLED === 'true';
     if (autoDispatchDisabled) {
@@ -243,7 +246,6 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
       autoDispatcher = new AutoDispatcher(config);
       const startResult = await autoDispatcher.start();
       if (startResult.started) {
-        autoDispatcherTransient = true;
         console.log('[AgentOrchestrator] AutoDispatcher started: D2 url=' + startResult.url);
         attachDispatcherSignalHandlers(autoDispatcher);
       } else {
@@ -471,7 +473,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
 
               const icon = reviewResult.status === 'passed' ? '✅' : '❌';
               const fallbackNote = fallbackUsed ? '\n⚠️ Kimi was unavailable, auto-passed.' : '';
-              emitCheckpointVerified(pending.id, reviewResult.status);
+              emitCheckpointVerified(pending.id, reviewResult.status, plan_id);
               return { output: `${icon} Checkpoint verified: ${reviewResult.status}\nFeedback: ${reviewResult.feedback}\nMilestone: item ${pending.milestone_idx}${fallbackNote}` };
             }
 
@@ -541,12 +543,26 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
               title: planDoc.title || 'Untitled Plan',
               goal: planDoc.goal || planDoc.title || 'See plan for details',
             };
-            const autoExecPrompt = autoExecEnabled
-              ? AutoExecutor.buildPrompt(validated, planContext)
-              : null;
 
-            // D1 subagent has no tool access — skip dispatch, use fallback path
-            const autoDispatched = false;
+            // Hybrid execution: split skills into AUTO (subagent) and MANUAL (main session)
+            const buildResult = autoExecEnabled
+              ? AutoExecutor.buildPrompt(validated, planContext)
+              : { prompt: null, autoSkills: [], manualSkills: validated };
+            const autoExecPrompt = buildResult.prompt;
+            const autoSkills = buildResult.autoSkills;
+            const manualSkills = buildResult.manualSkills;
+
+            // Build manual instructions for INTERACTIVE + TOOL_REQUIRED skills
+            const manualInstructions = manualSkills.map(s => ({
+              name: s.value || s.entry,
+              category: s.category || 'UNKNOWN',
+              tier: s.tier,
+              instruction: s.category === 'INTERACTIVE'
+                ? `Call the \`skill\` tool with name="${s.value || s.entry}" and follow its instructions. Requires user interaction.`
+                : `Call the \`skill\` tool with name="${s.value || s.entry}" and follow its instructions. Requires specific tools (bash/browse).`,
+            }));
+
+            const autoDispatched = !!(autoDispatcher && autoDispatcher.d2Enabled);
             const dispatchResult = null;
 
             return {
@@ -554,22 +570,33 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 plan_id: plan.id,
                 skills_to_execute: validated,
                 total: validated.length,
-                auto_exec: (autoExecEnabled && autoDispatched) ? {
+                breakdown: {
+                  INTERACTIVE: manualSkills.filter(s => s.category === 'INTERACTIVE').map(s => s.value || s.entry),
+                  TOOL_REQUIRED: manualSkills.filter(s => s.category === 'TOOL_REQUIRED').map(s => s.value || s.entry),
+                  AUTO: autoSkills.map(s => s.value || s.entry),
+                },
+                auto_exec: (autoExecEnabled && autoDispatched && autoExecPrompt) ? {
                   mode: 'subagent',
                   prompt: autoExecPrompt,
                   trigger: 'Call the task tool with subagent_type="general" and prompt=auto_exec.prompt',
                   model: process.env.AUTO_EXEC_MODEL || AUTO_EXEC_DEFAULTS.model || 'cheap',
+                  skills_count: autoSkills.length,
                 } : null,
+                manual_instructions: manualInstructions,
+                manual_count: manualInstructions.length,
+                auto_count: autoSkills.length,
                 auto_dispatched: autoDispatched,
                 dispatch_result: autoDispatched ? dispatchResult : null,
                 dispatcher_status: autoDispatcher ? autoDispatcher.getStatus() : null,
                 next_step: autoDispatched
                   ? `Subagent auto-dispatched. ${dispatchResult?.summary || 'See dispatch_result.'}`
-                  : (autoExecEnabled
-                    ? 'D1 subagent has no tool access. Execute skills manually in P0 → P1 → P2 order.'
-                    : (validated.length > 0
-                      ? 'Auto-exec disabled. Manually execute each skill in P0 → P1 → P2 order.'
-                      : 'No skills suggested. Proceed with normal execution.'))
+                  : (manualInstructions.length > 0
+                    ? `Execute ${manualInstructions.length} manual skills in main session (P0 → P1 → P2): ${manualInstructions.map(s => s.name).join(', ')}`
+                    : (autoExecEnabled
+                      ? 'All skills auto-executable. D1 subagent dispatched.'
+                      : (validated.length > 0
+                        ? 'Auto-exec disabled. Manually execute each skill in P0 → P1 → P2 order.'
+                        : 'No skills suggested. Proceed with normal execution.')))
               }, null, 2)
             };
           } catch (err) {
@@ -580,6 +607,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
       },
 
     "experimental.chat.system.transform": async (_input, output) => {
+      if (output.system.includes('Agent Orchestrator — MANDATORY EXECUTION FLOW')) return;
       output.system += `
 
 ## Agent Orchestrator — MANDATORY EXECUTION FLOW
@@ -615,20 +643,24 @@ After every \`agent\` call:
 
 4. **Never** silently ignore \`suggested_skills\`. They are part of the plan output.
 
-### Subagent Auto-Execution (preferred path)
-When \`agent_execute_skills\` returns an \`auto_exec.prompt\` field AND \`auto_dispatched\` is true:
-1. **Immediately** call \`task\` with subagent_type="general" and pass the ENTIRE \`auto_exec.prompt\` as the prompt
-2. The subagent has isolated context (do NOT re-inject MANDATORY EXECUTION FLOW)
-3. Read the subagent's JSON return value
-4. Present \`executed_skills[]\` results to the user in P0→P1→P2 order
-5. If \`status === "failure"\`, surface the \`p0_failures\` field
+### Subagent Auto-Execution (HYBRID MODE)
+When \`agent_execute_skills\` returns, it contains THREE groups:
+- \`breakdown.INTERACTIVE\` → Skills requiring user interaction (execute in main session)
+- \`breakdown.TOOL_REQUIRED\` → Skills requiring specific tools (execute in main session)
+- \`breakdown.AUTO\` → Skills that can run headlessly (dispatch to subagent)
 
-### Fallback (when auto_exec is null or auto_dispatched is false)
-The D1 subagent has no tool access, so you must execute skills yourself:
-- Read \`skills_to_execute[]\` from the agent_execute_skills output
-- Iterate in tier order: P0 first, then P1, then P2
-- Map each skill type to the appropriate tool:
-  - \`skill\` → call the \`skill\` tool with the skill name
+**Execution order:**
+1. If \`auto_exec.prompt\` exists → call \`task\` with subagent_type="general" to execute AUTO skills
+2. Read \`manual_instructions[]\` → execute each INTERACTIVE/TOOL_REQUIRED skill in main session
+3. Present combined results to user
+
+### Manual Skill Execution (INTERACTIVE + TOOL_REQUIRED)
+When \`manual_instructions[]\` is non-empty:
+- Iterate through \`manual_instructions\` in order
+- For each skill: call \`skill <name>\` and follow its SKILL.md instructions
+- INTERACTIVE skills will prompt the user for input (Q&A, approval, choices)
+- TOOL_REQUIRED skills will need bash/browse tools
+- Record each skill's execution result
   - \`command\` → run the slash command
   - \`codegraph\` → call the codegraph MCP tool
   - \`memory\` → search oh-my-memory

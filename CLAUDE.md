@@ -26,21 +26,21 @@ bash scripts/workflow-preflight-check.sh
 
 **核心区分：**
 - **Phase 1-4**（工作流）= 纯分析，不修改代码，不触发 P0 技能
-- **Phase 5**（审计修复）= 实施活动，修改代码，触发 P0 技能
+- **Phase 5**（问题修复）= 实施活动，修改代码，触发 P0 技能
 
-## 审计修复
+## 问题修复
 
-审计发现问题后，执行审计修复流程（Phase 5）：
-1. 输出审计报告
+审计或分析发现问题后，执行问题修复流程（Phase 5）：
+1. 输出问题清单
 2. 制定修复方案（writing-plans）
 3. 逐个 Task 修复（TDD + verification）
 4. finishing-a-development-branch
 
-详细流程见 [AUDIT.md](AUDIT.md)。
+详细流程见 [AUDIT.md](~/.config/opencode/AUDIT.md)。
 
 ## P0 技能触发规则
 
-P0 技能在**审计修复阶段**触发，不在工作流分析阶段触发：
+P0 技能在**问题修复阶段**触发，不在工作流分析阶段触发：
 
 | P0 技能             | 触发条件                     | 验证                |
 | ------------------- | ---------------------------- | ------------------- |
@@ -62,3 +62,49 @@ After any `agent` tool call, you MUST:
 - 所有用户请求 → 静默调用 `agent task="<request>"` 优先
 - 不要让用户自己调 `agent`
 - 简单问题, agent 会自动选 `plan` 模式
+
+---
+
+## 项目审计 checklist
+
+以下 checklist 针对 agent-orchestrator 项目，Phase 4 审计时必须执行。
+通用审计 checklist 见 [AUDIT.md](~/.config/opencode/AUDIT.md)。
+
+### Round 1-3: Full Audit
+
+- Schema duplication（plugin vs server vs tests）
+- Path consistency（plugin vs API behavior）
+- D1/D2 fallback chain
+- Dispatcher counter semantics
+- Dashboard real-time events
+- HTTP bridge（plugin → server）
+
+### Round 4: Prompt + Skills Alignment
+
+- AutoExecutor output schema vs SubagentRunner input schema
+- `json_mode` vs output format consistency
+- `suggested_skills` default values（`{}` vs `[]`）
+- `CAPABILITY_LIST` shared constant extraction
+- Empty skills check（no header when no skills）
+- `reviewCheckpoint` plan context
+
+### Round 5: D1 Skills Execution
+
+- D1 subagent has no tool access（raw LLM API call）
+- Verify `completedSkills.length` check after dispatch
+- Verify `auto_exec=null` when no skills completed
+- Verify fallback path triggers correctly
+
+### Round 6: Fallback Clarity
+
+- `generateRecommendations` uses `CAPABILITY_LIST`
+- system.transform fallback instructions updated
+- `dispatch_result` condition（only when `autoDispatched=true`）
+- `next_step` wording accuracy
+
+### Round 7: Global Config Consistency
+
+- Global CLAUDE.md loaded via OpenCode `instructions` field
+- CLAUDE.md aligned with system.transform
+- CAPABILITY_LIST includes all available capabilities
+- Cross-reference with CLAUDE.md and CAPABILITIES.md

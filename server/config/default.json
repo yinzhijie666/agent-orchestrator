@@ -13,7 +13,7 @@
     "model": "cheap",
     "timeout_ms": 90000,
     "dispatcher": {
-      "prefer": "auto",
+      "prefer": "run",
       "server": {
         "port_range": [14096, 14097, 14098, 14099],
         "startup_timeout_ms": 15000,
@@ -41,12 +41,47 @@
       "provider": "deepseek"
     },
     "minimax": {
-      "api_key_env": "MINIMAX_API_KEY",
-      "base_url": "https://api.minimax.chat/v1",
-      "model": "MiniMax-M3",
+      "api_key_env": "OPENCODE_API_KEY",
+      "base_url": "https://opencode.ai/zen/v1",
+      "model": "deepseek-v4-flash-free",
       "max_tokens": 128000,
       "temperature": 0.1,
-      "provider": "minimax"
+      "provider": "opencode-zen"
+    }
+  },
+  "workflow": {
+    "default_profile": "standard",
+    "profiles": {
+      "minimal": {
+        "phases": [1, 4],
+        "phase_1_steps": 4,
+        "phase_4_steps": 1,
+        "total_steps": 5,
+        "use_case": "日常 commit 前自检"
+      },
+      "standard": {
+        "phases": [1, 2, 4],
+        "phase_1_steps": 4,
+        "phase_2_steps": 31,
+        "phase_4_steps": 2,
+        "total_steps": 37,
+        "use_case": "重大功能前（推荐默认）"
+      },
+      "full": {
+        "phases": [1, 2, 3, 4],
+        "phase_1_steps": 4,
+        "phase_2_steps": 31,
+        "phase_3_steps": 32,
+        "phase_4_steps": 2,
+        "total_steps": 69,
+        "use_case": "发版、重大重构"
+      },
+      "audit": {
+        "extends": "full",
+        "extras": ["auto-generate-audit-report"],
+        "total_steps": 69,
+        "use_case": "审计场景，产出 audit-report-<date>.md"
+      }
     }
   }
 }

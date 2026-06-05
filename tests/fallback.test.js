@@ -1,27 +1,32 @@
 import { describe, test, expect } from "bun:test";
-import { AgentRouter } from "../server/lib/agent-router.js";
 import BaseModelClient from "../server/lib/model-clients/base-client.js";
 import KimiClient from "../server/lib/model-clients/kimi-client.js";
 import DeepSeekClient from "../server/lib/model-clients/deepseek-client.js";
 
 describe("Fallback Mechanism", () => {
-  describe("AgentRouter Fallback Chain", () => {
-    test("should have fallback chain for kimi", () => {
-      const router = new AgentRouter();
-      expect(router.hasFallback("kimi")).toBe(true);
-      expect(router.getFallbackModel("kimi")).toBe("deepseek");
+  describe("BaseModelClient chatWithFallback chain", () => {
+    test("BaseModelClient.shouldFallback returns true for network errors", () => {
+      const client = new BaseModelClient({
+        api_key_env: "TEST",
+        base_url: "http://x",
+        model: "m",
+        max_tokens: 100,
+      });
+      const err = new Error("ECONNREFUSED");
+      err.code = "ECONNREFUSED";
+      expect(client.shouldFallback(err)).toBe(true);
     });
 
-    test("should not have fallback for deepseek", () => {
-      const router = new AgentRouter();
-      expect(router.hasFallback("deepseek")).toBe(false);
-      expect(router.getFallbackModel("deepseek")).toBeNull();
-    });
-
-    test("should not have fallback for minimax", () => {
-      const router = new AgentRouter();
-      expect(router.hasFallback("minimax")).toBe(false);
-      expect(router.getFallbackModel("minimax")).toBeNull();
+    test("BaseModelClient.shouldFallback returns false for 401", () => {
+      const client = new BaseModelClient({
+        api_key_env: "TEST",
+        base_url: "http://x",
+        model: "m",
+        max_tokens: 100,
+      });
+      const err = new Error("Unauthorized");
+      err.status = 401;
+      expect(client.shouldFallback(err)).toBe(false);
     });
   });
 

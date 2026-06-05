@@ -43,6 +43,10 @@ class MiniMaxClient extends BaseModelClient {
   }
 
   // MiniMax is read-only - no write operations
+  static isReadOnly() {
+    return true;
+  }
+
   writeForbidden() {
     throw new Error('MiniMax agent is read-only. Write operations are forbidden.');
   }

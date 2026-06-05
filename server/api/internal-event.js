@@ -3,11 +3,11 @@ import broadcaster from "../websocket/broadcaster.js";
 const internalEventRouter = {
   async handleEvent(req) {
     try {
-      const { type, payload } = await req.json();
+      const { type, payload, planId } = await req.json();
       if (!type) {
         return new Response(JSON.stringify({ error: 'type required' }), { status: 400 });
       }
-      broadcaster.broadcast(type, payload || {});
+      broadcaster.broadcast(type, payload || {}, planId);
       return new Response(JSON.stringify({ ok: true }), { status: 200 });
     } catch (err) {
       return new Response(JSON.stringify({ error: err.message }), { status: 400 });

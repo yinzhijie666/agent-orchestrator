@@ -29,9 +29,9 @@ describe("Model Configuration", () => {
 
   test("MiniMax config has correct model name and base URL", () => {
     const mm = config.models.minimax;
-    expect(mm.model).toBe("MiniMax-M3");
-    expect(mm.base_url).toContain("api.minimax.chat");
-    expect(mm.api_key_env).toBe("MINIMAX_API_KEY");
+    expect(mm.model).toBe("deepseek-v4-flash-free");
+    expect(mm.base_url).toContain("opencode.ai");
+    expect(mm.api_key_env).toBe("OPENCODE_API_KEY");
     expect(mm.max_tokens).toBe(128000);
     expect(mm.temperature).toBe(0.1);
   });
@@ -39,7 +39,7 @@ describe("Model Configuration", () => {
   test("Models key environment variable names", () => {
     expect(config.models.kimi.api_key_env).toBe("OPENCODE_API_KEY");
     expect(config.models.deepseek.api_key_env).toBe("DEEPSEEK_API_KEY");
-    expect(config.models.minimax.api_key_env).toBe("MINIMAX_API_KEY");
+    expect(config.models.minimax.api_key_env).toBe("OPENCODE_API_KEY");
   });
 });
 
@@ -210,8 +210,8 @@ describe("Client Instantiation", () => {
 
   test("MiniMaxClient instantiates from config", () => {
     const client = new MiniMaxClient(config.models.minimax);
-    expect(client.model).toBe("MiniMax-M3");
-    expect(client.provider).toBe("minimax");
+    expect(client.model).toBe("deepseek-v4-flash-free");
+    expect(client.provider).toBe("opencode-zen");
   });
 });
 
