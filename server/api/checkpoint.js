@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
 import db from "../lib/db.js";
-import { MilestoneManager } from "../lib/agent-router.js";
+import { MilestoneManager } from "../lib/milestone-manager.js";
 import KimiClient from "../lib/model-clients/kimi-client.js";
 import DeepSeekClient from "../lib/model-clients/deepseek-client.js";
 import { emitCheckpointCreated, emitCheckpointVerified } from "../lib/events.js";
-import config from "../config/default.json" with { type: "json" };
+import { config } from "../lib/config.js";
 
 const checkpointRouter = {
   milestoneManager: new MilestoneManager(),
@@ -104,7 +104,7 @@ const checkpointRouter = {
         fallback_reason: fallbackUsed ? 'kimi_unavailable' : null
       };
 
-      emitCheckpointVerified(params.id, verifyResult.status);
+      emitCheckpointVerified(params.id, verifyResult.status, verifiedCheckpoint.plan_id);
 
       return new Response(JSON.stringify(response), { status: 200 });
     } catch (err) {

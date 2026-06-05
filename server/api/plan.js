@@ -3,7 +3,7 @@ import KimiClient from "../lib/model-clients/kimi-client.js";
 import DeepSeekClient from "../lib/model-clients/deepseek-client.js";
 import { PlanOrchestrator } from "../lib/plan-orchestrator.js";
 import { emitPlanActivated, emitPlanCompleted, emitPlanCreated, emitModelFallback } from "../lib/events.js";
-import config from "../config/default.json" with { type: "json" };
+import { config } from "../lib/config.js";
 
 const router = {
   kimiClient: new KimiClient(config.models.kimi),
