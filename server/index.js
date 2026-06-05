@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 // Config
 import config from "./config/default.json" with { type: "json" };
 import { SCHEMA_SQL } from "./lib/db-schema.js";
+import { runMigrations } from "./lib/db-migrate.js";
 
 // API Routers
 import planRouter from "./api/plan.js";
@@ -27,6 +28,7 @@ await mkdir(dirname(DB_PATH), { recursive: true });
 
 const initDb = new Database(DB_PATH, { create: true });
 initDb.exec(SCHEMA_SQL);
+runMigrations(initDb);
 initDb.close();
 console.log(`[server] Database initialized at ${DB_PATH}`);
 
