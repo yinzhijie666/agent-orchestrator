@@ -1,9 +1,26 @@
 import broadcaster from "./broadcaster.js";
 
+const HEARTBEAT_INTERVAL = 30000; // 30s
+
 function setupWebSocket() {
+  // Server-side heartbeat
+  const heartbeatTimer = setInterval(() => {
+    const now = Date.now();
+    for (const client of broadcaster.clients) {
+      if (client.readyState === 1) { // OPEN
+        if (client.data.lastPong && now - client.data.lastPong > HEARTBEAT_INTERVAL * 2) {
+          client.close();
+          broadcaster.removeClient(client);
+        } else {
+          broadcaster.sendTo(client, 'ping', { timestamp: now });
+        }
+      }
+    }
+  }, HEARTBEAT_INTERVAL);
+
   return {
     async open(ws) {
-      ws.data = { subscribedPlans: new Set() };
+      ws.data = { subscribedPlans: new Set(), lastPong: Date.now() };
       broadcaster.addClient(ws);
       broadcaster.sendTo(ws, 'connected', { message: 'Welcome to Agent Orchestrator' });
     },
@@ -23,6 +40,9 @@ function setupWebSocket() {
             if (data.plan_id) {
               ws.data.subscribedPlans.delete(data.plan_id);
             }
+            break;
+          case 'pong':
+            ws.data.lastPong = Date.now();
             break;
           case 'ping':
             broadcaster.sendTo(ws, 'pong', { timestamp: Date.now() });
