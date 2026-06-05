@@ -67,44 +67,55 @@ class BaseModelClient {
 
   // Chat with automatic fallback to another client
   async chatWithFallback(messages, options = {}, fallbackClient = null) {
-    try {
-      const result = await this.chat(messages, options);
-      return {
-        content: result,
-        _fallback: false,
-        _model: this.model,
-        _provider: this.provider
-      };
-    } catch (err) {
-      console.error(`[${this.constructor.name}] Primary failed:`, err.message);
-      
-      if (fallbackClient && this.shouldFallback(err)) {
-        console.log(`[Fallback] ${this.model} → ${fallbackClient.model}`);
-        
-        try {
-          const result = await fallbackClient.chat(messages, options);
-          return {
-            content: result,
-            _fallback: true,
-            _fallback_from: this.model,
-            _fallback_to: fallbackClient.model,
-            _fallback_reason: err.message,
-            _provider: fallbackClient.provider
-          };
-        } catch (fallbackErr) {
-          console.error(`[Fallback] ${fallbackClient.model} also failed:`, fallbackErr.message);
-          
-          const finalErr = new Error(
-            `Both ${this.model} and ${fallbackClient.model} failed. ` +
-            `Primary: ${err.message}, Fallback: ${fallbackErr.message}`
-          );
-          finalErr.primaryError = err;
-          finalErr.fallbackError = fallbackErr;
-          throw finalErr;
+    const maxRetries = 3;
+
+    // Primary with retry for 429
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const result = await this.chat(messages, options);
+        return {
+          content: result,
+          _fallback: false,
+          _model: this.model,
+          _provider: this.provider
+        };
+      } catch (err) {
+        // 429: retry with backoff
+        if (err.status === 429 && i < maxRetries - 1) {
+          await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+          continue;
         }
+
+        console.error(`[${this.constructor.name}] Primary failed:`, err.message);
+
+        if (fallbackClient && this.shouldFallback(err)) {
+          console.log(`[Fallback] ${this.model} → ${fallbackClient.model}`);
+
+          try {
+            const result = await fallbackClient.chat(messages, options);
+            return {
+              content: result,
+              _fallback: true,
+              _fallback_from: this.model,
+              _fallback_to: fallbackClient.model,
+              _fallback_reason: err.message,
+              _provider: fallbackClient.provider
+            };
+          } catch (fallbackErr) {
+            console.error(`[Fallback] ${fallbackClient.model} also failed:`, fallbackErr.message);
+
+            const finalErr = new Error(
+              `Both ${this.model} and ${fallbackClient.model} failed. ` +
+              `Primary: ${err.message}, Fallback: ${fallbackErr.message}`
+            );
+            finalErr.primaryError = err;
+            finalErr.fallbackError = fallbackErr;
+            throw finalErr;
+          }
+        }
+
+        throw err;
       }
-      
-      throw err;
     }
   }
 }
