@@ -7,24 +7,6 @@
 - 改动最小化，不要"顺手"优化
 - 多步任务先列计划再执行
 
-## 完整工作流前置检查 (MUST)
-
-执行"完整工作流"前必须先运行前置检查，确保所有 skills、工具、MCP 能够正常工作：
-
-```bash
-bash scripts/workflow-preflight-check.sh
-```
-
-**检查项：**
-- [ ] CodeGraph 已安装（`codegraph --version`）
-- [ ] Understand-Anything 已安装（`~/.understand-anything-plugin` 存在）
-- [ ] Graphify 已安装（`graphify --version`）
-- [ ] GStack-OpenCode 已安装（16 个技能）
-- [ ] Superpowers 已安装（14 个技能）
-- [ ] CodeGraph 索引已初始化（`.codegraph/` 存在）
-
-**只有前置检查通过（无错误）后才执行完整工作流。**警告可继续，但部分功能可能受限。
-
 ## 项目特定规则
 
 - 改 `index.js` / `server/*` 前必须先写测试
@@ -33,20 +15,47 @@ bash scripts/workflow-preflight-check.sh
 - 提示词改动需要更新 `tests/prompts.test.js` 中的断言
 - 三层模型调用走 `BaseModelClient.chatWithFallback()`，不要直接 `fetch()`
 
-## Skill Auto-Execution Protocol (MUST)
+## 完整工作流
+
+执行完整工作流前，运行前置检查：
+```bash
+bash scripts/workflow-preflight-check.sh
+```
+
+工作流定义见 [WORKFLOW.md](~/.config/opencode/WORKFLOW.md)（Phase 1-4 纯分析流程）。
+
+**核心区分：**
+- **Phase 1-4**（工作流）= 纯分析，不修改代码，不触发 P0 技能
+- **Phase 5**（审计修复）= 实施活动，修改代码，触发 P0 技能
+
+## 审计修复
+
+审计发现问题后，执行审计修复流程（Phase 5）：
+1. 输出审计报告
+2. 制定修复方案（writing-plans）
+3. 逐个 Task 修复（TDD + verification）
+4. finishing-a-development-branch
+
+详细流程见 [AUDIT.md](AUDIT.md)。
+
+## P0 技能触发规则
+
+P0 技能在**审计修复阶段**触发，不在工作流分析阶段触发：
+
+| P0 技能             | 触发条件                     | 验证                |
+| ------------------- | ---------------------------- | ------------------- |
+| brainstorming       | 任何新功能/修改/重构前       | spec doc 存在       |
+| writing-plans       | brainstorming 完成后         | plan doc 存在       |
+| TDD                 | 任何代码变更                 | RED→GREEN→REFACTOR  |
+| verification        | 任何"完成"声明前             | 5 步 Gate Function  |
+| finishing-branch    | 实施完成                     | 用户选择 4 选项     |
+
+## Skill Auto-Execution Protocol
 
 After any `agent` tool call, you MUST:
-
-1. **If output contains `💡 建议后续:`** → call `agent_execute_skills` tool
-2. **Execute returned skills in priority order**: P0 (blocking) → P1 (important) → P2 (optional)
-3. **Do NOT skip P0 items** under any circumstance
-4. **Do NOT silently ignore** the suggested_skills section
-
-Each entry type maps to:
-- `skill X` → call `skill X` tool
-- `/command` → call that command
-- `codegraph_X` → call that codegraph tool
-- `oh-my-memory search` → search memory vault
+1. If output contains `💡 建议后续:` → call `agent_execute_skills` tool
+2. Execute returned skills in priority order: P0 → P1 → P2
+3. Do NOT skip P0 items under any circumstance
 
 ## Routing Rule
 
