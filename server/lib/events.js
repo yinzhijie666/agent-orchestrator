@@ -7,15 +7,37 @@ export function markAsServerProcess() {
   isServerProcess = true;
 }
 
-function emit(type, payload) {
+async function fetchWithRetry(url, options, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const res = await fetch(url, options);
+      if (res.ok) return res;
+      if ((res.status === 429 || res.status >= 500) && i < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+        continue;
+      }
+      return res;
+    } catch (err) {
+      if (i < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
+function emit(type, payload, planId = null) {
   if (isServerProcess) {
-    try { broadcaster.broadcast(type, payload); } catch {}
+    try { broadcaster.broadcast(type, payload, planId); } catch {}
   } else {
-    fetch(PLUGIN_EMIT_URL, {
+    fetchWithRetry(PLUGIN_EMIT_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type, payload }),
-    }).catch(() => {});
+      body: JSON.stringify({ type, payload, planId }),
+    }).catch((err) => {
+      console.warn(`[events] emit ${type} failed after retries: ${err.message}`);
+    });
   }
 }
 
@@ -24,15 +46,15 @@ export function emitPlanCreated(planId, plan) {
     plan_id: planId,
     title: plan.title,
     items: plan.items.length,
-  });
+  }, planId);
 }
 
 export function emitPlanActivated(planId) {
-  emit("plan.activated", { plan_id: planId });
+  emit("plan.activated", { plan_id: planId }, planId);
 }
 
 export function emitPlanCompleted(planId, status) {
-  emit("plan.completed", { plan_id: planId, status });
+  emit("plan.completed", { plan_id: planId, status }, planId);
 }
 
 export function emitItemStarted(planId, item) {
@@ -41,7 +63,7 @@ export function emitItemStarted(planId, item) {
     agent: item.executor,
     title: item.title,
     idx: item.idx,
-  });
+  }, planId);
 }
 
 export function emitItemCompleted(planId, item, status) {
@@ -51,7 +73,7 @@ export function emitItemCompleted(planId, item, status) {
     title: item.title,
     idx: item.idx,
     status,
-  });
+  }, planId);
 }
 
 export function emitCheckpointCreated(planId, checkpointId, milestoneIdx) {
@@ -59,16 +81,16 @@ export function emitCheckpointCreated(planId, checkpointId, milestoneIdx) {
     plan_id: planId,
     checkpoint_id: checkpointId,
     milestone_idx: milestoneIdx,
-  });
+  }, planId);
 }
 
-export function emitCheckpointVerified(checkpointId, result) {
+export function emitCheckpointVerified(checkpointId, result, planId) {
   emit("checkpoint.verified", {
     checkpoint_id: checkpointId,
     result,
-  });
+  }, planId);
 }
 
-export function emitModelFallback(from, to, reason) {
-  emit("model.fallback", { from, to, reason });
+export function emitModelFallback(from, to, reason, planId = null) {
+  emit("model.fallback", { from, to, reason }, planId);
 }
