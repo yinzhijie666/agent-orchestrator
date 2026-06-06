@@ -4,7 +4,7 @@ import { SubagentRunner } from "../server/lib/subagent-runner.js";
 const cfg = {
   models: {
     deepseek: { api_key_env: "X", base_url: "x", model: "d" },
-    minimax: { api_key_env: "X", base_url: "x", model: "m" },
+    "opencode-zen": { api_key_env: "X", base_url: "x", model: "m" },
   },
   auto_exec: { model: "cheap", timeout_ms: 5000 },
 };

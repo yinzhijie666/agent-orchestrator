@@ -1,0 +1,446 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 4,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "CLAUDE.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 422,
+      "nonEmptyLines": 322,
+      "sections": [
+        {
+          "heading": "Agent Orchestrator — Project Rules",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "行为准则",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "完整工作流前置检查 (MUST)",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "工作流 Profile 系统",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "Phase 1: 知识图谱构建（4 步）",
+          "level": 2,
+          "line": 52
+        },
+        {
+          "heading": "检查点机制 (MUST)",
+          "level": 2,
+          "line": 81
+        },
+        {
+          "heading": "核心规则",
+          "level": 3,
+          "line": 85
+        },
+        {
+          "heading": "检查点类型",
+          "level": 3,
+          "line": 92
+        },
+        {
+          "heading": "产物新鲜度验证",
+          "level": 3,
+          "line": 100
+        },
+        {
+          "heading": "详细文档",
+          "level": 3,
+          "line": 113
+        },
+        {
+          "heading": "完整工作流执行合约 (MUST) — full profile",
+          "level": 2,
+          "line": 117
+        },
+        {
+          "heading": "执行合约条款",
+          "level": 3,
+          "line": 121
+        },
+        {
+          "heading": "Phase 完成自检问题（必答）",
+          "level": 3,
+          "line": 129
+        },
+        {
+          "heading": "执行摘要表（必填）",
+          "level": 3,
+          "line": 139
+        },
+        {
+          "heading": "降级检测与禁止 (MUST)",
+          "level": 2,
+          "line": 150
+        },
+        {
+          "heading": "禁止的降级行为",
+          "level": 3,
+          "line": 152
+        },
+        {
+          "heading": "降级检测问题（每次想跳过步骤时必答）",
+          "level": 3,
+          "line": 160
+        },
+        {
+          "heading": "工具调用规范",
+          "level": 2,
+          "line": 166
+        },
+        {
+          "heading": "调用前（必填）",
+          "level": 3,
+          "line": 168
+        },
+        {
+          "heading": "调用后（必填）",
+          "level": 3,
+          "line": 180
+        },
+        {
+          "heading": "失败处理",
+          "level": 3,
+          "line": 187
+        },
+        {
+          "heading": "完整工作流实际可用性 (2026-06-04)",
+          "level": 2,
+          "line": 195
+        },
+        {
+          "heading": "Phase 1.5: Graphify MCP 服务器",
+          "level": 3,
+          "line": 197
+        },
+        {
+          "heading": "Phase 3.1: Understand 7 个 skill 指令（**非 CLI 命令**）",
+          "level": 3,
+          "line": 201
+        },
+        {
+          "heading": "Phase 3.2: CodeGraph 16 个 CLI 命令（CLI > MCP 优先）",
+          "level": 3,
+          "line": 218
+        },
+        {
+          "heading": "Phase 3.4: Graphify MCP 7 工具替代方案",
+          "level": 3,
+          "line": 247
+        },
+        {
+          "heading": "工具选择原则 (MUST)",
+          "level": 2,
+          "line": 259
+        },
+        {
+          "heading": "技能驱动执行合约 (MUST) — 方案 B 全量",
+          "level": 2,
+          "line": 272
+        },
+        {
+          "heading": "核心原则",
+          "level": 3,
+          "line": 274
+        },
+        {
+          "heading": "P0 强制执行（5 核心技能）",
+          "level": 3,
+          "line": 277
+        },
+        {
+          "heading": "1. brainstorming — 触发: 任何新功能/修改/重构前",
+          "level": 4,
+          "line": 279
+        },
+        {
+          "heading": "2. writing-plans — 触发: brainstorming 完成后",
+          "level": 4,
+          "line": 286
+        },
+        {
+          "heading": "3. test-driven-development — 触发: 任何代码变更",
+          "level": 4,
+          "line": 291
+        },
+        {
+          "heading": "4. verification-before-completion — 触发: 任何\"完成\"声明前",
+          "level": 4,
+          "line": 299
+        },
+        {
+          "heading": "5. finishing-a-development-branch — 触发: 实施完成",
+          "level": 4,
+          "line": 303
+        },
+        {
+          "heading": "P1 主动使用（10 技能）",
+          "level": 3,
+          "line": 308
+        },
+        {
+          "heading": "P2 按需使用（16 GStack 技能）",
+          "level": 3,
+          "line": 323
+        },
+        {
+          "heading": "P0 技能执行失败的降级路径",
+          "level": 3,
+          "line": 342
+        },
+        {
+          "heading": "执行摘要表（必填格式）",
+          "level": 3,
+          "line": 355
+        },
+        {
+          "heading": "P0 技能执行验证脚本",
+          "level": 3,
+          "line": 367
+        },
+        {
+          "heading": "工具调用规范（完整版）",
+          "level": 3,
+          "line": 375
+        },
+        {
+          "heading": "调用前（必填）",
+          "level": 4,
+          "line": 377
+        },
+        {
+          "heading": "调用后（必填）",
+          "level": 4,
+          "line": 381
+        },
+        {
+          "heading": "失败处理",
+          "level": 4,
+          "line": 386
+        },
+        {
+          "heading": "项目特定规则",
+          "level": 2,
+          "line": 395
+        },
+        {
+          "heading": "Skill Auto-Execution Protocol (MUST)",
+          "level": 2,
+          "line": 403
+        },
+        {
+          "heading": "Routing Rule",
+          "level": 2,
+          "line": 418
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 47
+      }
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 214,
+      "nonEmptyLines": 169,
+      "sections": [
+        {
+          "heading": "Agent Orchestrator",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Quick Start",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Model Configuration",
+          "level": 2,
+          "line": 26
+        },
+        {
+          "heading": "Kimi Configuration (OpenCode GO)",
+          "level": 3,
+          "line": 34
+        },
+        {
+          "heading": "Architecture",
+          "level": 2,
+          "line": 50
+        },
+        {
+          "heading": "Features",
+          "level": 2,
+          "line": 76
+        },
+        {
+          "heading": "API Endpoints",
+          "level": 2,
+          "line": 84
+        },
+        {
+          "heading": "Plugin Tools",
+          "level": 2,
+          "line": 96
+        },
+        {
+          "heading": "Environment Variables",
+          "level": 2,
+          "line": 105
+        },
+        {
+          "heading": "Auto-Skill-Execution (L3)",
+          "level": 2,
+          "line": 118
+        },
+        {
+          "heading": "Development",
+          "level": 2,
+          "line": 140
+        },
+        {
+          "heading": "Testing Model Connectivity",
+          "level": 2,
+          "line": 148
+        },
+        {
+          "heading": "Health Check",
+          "level": 2,
+          "line": 160
+        },
+        {
+          "heading": "License",
+          "level": 2,
+          "line": 212
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 14
+      }
+    },
+    {
+      "path": "opencode.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 44,
+      "nonEmptyLines": 44,
+      "sections": [
+        {
+          "heading": "$schema",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "tools",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "workflow",
+          "level": 1,
+          "line": 9
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "package.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 23,
+      "nonEmptyLines": 23,
+      "sections": [
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "description",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "type",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "main",
+          "level": 1,
+          "line": 6
+        },
+        {
+          "heading": "scripts",
+          "level": 1,
+          "line": 7
+        },
+        {
+          "heading": "keywords",
+          "level": 1,
+          "line": 13
+        },
+        {
+          "heading": "license",
+          "level": 1,
+          "line": 14
+        },
+        {
+          "heading": "engines",
+          "level": 1,
+          "line": 15
+        },
+        {
+          "heading": "dependencies",
+          "level": 1,
+          "line": 18
+        },
+        {
+          "heading": "devDependencies",
+          "level": 1,
+          "line": 22
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    }
+  ]
+}

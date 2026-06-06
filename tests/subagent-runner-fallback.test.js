@@ -5,18 +5,18 @@ import BaseModelClient from "../server/lib/model-clients/base-client.js";
 const cfg = {
   models: {
     deepseek: { api_key_env: "DEEPSEEK_API_KEY", base_url: "x", model: "deepseek-v4" },
-    minimax: { api_key_env: "MINIMAX_API_KEY", base_url: "x", model: "minimax-m3" },
+    "opencode-zen": { api_key_env: "OPENCODE_API_KEY", base_url: "x", model: "deepseek-v4-flash-free" },
   },
   auto_exec: { model: "cheap", timeout_ms: 5000 },
 };
 
 describe("SubagentRunner fallback chain (PR2: Stage 4.1)", () => {
-  test("cheap (MiniMax) with primary failure falls back to DeepSeek", async () => {
+  test("cheap (OpenCode Zen) with primary failure falls back to DeepSeek", async () => {
     const r = new SubagentRunner(cfg);
     const calls = [];
     const primaryClient = {
-      model: "minimax-m3",
-      provider: "minimax",
+      model: "deepseek-v4-flash-free",
+      provider: "opencode-zen",
       chatWithFallback: async (_msgs, _opts, fallbackClient) => {
         calls.push("primary");
         if (!fallbackClient) {
@@ -65,14 +65,14 @@ describe("SubagentRunner fallback chain (PR2: Stage 4.1)", () => {
     const r = new SubagentRunner(cfg);
     let receivedFallback = null;
     const mmClient = {
-      model: "minimax-m3",
-      provider: "minimax",
+      model: "deepseek-v4-flash-free",
+      provider: "opencode-zen",
       chatWithFallback: async (_msgs, _opts, fallbackClient) => {
         receivedFallback = fallbackClient;
         return {
           content: '{"status":"success","executed_skills":[],"p0_failures":[],"summary":"ok"}',
-          _model: "minimax-m3",
-          _provider: "minimax",
+          _model: "deepseek-v4-flash-free",
+          _provider: "opencode-zen",
           _fallback: false,
         };
       },

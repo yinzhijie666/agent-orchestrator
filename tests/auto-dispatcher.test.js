@@ -18,7 +18,7 @@ function makeConfig(overrides = {}) {
     },
     models: {
       deepseek: { api_key_env: "DEEPSEEK_API_KEY", base_url: "x", model: "d" },
-      minimax: { api_key_env: "MINIMAX_API_KEY", base_url: "x", model: "m" },
+      "opencode-zen": { api_key_env: "OPENCODE_API_KEY", base_url: "x", model: "m" },
     },
     ...overrides,
   };

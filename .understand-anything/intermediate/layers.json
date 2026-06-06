@@ -1,0 +1,77 @@
+{
+  "layers": [
+    {
+      "id": "layer:plugin-entry",
+      "name": "Plugin Entry Layer",
+      "description": "OpenCode plugin entry point and package configuration. index.js is the AgentOrchestratorPlugin that wires together all subsystems and exposes tools to the OpenCode runtime.",
+      "nodeIds": [
+        "file:index.js",
+        "config:opencode.json",
+        "config:package.json"
+      ]
+    },
+    {
+      "id": "layer:api",
+      "name": "API Layer",
+      "description": "REST API endpoints exposed by the HTTP server. Each file defines Express routes for a specific domain (plans, checkpoints, status, threads, internal events).",
+      "nodeIds": [
+        "file:server/api/plan.js",
+        "file:server/api/checkpoint.js",
+        "file:server/api/status.js",
+        "file:server/api/thread.js",
+        "file:server/api/internal-event.js"
+      ]
+    },
+    {
+      "id": "layer:core-orchestration",
+      "name": "Core Orchestration Layer",
+      "description": "Central orchestration logic. Auto-dispatcher routes tasks to appropriate handlers. Auto-executor builds skill execution prompts. Plan-orchestrator generates and manages plans. Milestone-manager tracks checkpoint progress. Subagent-runner dispatches work to model-backed subagents.",
+      "nodeIds": [
+        "file:server/lib/auto-dispatcher.js",
+        "file:server/lib/auto-executor.js",
+        "file:server/lib/plan-orchestrator.js",
+        "file:server/lib/milestone-manager.js",
+        "file:server/lib/subagent-runner.js"
+      ]
+    },
+    {
+      "id": "layer:model-clients",
+      "name": "Model Layer",
+      "description": "LLM model client implementations. Kimi handles planning (Plan Mode), DeepSeek handles execution (Build Mode), MiniMax provides fallback/specialized capabilities. All clients share a common interface for the orchestration layer.",
+      "nodeIds": [
+        "file:server/lib/model-clients/kimi-client.js",
+        "file:server/lib/model-clients/deepseek-client.js",
+        "file:server/lib/model-clients/minimax-client.js"
+      ]
+    },
+    {
+      "id": "layer:infrastructure",
+      "name": "Infrastructure Layer",
+      "description": "Shared infrastructure services. SQLite database layer (db.js) handles persistence and schema. Event system (events.js) provides pub/sub messaging. WebSocket server enables real-time communication with OpenCode frontend.",
+      "nodeIds": [
+        "file:server/lib/db.js",
+        "file:server/lib/events.js",
+        "file:server/websocket/server.js",
+        "file:server/index.js"
+      ]
+    },
+    {
+      "id": "layer:documentation",
+      "name": "Documentation Layer",
+      "description": "Project documentation including architecture docs, checkpoint system docs, AI assistant instructions (CLAUDE.md), and project README.",
+      "nodeIds": [
+        "document:CLAUDE.md",
+        "document:README.md",
+        "document:docs/ARCHITECTURE.md",
+        "document:docs/CHECKPOINT-SYSTEM.md"
+      ]
+    }
+  ],
+  "metadata": {
+    "generatedAt": "2026-06-05",
+    "totalLayers": 6,
+    "totalNodesAssigned": 22,
+    "unassignedNodes": [],
+    "notes": "All 22 provided file-level nodes are assigned. Test files (tests/*.test.js) and shell scripts (scripts/*.sh) exist on disk but were not in the provided node list; if added, they would form layer:test and layer:scripts respectively."
+  }
+}

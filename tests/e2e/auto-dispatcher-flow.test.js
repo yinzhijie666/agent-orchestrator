@@ -37,10 +37,10 @@ const cfg = {
       base_url: "https://api.deepseek.com/v1",
       model: "deepseek-v4-flash",
     },
-    minimax: {
-      api_key_env: "MINIMAX_API_KEY",
-      base_url: "https://api.minimax.chat/v1",
-      model: "MiniMax-M3",
+    "opencode-zen": {
+      api_key_env: "OPENCODE_API_KEY",
+      base_url: "https://opencode.ai/zen/v1",
+      model: "deepseek-v4-flash-free",
     },
   },
 };

@@ -4,13 +4,12 @@
 // BaseModelClient. This is the D1 path of the AutoDispatcher.
 
 import DeepSeekClient from "./model-clients/deepseek-client.js";
-import MiniMaxClient from "./model-clients/minimax-client.js";
 
 const MODEL_MAP = {
   deepseek: (config) => new DeepSeekClient(config.models.deepseek),
-  minimax: (config) => new DeepSeekClient(config.models.minimax),  // DeepSeek V4 Flash Free via OpenCode Zen
-  cheap: (config) => new DeepSeekClient(config.models.minimax),    // DeepSeek V4 Flash Free via OpenCode Zen
-  default: (config) => new DeepSeekClient(config.models.minimax),  // DeepSeek V4 Flash Free via OpenCode Zen
+  "opencode-zen": (config) => new DeepSeekClient(config.models["opencode-zen"]),  // DeepSeek V4 Flash Free via OpenCode Zen
+  cheap: (config) => new DeepSeekClient(config.models["opencode-zen"]),            // DeepSeek V4 Flash Free via OpenCode Zen
+  default: (config) => new DeepSeekClient(config.models["opencode-zen"]),          // DeepSeek V4 Flash Free via OpenCode Zen
 };
 
 function pickClient(config, modelName) {
@@ -75,7 +74,7 @@ export class SubagentRunner {
     const timeoutMs = options.timeoutMs || this.defaultTimeoutMs;
 
     const fallbackClient = options.fallbackClient
-      || (client.provider === "minimax" ? this.deepseekClient : null);
+      || (client.provider === "opencode-zen" ? this.deepseekClient : null);
 
     const messages = [
       { role: "system", content: SUBAGENT_SYSTEM_PROMPT },

@@ -166,7 +166,7 @@ describe("agent_execute_skills auto_exec integration", () => {
     expect(parsed.auto_exec).toBeNull();
     expect(parsed.auto_dispatched).toBe(false);
     expect(parsed.skills_to_execute.length).toBe(4);
-    expect(parsed.next_step).toContain("Manually execute");
+    expect(parsed.next_step).toContain("manual skills in main session");
   });
 
   test("auto_exec null when AUTO_EXEC_SKILLS=false", async () => {
@@ -193,7 +193,7 @@ describe("agent_execute_skills auto_exec integration", () => {
 
     expect(parsed.auto_exec).toBeNull();
     expect(parsed.skills_to_execute.length).toBeGreaterThan(0);
-    expect(parsed.next_step).toContain("Manually execute");
+    expect(parsed.next_step).toContain("manual skills in main session");
     delete process.env.AUTO_EXEC_SKILLS;
   });
 });

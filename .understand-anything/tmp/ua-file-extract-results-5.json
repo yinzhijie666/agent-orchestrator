@@ -1,0 +1,1143 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 9,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "server/lib/model-clients/minimax-client.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 55,
+      "nonEmptyLines": 46,
+      "classes": [
+        {
+          "name": "MiniMaxClient",
+          "startLine": 3,
+          "endLine": 53,
+          "methods": [
+            "constructor",
+            "searchCode",
+            "readFileSummary",
+            "batchQuery",
+            "isReadOnly",
+            "writeForbidden"
+          ],
+          "properties": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 5
+        },
+        {
+          "caller": "searchCode",
+          "callee": "codebase.slice",
+          "lineNumber": 17
+        },
+        {
+          "caller": "searchCode",
+          "callee": "this.chat",
+          "lineNumber": 21
+        },
+        {
+          "caller": "readFileSummary",
+          "callee": "content.slice",
+          "lineNumber": 32
+        },
+        {
+          "caller": "readFileSummary",
+          "callee": "this.chat",
+          "lineNumber": 36
+        },
+        {
+          "caller": "batchQuery",
+          "callee": "queries.map",
+          "lineNumber": 41
+        },
+        {
+          "caller": "batchQuery",
+          "callee": "this.searchCode",
+          "lineNumber": 41
+        },
+        {
+          "caller": "batchQuery",
+          "callee": "Promise.all",
+          "lineNumber": 42
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/lib/network-utils.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 20,
+      "nonEmptyLines": 19,
+      "functions": [
+        {
+          "name": "isPortFree",
+          "startLine": 1,
+          "endLine": 11,
+          "params": [
+            "port"
+          ]
+        },
+        {
+          "name": "findFreePort",
+          "startLine": 13,
+          "endLine": 20,
+          "params": [
+            "range"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "isPortFree",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "findFreePort",
+          "line": 13,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isPortFree",
+          "callee": "import(\"node:net\").then",
+          "lineNumber": 3
+        },
+        {
+          "caller": "isPortFree",
+          "callee": "import",
+          "lineNumber": 3
+        },
+        {
+          "caller": "isPortFree",
+          "callee": "m.createServer().listen",
+          "lineNumber": 4
+        },
+        {
+          "caller": "isPortFree",
+          "callee": "m.createServer",
+          "lineNumber": 4
+        },
+        {
+          "caller": "isPortFree",
+          "callee": "server.close",
+          "lineNumber": 6
+        },
+        {
+          "caller": "findFreePort",
+          "callee": "isPortFree",
+          "lineNumber": 15
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/lib/opencode-server.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 233,
+      "nonEmptyLines": 210,
+      "functions": [
+        {
+          "name": "attachGlobalSignalHandlers",
+          "startLine": 12,
+          "endLine": 28,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "OpencodeServer",
+          "startLine": 30,
+          "endLine": 231,
+          "methods": [
+            "constructor",
+            "start",
+            "stop",
+            "isHealthy",
+            "_cachedProbe",
+            "invalidateHealth",
+            "waitForHealthy",
+            "_probe",
+            "_pickPort",
+            "_drainStderr",
+            "_forceKill"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "OpencodeServer",
+          "line": 30,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "cleanup",
+          "callee": "server.process.kill",
+          "lineNumber": 17
+        },
+        {
+          "caller": "attachGlobalSignalHandlers",
+          "callee": "process.on",
+          "lineNumber": 21
+        },
+        {
+          "caller": "attachGlobalSignalHandlers",
+          "callee": "cleanup",
+          "lineNumber": 21
+        },
+        {
+          "caller": "attachGlobalSignalHandlers",
+          "callee": "process.on",
+          "lineNumber": 23
+        },
+        {
+          "caller": "attachGlobalSignalHandlers",
+          "callee": "server.process.kill",
+          "lineNumber": 25
+        },
+        {
+          "caller": "start",
+          "callee": "this._pickPort",
+          "lineNumber": 48
+        },
+        {
+          "caller": "start",
+          "callee": "this.portRange.join",
+          "lineNumber": 51
+        },
+        {
+          "caller": "start",
+          "callee": "String",
+          "lineNumber": 58
+        },
+        {
+          "caller": "start",
+          "callee": "args.push",
+          "lineNumber": 67
+        },
+        {
+          "caller": "start",
+          "callee": "spawn",
+          "lineNumber": 70
+        },
+        {
+          "caller": "start",
+          "callee": "attachGlobalSignalHandlers",
+          "lineNumber": 77
+        },
+        {
+          "caller": "start",
+          "callee": "_serverRegistry.values().next",
+          "lineNumber": 79
+        },
+        {
+          "caller": "start",
+          "callee": "_serverRegistry.values",
+          "lineNumber": 79
+        },
+        {
+          "caller": "start",
+          "callee": "_serverRegistry.delete",
+          "lineNumber": 80
+        },
+        {
+          "caller": "start",
+          "callee": "_serverRegistry.add",
+          "lineNumber": 82
+        },
+        {
+          "caller": "start",
+          "callee": "Date.now",
+          "lineNumber": 86
+        },
+        {
+          "caller": "start",
+          "callee": "this._drainStderr",
+          "lineNumber": 89
+        },
+        {
+          "caller": "start",
+          "callee": "setTimeout",
+          "lineNumber": 92
+        },
+        {
+          "caller": "start",
+          "callee": "this.waitForHealthy",
+          "lineNumber": 94
+        },
+        {
+          "caller": "start",
+          "callee": "this._forceKill",
+          "lineNumber": 96
+        },
+        {
+          "caller": "stop",
+          "callee": "this._forceKill",
+          "lineNumber": 112
+        },
+        {
+          "caller": "isHealthy",
+          "callee": "this._cachedProbe",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_cachedProbe",
+          "callee": "Date.now",
+          "lineNumber": 123
+        },
+        {
+          "caller": "_cachedProbe",
+          "callee": "Bun.spawnSync",
+          "lineNumber": 129
+        },
+        {
+          "caller": "_cachedProbe",
+          "callee": "Number",
+          "lineNumber": 135
+        },
+        {
+          "caller": "_cachedProbe",
+          "callee": "res.stdout.toString().trim",
+          "lineNumber": 135
+        },
+        {
+          "caller": "_cachedProbe",
+          "callee": "res.stdout.toString",
+          "lineNumber": 135
+        },
+        {
+          "caller": "waitForHealthy",
+          "callee": "Date.now",
+          "lineNumber": 149
+        },
+        {
+          "caller": "waitForHealthy",
+          "callee": "Date.now",
+          "lineNumber": 150
+        },
+        {
+          "caller": "waitForHealthy",
+          "callee": "this._probe",
+          "lineNumber": 154
+        },
+        {
+          "caller": "waitForHealthy",
+          "callee": "Date.now",
+          "lineNumber": 156
+        },
+        {
+          "caller": "waitForHealthy",
+          "callee": "setTimeout",
+          "lineNumber": 159
+        },
+        {
+          "caller": "_probe",
+          "callee": "fetch",
+          "lineNumber": 167
+        },
+        {
+          "caller": "_probe",
+          "callee": "AbortSignal.timeout",
+          "lineNumber": 169
+        },
+        {
+          "caller": "_pickPort",
+          "callee": "isPortFree",
+          "lineNumber": 179
+        },
+        {
+          "caller": "_drainStderr",
+          "callee": "this.process.stderr.getReader",
+          "lineNumber": 188
+        },
+        {
+          "caller": "pump",
+          "callee": "reader.read",
+          "lineNumber": 194
+        },
+        {
+          "caller": "pump",
+          "callee": "decoder.decode",
+          "lineNumber": 196
+        },
+        {
+          "caller": "pump",
+          "callee": "buffer.slice",
+          "lineNumber": 198
+        },
+        {
+          "caller": "_drainStderr",
+          "callee": "pump",
+          "lineNumber": 203
+        },
+        {
+          "caller": "_forceKill",
+          "callee": "this.process.kill",
+          "lineNumber": 212
+        },
+        {
+          "caller": "_forceKill",
+          "callee": "Promise.race",
+          "lineNumber": 213
+        },
+        {
+          "caller": "_forceKill",
+          "callee": "setTimeout",
+          "lineNumber": 215
+        },
+        {
+          "caller": "_forceKill",
+          "callee": "r",
+          "lineNumber": 215
+        },
+        {
+          "caller": "_forceKill",
+          "callee": "this.process.kill",
+          "lineNumber": 218
+        },
+        {
+          "caller": "_forceKill",
+          "callee": "this.process.exited.catch",
+          "lineNumber": 219
+        },
+        {
+          "caller": "_forceKill",
+          "callee": "this.process.kill",
+          "lineNumber": 223
+        },
+        {
+          "caller": "_forceKill",
+          "callee": "_serverRegistry.delete",
+          "lineNumber": 228
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/lib/plan-orchestrator.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 79,
+      "nonEmptyLines": 70,
+      "classes": [
+        {
+          "name": "PlanOrchestrator",
+          "startLine": 4,
+          "endLine": 77,
+          "methods": [
+            "generateAndPersist"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "PlanOrchestrator",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "generateAndPersist",
+          "callee": "kimiClient.generatePlan",
+          "lineNumber": 11
+        },
+        {
+          "caller": "generateAndPersist",
+          "callee": "new Date().toISOString",
+          "lineNumber": 18
+        },
+        {
+          "caller": "generateAndPersist",
+          "callee": "PlanParser.validate",
+          "lineNumber": 27
+        },
+        {
+          "caller": "generateAndPersist",
+          "callee": "validation.errors.join",
+          "lineNumber": 29
+        },
+        {
+          "caller": "generateAndPersist",
+          "callee": "randomUUID",
+          "lineNumber": 34
+        },
+        {
+          "caller": "generateAndPersist",
+          "callee": "db.createPlan",
+          "lineNumber": 35
+        },
+        {
+          "caller": "generateAndPersist",
+          "callee": "JSON.stringify",
+          "lineNumber": 38
+        },
+        {
+          "caller": "generateAndPersist",
+          "callee": "Math.ceil",
+          "lineNumber": 40
+        },
+        {
+          "caller": "generateAndPersist",
+          "callee": "planDoc.items.forEach",
+          "lineNumber": 44
+        },
+        {
+          "caller": "generateAndPersist",
+          "callee": "db.createPlanItem",
+          "lineNumber": 45
+        },
+        {
+          "caller": "generateAndPersist",
+          "callee": "db.logActivity",
+          "lineNumber": 56
+        },
+        {
+          "caller": "generateAndPersist",
+          "callee": "db.logActivity",
+          "lineNumber": 64
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/lib/plan-parser.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 47,
+      "nonEmptyLines": 40,
+      "classes": [
+        {
+          "name": "PlanParser",
+          "startLine": 2,
+          "endLine": 45,
+          "methods": [
+            "parse",
+            "validate",
+            "serialize",
+            "estimateComplexity"
+          ],
+          "properties": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "parse",
+          "callee": "JSON.parse",
+          "lineNumber": 6
+        },
+        {
+          "caller": "validate",
+          "callee": "errors.push",
+          "lineNumber": 17
+        },
+        {
+          "caller": "validate",
+          "callee": "Array.isArray",
+          "lineNumber": 18
+        },
+        {
+          "caller": "validate",
+          "callee": "errors.push",
+          "lineNumber": 19
+        },
+        {
+          "caller": "validate",
+          "callee": "errors.push",
+          "lineNumber": 22
+        },
+        {
+          "caller": "validate",
+          "callee": "plan.items.forEach",
+          "lineNumber": 24
+        },
+        {
+          "caller": "validate",
+          "callee": "errors.push",
+          "lineNumber": 25
+        },
+        {
+          "caller": "validate",
+          "callee": "['kimi', 'deepseek', 'minimax'].includes",
+          "lineNumber": 26
+        },
+        {
+          "caller": "validate",
+          "callee": "errors.push",
+          "lineNumber": 27
+        },
+        {
+          "caller": "serialize",
+          "callee": "JSON.stringify",
+          "lineNumber": 38
+        },
+        {
+          "caller": "estimateComplexity",
+          "callee": "plan.items.reduce",
+          "lineNumber": 43
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/lib/skill-classifier.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 159,
+      "nonEmptyLines": 134,
+      "functions": [
+        {
+          "name": "createDefaultClassifier",
+          "startLine": 142,
+          "endLine": 159,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "SkillClassifier",
+          "startLine": 64,
+          "endLine": 140,
+          "methods": [
+            "constructor",
+            "classify",
+            "classifyAll",
+            "getByCategory"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SkillClassifier",
+          "line": 64,
+          "isDefault": false
+        },
+        {
+          "name": "createDefaultClassifier",
+          "line": 142,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "classify",
+          "callee": "existsSync",
+          "lineNumber": 73
+        },
+        {
+          "caller": "classify",
+          "callee": "readFileSync",
+          "lineNumber": 77
+        },
+        {
+          "caller": "classify",
+          "callee": "content.indexOf",
+          "lineNumber": 80
+        },
+        {
+          "caller": "classify",
+          "callee": "content.slice",
+          "lineNumber": 81
+        },
+        {
+          "caller": "classify",
+          "callee": "regex.test",
+          "lineNumber": 85
+        },
+        {
+          "caller": "classify",
+          "callee": "regex.test",
+          "lineNumber": 92
+        },
+        {
+          "caller": "classify",
+          "callee": "regex.test",
+          "lineNumber": 99
+        },
+        {
+          "caller": "classify",
+          "callee": "regex.test",
+          "lineNumber": 109
+        },
+        {
+          "caller": "classify",
+          "callee": "regex.test",
+          "lineNumber": 112
+        },
+        {
+          "caller": "classifyAll",
+          "callee": "this.classify",
+          "lineNumber": 129
+        },
+        {
+          "caller": "getByCategory",
+          "callee": "this.classifyAll",
+          "lineNumber": 135
+        },
+        {
+          "caller": "getByCategory",
+          "callee": "Object.entries(all)\n      .filter(([, v]) => v.category === category)\n      .map",
+          "lineNumber": 136
+        },
+        {
+          "caller": "getByCategory",
+          "callee": "Object.entries(all)\n      .filter",
+          "lineNumber": 136
+        },
+        {
+          "caller": "getByCategory",
+          "callee": "Object.entries",
+          "lineNumber": 136
+        },
+        {
+          "caller": "createDefaultClassifier",
+          "callee": "entries.push",
+          "lineNumber": 146
+        },
+        {
+          "caller": "createDefaultClassifier",
+          "callee": "join",
+          "lineNumber": 146
+        },
+        {
+          "caller": "createDefaultClassifier",
+          "callee": "join",
+          "lineNumber": 148
+        },
+        {
+          "caller": "createDefaultClassifier",
+          "callee": "entries.push",
+          "lineNumber": 150
+        },
+        {
+          "caller": "createDefaultClassifier",
+          "callee": "join",
+          "lineNumber": 150
+        },
+        {
+          "caller": "createDefaultClassifier",
+          "callee": "join",
+          "lineNumber": 153
+        },
+        {
+          "caller": "createDefaultClassifier",
+          "callee": "entries.push",
+          "lineNumber": 155
+        },
+        {
+          "caller": "createDefaultClassifier",
+          "callee": "join",
+          "lineNumber": 155
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/lib/subagent-runner.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 155,
+      "nonEmptyLines": 135,
+      "functions": [
+        {
+          "name": "pickClient",
+          "startLine": 16,
+          "endLine": 19,
+          "params": [
+            "config",
+            "modelName"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "SubagentRunner",
+          "startLine": 49,
+          "endLine": 153,
+          "methods": [
+            "constructor",
+            "run",
+            "_chatWithTimeout",
+            "_parseResult"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SubagentRunner",
+          "line": 49,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "pickClient",
+          "callee": "factory",
+          "lineNumber": 18
+        },
+        {
+          "caller": "run",
+          "callee": "pickClient",
+          "lineNumber": 58
+        },
+        {
+          "caller": "run",
+          "callee": "Date.now",
+          "lineNumber": 69
+        },
+        {
+          "caller": "run",
+          "callee": "this._chatWithTimeout",
+          "lineNumber": 70
+        },
+        {
+          "caller": "run",
+          "callee": "Date.now",
+          "lineNumber": 74
+        },
+        {
+          "caller": "run",
+          "callee": "this._parseResult",
+          "lineNumber": 76
+        },
+        {
+          "caller": "_chatWithTimeout",
+          "callee": "setTimeout",
+          "lineNumber": 96
+        },
+        {
+          "caller": "_chatWithTimeout",
+          "callee": "reject",
+          "lineNumber": 96
+        },
+        {
+          "caller": "_chatWithTimeout",
+          "callee": "Promise.race",
+          "lineNumber": 99
+        },
+        {
+          "caller": "_chatWithTimeout",
+          "callee": "client.chatWithFallback",
+          "lineNumber": 100
+        },
+        {
+          "caller": "_chatWithTimeout",
+          "callee": "clearTimeout",
+          "lineNumber": 105
+        },
+        {
+          "caller": "_parseResult",
+          "callee": "content.trim",
+          "lineNumber": 118
+        },
+        {
+          "caller": "_parseResult",
+          "callee": "text.startsWith",
+          "lineNumber": 120
+        },
+        {
+          "caller": "_parseResult",
+          "callee": "text.match",
+          "lineNumber": 121
+        },
+        {
+          "caller": "_parseResult",
+          "callee": "text.replace(/<think>[\\s\\S]*?<\\/think>/gi, \"\").trim",
+          "lineNumber": 125
+        },
+        {
+          "caller": "_parseResult",
+          "callee": "text.replace",
+          "lineNumber": 125
+        },
+        {
+          "caller": "_parseResult",
+          "callee": "text.indexOf",
+          "lineNumber": 127
+        },
+        {
+          "caller": "_parseResult",
+          "callee": "text.lastIndexOf",
+          "lineNumber": 128
+        },
+        {
+          "caller": "_parseResult",
+          "callee": "text.slice",
+          "lineNumber": 130
+        },
+        {
+          "caller": "_parseResult",
+          "callee": "JSON.parse",
+          "lineNumber": 134
+        },
+        {
+          "caller": "_parseResult",
+          "callee": "Array.isArray",
+          "lineNumber": 138
+        },
+        {
+          "caller": "_parseResult",
+          "callee": "Array.isArray",
+          "lineNumber": 139
+        },
+        {
+          "caller": "_parseResult",
+          "callee": "text.slice",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_parseResult",
+          "callee": "text.slice",
+          "lineNumber": 149
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/websocket/broadcaster.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 53,
+      "nonEmptyLines": 45,
+      "classes": [
+        {
+          "name": "WebSocketBroadcaster",
+          "startLine": 2,
+          "endLine": 51,
+          "methods": [
+            "constructor",
+            "addClient",
+            "removeClient",
+            "broadcast",
+            "sendTo",
+            "getStats"
+          ],
+          "properties": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "addClient",
+          "callee": "this.clients.add",
+          "lineNumber": 8
+        },
+        {
+          "caller": "addClient",
+          "callee": "console.log",
+          "lineNumber": 9
+        },
+        {
+          "caller": "removeClient",
+          "callee": "this.clients.delete",
+          "lineNumber": 13
+        },
+        {
+          "caller": "removeClient",
+          "callee": "console.log",
+          "lineNumber": 14
+        },
+        {
+          "caller": "broadcast",
+          "callee": "JSON.stringify",
+          "lineNumber": 18
+        },
+        {
+          "caller": "broadcast",
+          "callee": "new Date().toISOString",
+          "lineNumber": 21
+        },
+        {
+          "caller": "broadcast",
+          "callee": "this.clients.forEach",
+          "lineNumber": 25
+        },
+        {
+          "caller": "broadcast",
+          "callee": "client.data.subscribedPlans.has",
+          "lineNumber": 27
+        },
+        {
+          "caller": "broadcast",
+          "callee": "client.send",
+          "lineNumber": 28
+        },
+        {
+          "caller": "broadcast",
+          "callee": "console.warn",
+          "lineNumber": 29
+        },
+        {
+          "caller": "broadcast",
+          "callee": "console.log",
+          "lineNumber": 32
+        },
+        {
+          "caller": "sendTo",
+          "callee": "ws.send",
+          "lineNumber": 37
+        },
+        {
+          "caller": "sendTo",
+          "callee": "JSON.stringify",
+          "lineNumber": 37
+        },
+        {
+          "caller": "sendTo",
+          "callee": "new Date().toISOString",
+          "lineNumber": 40
+        },
+        {
+          "caller": "getStats",
+          "callee": "new Date().toISOString",
+          "lineNumber": 48
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/websocket/server.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 39,
+      "functions": [
+        {
+          "name": "setupWebSocket",
+          "startLine": 3,
+          "endLine": 42,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "setupWebSocket",
+          "line": 44,
+          "isDefault": false
+        },
+        {
+          "name": "broadcaster",
+          "line": 44,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "open",
+          "callee": "broadcaster.addClient",
+          "lineNumber": 7
+        },
+        {
+          "caller": "open",
+          "callee": "broadcaster.sendTo",
+          "lineNumber": 8
+        },
+        {
+          "caller": "message",
+          "callee": "JSON.parse",
+          "lineNumber": 13
+        },
+        {
+          "caller": "message",
+          "callee": "ws.data.subscribedPlans.add",
+          "lineNumber": 18
+        },
+        {
+          "caller": "message",
+          "callee": "broadcaster.sendTo",
+          "lineNumber": 19
+        },
+        {
+          "caller": "message",
+          "callee": "ws.data.subscribedPlans.delete",
+          "lineNumber": 24
+        },
+        {
+          "caller": "message",
+          "callee": "broadcaster.sendTo",
+          "lineNumber": 28
+        },
+        {
+          "caller": "message",
+          "callee": "Date.now",
+          "lineNumber": 28
+        },
+        {
+          "caller": "message",
+          "callee": "console.log",
+          "lineNumber": 31
+        },
+        {
+          "caller": "message",
+          "callee": "console.error",
+          "lineNumber": 34
+        },
+        {
+          "caller": "close",
+          "callee": "broadcaster.removeClient",
+          "lineNumber": 39
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    }
+  ]
+}

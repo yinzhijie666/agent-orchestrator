@@ -1,7 +1,7 @@
 {
   "name": "agent-orchestrator",
   "version": "1.0.0",
-  "description": "Three-layer agent orchestration: Kimi plans, DeepSeek builds, MiniMax queries",
+  "description": "Three-layer agent orchestration: Kimi plans, DeepSeek builds, OpenCode Zen queries",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "test": "bun test",
     "test:e2e": "bun test tests/e2e/auto-exec-flow.test.js"
   },
-  "keywords": ["agent", "orchestrator", "opencode", "kimi", "deepseek", "minimax"],
+  "keywords": ["agent", "orchestrator", "opencode", "kimi", "deepseek", "opencode-zen"],
   "license": "MIT",
   "engines": {
     "bun": ">=1.0.0"

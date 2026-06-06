@@ -1,0 +1,814 @@
+{
+  "nodes": [
+    {
+      "id": "file:.codegraphignore",
+      "type": "file",
+      "name": ".codegraphignore",
+      "path": ".codegraphignore",
+      "language": "unknown",
+      "category": "code",
+      "lines": 6
+    },
+    {
+      "id": "file:.gstack/audit-reports/dry-run-2026-06-05.md",
+      "type": "file",
+      "name": "dry-run-2026-06-05.md",
+      "path": ".gstack/audit-reports/dry-run-2026-06-05.md",
+      "language": "markdown",
+      "category": "docs",
+      "lines": 7,
+      "sections": ["Dry-Run Audit Report", "失败项"]
+    },
+    {
+      "id": "file:.gstack/skill-execution-log.md",
+      "type": "file",
+      "name": "skill-execution-log.md",
+      "path": ".gstack/skill-execution-log.md",
+      "language": "markdown",
+      "category": "docs",
+      "lines": 78,
+      "sections": ["Skill Execution Log", "Phase 1: 工具执行结果", "CodeGraph context"]
+    },
+    {
+      "id": "file:.opencode/plans/fallback-fix-plan.md",
+      "type": "file",
+      "name": "fallback-fix-plan.md",
+      "path": ".opencode/plans/fallback-fix-plan.md",
+      "language": "markdown",
+      "category": "docs",
+      "lines": 127,
+      "sections": ["Fallback 修复方案 — 实施计划", "方式 A：可选参数传 fallbackClient", "步骤 1：DeepSeekClient 加 generatePlan 方法", "步骤 2：KimiClient 的 generatePlan 支持可选的 fallbackClient", "步骤 3：更新 index.js 传入 deepseekClient", "步骤 4：更新 plan.js 传入 deepseekClient", "步骤 5：更新测试文件", "实施顺序", "验证方式"]
+    },
+    {
+      "id": "file:.opencode/plans/real-api-test-plan.md",
+      "type": "file",
+      "name": "real-api-test-plan.md",
+      "path": ".opencode/plans/real-api-test-plan.md",
+      "language": "markdown",
+      "category": "docs",
+      "lines": 41,
+      "sections": ["真实 API 三层测试方案", "文件", "覆盖的 Client", "四个 describe 块", "安全机制", "运行方式"]
+    },
+    {
+      "id": "file:.understand-anything/.understandignore",
+      "type": "file",
+      "name": ".understandignore",
+      "path": ".understand-anything/.understandignore",
+      "language": "unknown",
+      "category": "code",
+      "lines": 32
+    },
+    {
+      "id": "file:docs/superpowers/plans/2026-06-02-orchestrator-e2e.md",
+      "type": "file",
+      "name": "2026-06-02-orchestrator-e2e.md",
+      "path": "docs/superpowers/plans/2026-06-02-orchestrator-e2e.md",
+      "language": "markdown",
+      "category": "docs",
+      "lines": 65,
+      "sections": ["agent-orchestrator 端到端连通验证 实施计划", "Task 1: 启动 HTTP 服务器并验证 API 可用", "Task 2: 验证插件被 OpenCode 加载", "Task 3: 检查工具名冲突", "Task 4: 验证模型 API 连通性", "Task 5: 回归测试", "Task 6: 写设计文档和实施计划"]
+    },
+    {
+      "id": "file:docs/superpowers/specs/2026-06-02-orchestrator-e2e-design.md",
+      "type": "file",
+      "name": "2026-06-02-orchestrator-e2e-design.md",
+      "path": "docs/superpowers/specs/2026-06-02-orchestrator-e2e-design.md",
+      "language": "markdown",
+      "category": "docs",
+      "lines": 50,
+      "sections": ["agent-orchestrator 端到端连通验证 — 设计文档", "目标", "范围", "验证步骤", "S1. 启动 HTTP 服务器", "S2. 验证插件加载", "S3. 检查工具名冲突", "S4. 验证模型 API 连通性", "S5. 回归测试", "S6. 故障修复", "回滚策略"]
+    },
+    {
+      "id": "file:index.js",
+      "type": "file",
+      "name": "index.js",
+      "path": "index.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 699,
+      "exports": ["AgentOrchestratorPlugin"],
+      "imports": 10,
+      "functions": 8
+    },
+    {
+      "id": "module:AgentOrchestratorPlugin",
+      "type": "module",
+      "name": "AgentOrchestratorPlugin",
+      "path": "index.js",
+      "line": 221,
+      "kind": "function",
+      "description": "Main plugin entry point for OpenCode. Registers agent, plan, checkpoint, status, and skill-executor tools. Coordinates Kimi/DeepSeek/MiniMax model clients for plan generation, task execution, and checkpoint verification.",
+      "methods": ["initSchema", "executePlanTask", "generateRecommendations", "formatSuggestedSkills", "parseSkillAction", "loadEnvFile"]
+    },
+    {
+      "id": "file:server/api/checkpoint.js",
+      "type": "file",
+      "name": "checkpoint.js",
+      "path": "server/api/checkpoint.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 124,
+      "imports": 6
+    },
+    {
+      "id": "file:server/api/internal-event.js",
+      "type": "file",
+      "name": "internal-event.js",
+      "path": "server/api/internal-event.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 76,
+      "imports": 1
+    },
+    {
+      "id": "file:server/api/plan.js",
+      "type": "file",
+      "name": "plan.js",
+      "path": "server/api/plan.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 215,
+      "imports": 6
+    },
+    {
+      "id": "file:server/api/status.js",
+      "type": "file",
+      "name": "status.js",
+      "path": "server/api/status.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 46,
+      "imports": 1
+    },
+    {
+      "id": "file:server/api/thread.js",
+      "type": "file",
+      "name": "thread.js",
+      "path": "server/api/thread.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 52,
+      "imports": 1
+    },
+    {
+      "id": "file:server/index.js",
+      "type": "file",
+      "name": "server/index.js",
+      "path": "server/index.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 175,
+      "exports": ["server"],
+      "imports": 9,
+      "functions": 1
+    },
+    {
+      "id": "module:server",
+      "type": "module",
+      "name": "server",
+      "path": "server/index.js",
+      "line": 167,
+      "kind": "object",
+      "description": "HTTP server for agent-orchestrator. Routes requests to plan, checkpoint, thread, status, and internal-event API routers. Serves static web UI files. Integrates WebSocket broadcaster for real-time updates."
+    },
+    {
+      "id": "file:server/lib/agent-router.js",
+      "type": "file",
+      "name": "agent-router.js",
+      "path": "server/lib/agent-router.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 353,
+      "exports": ["MilestoneManager"]
+    },
+    {
+      "id": "file:server/lib/auto-dispatcher.js",
+      "type": "file",
+      "name": "auto-dispatcher.js",
+      "path": "server/lib/auto-dispatcher.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 229,
+      "exports": ["AutoDispatcher"],
+      "imports": 2,
+      "classes": 1
+    },
+    {
+      "id": "module:AutoDispatcher",
+      "type": "module",
+      "name": "AutoDispatcher",
+      "path": "server/lib/auto-dispatcher.js",
+      "line": 13,
+      "kind": "class",
+      "description": "Manages automatic dispatching of tasks to the OpenCode server. Handles server health checks, automatic restart on failure, and fallback to direct execution via SubagentRunner.",
+      "methods": ["constructor", "start", "dispatch", "ensureHealthy", "stop", "getStatus", "_isServerPreferred"]
+    },
+    {
+      "id": "file:server/lib/auto-executor.js",
+      "type": "file",
+      "name": "auto-executor.js",
+      "path": "server/lib/auto-executor.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 245,
+      "exports": ["AutoExecutor"],
+      "imports": 1,
+      "classes": 1
+    },
+    {
+      "id": "module:AutoExecutor",
+      "type": "module",
+      "name": "AutoExecutor",
+      "path": "server/lib/auto-executor.js",
+      "line": 30,
+      "kind": "class",
+      "description": "Builds execution prompts for skill auto-execution. Classifies skills by tier (P0/P1/P2), validates skill entries, and generates structured instructions for the AI agent.",
+      "methods": ["generateInstruction", "buildPrompt", "validate"]
+    },
+    {
+      "id": "file:server/lib/db-schema.js",
+      "type": "file",
+      "name": "db-schema.js",
+      "path": "server/lib/db-schema.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 109,
+      "exports": ["SCHEMA_SQL"]
+    },
+    {
+      "id": "module:SCHEMA_SQL",
+      "type": "module",
+      "name": "SCHEMA_SQL",
+      "path": "server/lib/db-schema.js",
+      "line": 1,
+      "kind": "variable",
+      "description": "SQLite schema definition for the agent-orchestrator database. Defines tables: plans, plan_items, checkpoints, agent_threads, messages, activity_log."
+    },
+    {
+      "id": "file:server/lib/db.js",
+      "type": "file",
+      "name": "db.js",
+      "path": "server/lib/db.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 198,
+      "exports": ["getDefaultDB", "DB"],
+      "classes": 1,
+      "functions": 1
+    },
+    {
+      "id": "module:DB",
+      "type": "module",
+      "name": "DB",
+      "path": "server/lib/db.js",
+      "line": 9,
+      "kind": "class",
+      "description": "Database access layer for agent-orchestrator. Wraps Bun SQLite with methods for plans, plan_items, checkpoints, threads, messages, and activity_log CRUD operations.",
+      "methods": ["constructor", "createPlan", "getPlan", "getRecentPlan", "updatePlanStatus", "updatePlanMilestones", "createPlanItem", "getPlanItem", "getPlanItems", "updatePlanItemStatus", "createCheckpoint", "getCheckpoint", "verifyCheckpoint", "createThread", "getThread", "updateThread", "getRecentPlans", "createMessage", "getThreadMessages", "logActivity", "getActivityLog", "cleanupActivityLog", "close"]
+    },
+    {
+      "id": "module:getDefaultDB",
+      "type": "module",
+      "name": "getDefaultDB",
+      "path": "server/lib/db.js",
+      "line": 174,
+      "kind": "function",
+      "description": "Factory function that returns a default DB instance using the standard database path."
+    },
+    {
+      "id": "file:server/lib/events.js",
+      "type": "file",
+      "name": "events.js",
+      "path": "server/lib/events.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 218,
+      "exports": ["markAsServerProcess", "emitPlanCreated", "emitPlanActivated", "emitPlanCompleted", "emitItemStarted", "emitItemCompleted", "emitCheckpointCreated", "emitCheckpointVerified", "emitModelFallback"],
+      "functions": 10
+    },
+    {
+      "id": "module:events",
+      "type": "module",
+      "name": "events",
+      "path": "server/lib/events.js",
+      "line": 1,
+      "kind": "module",
+      "description": "Event emission system for agent-orchestrator. Provides typed event emitters for plan lifecycle (created/activated/completed), item execution (started/completed), checkpoint management (created/verified), and model fallback notifications. Uses HTTP POST to notify the plugin process and WebSocket broadcaster for real-time UI updates.",
+      "exports": ["markAsServerProcess", "emitPlanCreated", "emitPlanActivated", "emitPlanCompleted", "emitItemStarted", "emitItemCompleted", "emitCheckpointCreated", "emitCheckpointVerified", "emitModelFallback"]
+    },
+    {
+      "id": "file:server/lib/milestone-manager.js",
+      "type": "file",
+      "name": "milestone-manager.js",
+      "path": "server/lib/milestone-manager.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 129,
+      "exports": ["MilestoneManager"],
+      "imports": 2,
+      "classes": 1
+    },
+    {
+      "id": "module:MilestoneManager",
+      "type": "module",
+      "name": "MilestoneManager",
+      "path": "server/lib/milestone-manager.js",
+      "line": 5,
+      "kind": "class",
+      "description": "Manages checkpoint/milestone creation and verification for plan execution. Determines when checkpoints should be created based on configurable intervals, collects agent output for review, and coordinates with KimiClient for checkpoint verification.",
+      "methods": ["constructor", "shouldCheckpoint", "getNextCheckpointIndex", "createCheckpoint", "_collectAgentOutput", "verifyCheckpoint", "getPendingCheckpoints"]
+    },
+    {
+      "id": "file:server/lib/model-clients/base-client.js",
+      "type": "file",
+      "name": "base-client.js",
+      "path": "server/lib/model-clients/base-client.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 162,
+      "classes": 1
+    },
+    {
+      "id": "module:BaseModelClient",
+      "type": "module",
+      "name": "BaseModelClient",
+      "path": "server/lib/model-clients/base-client.js",
+      "line": 2,
+      "kind": "class",
+      "description": "Base HTTP client for all model APIs. Provides chat() for direct API calls, shouldFallback() for error classification, and chatWithFallback() for automatic failover to a secondary client on network/rate-limit errors.",
+      "methods": ["constructor", "chat", "shouldFallback", "chatWithFallback"]
+    },
+    {
+      "id": "file:server/lib/model-clients/deepseek-client.js",
+      "type": "file",
+      "name": "deepseek-client.js",
+      "path": "server/lib/model-clients/deepseek-client.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 89,
+      "classes": 1
+    },
+    {
+      "id": "module:DeepSeekClient",
+      "type": "module",
+      "name": "DeepSeekClient",
+      "path": "server/lib/model-clients/deepseek-client.js",
+      "line": 3,
+      "kind": "class",
+      "description": "DeepSeek model client extending BaseModelClient. Provides executeTask() for build-mode task execution, generatePlan() for plan generation, and generateCode() for code generation. Used as Layer 2 in the three-layer fallback chain.",
+      "methods": ["constructor", "executeTask", "generatePlan", "generateCode", "parseExecutionResult"]
+    },
+    {
+      "id": "file:server/lib/model-clients/kimi-client.js",
+      "type": "file",
+      "name": "kimi-client.js",
+      "path": "server/lib/model-clients/kimi-client.js",
+      "language": "javascript",
+      "category": "code",
+      "lines": 189,
+      "exports": ["CAPABILITY_LIST"],
+      "classes": 1
+    },
+    {
+      "id": "module:KimiClient",
+      "type": "module",
+      "name": "KimiClient",
+      "path": "server/lib/model-clients/kimi-client.js",
+      "line": 11,
+      "kind": "class",
+      "description": "Kimi (Moonshot) model client extending BaseModelClient. Primary model for plan generation, task mode analysis, and checkpoint review. Implements generatePlan() with structured JSON parsing, analyzeTaskMode() for plan-vs-build decisions, and reviewCheckpoint() for milestone verification.",
+      "methods": ["constructor", "generatePlan", "analyzeTaskMode", "reviewCheckpoint", "parsePlan"]
+    },
+    {
+      "id": "module:CAPABILITY_LIST",
+      "type": "module",
+      "name": "CAPABILITY_LIST",
+      "path": "server/lib/model-clients/kimi-client.js",
+      "line": 9,
+      "kind": "variable",
+      "description": "List of Kimi model capabilities used in plan generation prompts."
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:index.js",
+      "target": "module:AgentOrchestratorPlugin",
+      "type": "EXPORTS",
+      "line": 221
+    },
+    {
+      "source": "module:AgentOrchestratorPlugin",
+      "target": "module:DB",
+      "type": "IMPORTS",
+      "description": "Uses DB for database operations"
+    },
+    {
+      "source": "module:AgentOrchestratorPlugin",
+      "target": "module:KimiClient",
+      "type": "IMPORTS",
+      "description": "Uses KimiClient for plan generation and task analysis"
+    },
+    {
+      "source": "module:AgentOrchestratorPlugin",
+      "target": "module:DeepSeekClient",
+      "type": "IMPORTS",
+      "description": "Uses DeepSeekClient for task execution"
+    },
+    {
+      "source": "module:AgentOrchestratorPlugin",
+      "target": "module:AutoDispatcher",
+      "type": "IMPORTS",
+      "description": "Uses AutoDispatcher for automatic task dispatch"
+    },
+    {
+      "source": "module:AgentOrchestratorPlugin",
+      "target": "module:AutoExecutor",
+      "type": "IMPORTS",
+      "description": "Uses AutoExecutor for skill execution prompts"
+    },
+    {
+      "source": "module:AgentOrchestratorPlugin",
+      "target": "module:SCHEMA_SQL",
+      "type": "IMPORTS",
+      "description": "Uses SCHEMA_SQL for database initialization"
+    },
+    {
+      "source": "module:AgentOrchestratorPlugin",
+      "target": "module:events",
+      "type": "IMPORTS",
+      "description": "Uses event emitters for lifecycle notifications"
+    },
+    {
+      "source": "file:server/index.js",
+      "target": "module:server",
+      "type": "EXPORTS",
+      "line": 167
+    },
+    {
+      "source": "module:server",
+      "target": "file:server/api/plan.js",
+      "type": "IMPORTS",
+      "description": "Routes plan API requests"
+    },
+    {
+      "source": "module:server",
+      "target": "file:server/api/checkpoint.js",
+      "type": "IMPORTS",
+      "description": "Routes checkpoint API requests"
+    },
+    {
+      "source": "module:server",
+      "target": "file:server/api/thread.js",
+      "type": "IMPORTS",
+      "description": "Routes thread API requests"
+    },
+    {
+      "source": "module:server",
+      "target": "file:server/api/status.js",
+      "type": "IMPORTS",
+      "description": "Routes status API requests"
+    },
+    {
+      "source": "module:server",
+      "target": "file:server/api/internal-event.js",
+      "type": "IMPORTS",
+      "description": "Routes internal event API requests"
+    },
+    {
+      "source": "module:server",
+      "target": "module:SCHEMA_SQL",
+      "type": "IMPORTS",
+      "description": "Uses SCHEMA_SQL for database initialization"
+    },
+    {
+      "source": "file:server/lib/agent-router.js",
+      "target": "module:MilestoneManager",
+      "type": "EXPORTS",
+      "line": 3
+    },
+    {
+      "source": "file:server/lib/auto-dispatcher.js",
+      "target": "module:AutoDispatcher",
+      "type": "EXPORTS",
+      "line": 13
+    },
+    {
+      "source": "module:AutoDispatcher",
+      "target": "file:server/lib/opencode-server.js",
+      "type": "IMPORTS",
+      "description": "Uses OpencodeServer for server management"
+    },
+    {
+      "source": "module:AutoDispatcher",
+      "target": "file:server/lib/subagent-runner.js",
+      "type": "IMPORTS",
+      "description": "Uses SubagentRunner for direct task execution"
+    },
+    {
+      "source": "file:server/lib/auto-executor.js",
+      "target": "module:AutoExecutor",
+      "type": "EXPORTS",
+      "line": 30
+    },
+    {
+      "source": "module:AutoExecutor",
+      "target": "file:server/lib/skill-classifier.js",
+      "type": "IMPORTS",
+      "description": "Uses SkillClassifier for skill tier classification"
+    },
+    {
+      "source": "file:server/lib/db-schema.js",
+      "target": "module:SCHEMA_SQL",
+      "type": "EXPORTS",
+      "line": 1
+    },
+    {
+      "source": "file:server/lib/db.js",
+      "target": "module:DB",
+      "type": "EXPORTS",
+      "line": 183
+    },
+    {
+      "source": "file:server/lib/db.js",
+      "target": "module:getDefaultDB",
+      "type": "EXPORTS",
+      "line": 174
+    },
+    {
+      "source": "module:DB",
+      "target": "module:SCHEMA_SQL",
+      "type": "IMPORTS",
+      "description": "Constructor accepts database path, schema applied externally"
+    },
+    {
+      "source": "file:server/lib/events.js",
+      "target": "module:events",
+      "type": "EXPORTS",
+      "line": 1
+    },
+    {
+      "source": "module:events",
+      "target": "file:server/websocket/broadcaster.js",
+      "type": "IMPORTS",
+      "description": "Uses broadcaster for WebSocket event distribution"
+    },
+    {
+      "source": "file:server/lib/milestone-manager.js",
+      "target": "module:MilestoneManager",
+      "type": "EXPORTS",
+      "line": 89
+    },
+    {
+      "source": "module:MilestoneManager",
+      "target": "module:DB",
+      "type": "IMPORTS",
+      "description": "Uses DB for checkpoint CRUD operations"
+    },
+    {
+      "source": "module:MilestoneManager",
+      "target": "module:KimiClient",
+      "type": "IMPORTS",
+      "description": "Uses KimiClient for checkpoint verification"
+    },
+    {
+      "source": "module:DeepSeekClient",
+      "target": "module:BaseModelClient",
+      "type": "EXTENDS",
+      "description": "DeepSeekClient extends BaseModelClient"
+    },
+    {
+      "source": "module:KimiClient",
+      "target": "module:BaseModelClient",
+      "type": "EXTENDS",
+      "description": "KimiClient extends BaseModelClient"
+    },
+    {
+      "source": "file:server/lib/model-clients/kimi-client.js",
+      "target": "module:CAPABILITY_LIST",
+      "type": "EXPORTS",
+      "line": 9
+    },
+    {
+      "source": "file:server/lib/model-clients/kimi-client.js",
+      "target": "module:KimiClient",
+      "type": "EXPORTS",
+      "line": 11
+    },
+    {
+      "source": "file:server/lib/model-clients/deepseek-client.js",
+      "target": "module:DeepSeekClient",
+      "type": "EXPORTS",
+      "line": 3
+    },
+    {
+      "source": "module:AgentOrchestratorPlugin",
+      "target": "module:DB",
+      "type": "CALLS",
+      "description": "Calls db.createPlan, db.getPlan, db.updatePlanStatus, db.logActivity, etc."
+    },
+    {
+      "source": "module:AgentOrchestratorPlugin",
+      "target": "module:KimiClient",
+      "type": "CALLS",
+      "description": "Calls kimiClient.chatWithFallback, kimiClient.analyzeTaskMode, kimiClient.reviewCheckpoint"
+    },
+    {
+      "source": "module:AgentOrchestratorPlugin",
+      "target": "module:DeepSeekClient",
+      "type": "CALLS",
+      "description": "Calls deepseekClient.executeTask"
+    },
+    {
+      "source": "module:AgentOrchestratorPlugin",
+      "target": "module:AutoExecutor",
+      "type": "CALLS",
+      "description": "Calls AutoExecutor.validate, AutoExecutor.buildPrompt"
+    },
+    {
+      "source": "module:AgentOrchestratorPlugin",
+      "target": "module:AutoDispatcher",
+      "type": "CALLS",
+      "description": "Calls autoDispatcher.start, autoDispatcher.stop, autoDispatcher.getStatus"
+    },
+    {
+      "source": "module:AgentOrchestratorPlugin",
+      "target": "module:MilestoneManager",
+      "type": "CALLS",
+      "description": "Uses MilestoneManager for checkpoint creation/verification"
+    },
+    {
+      "source": "module:KimiClient",
+      "target": "module:BaseModelClient",
+      "type": "CALLS",
+      "description": "Calls this.chatWithFallback (inherited)"
+    },
+    {
+      "source": "module:DeepSeekClient",
+      "target": "module:BaseModelClient",
+      "type": "CALLS",
+      "description": "Calls this.chat (inherited)"
+    },
+    {
+      "source": "file:server/api/checkpoint.js",
+      "target": "module:MilestoneManager",
+      "type": "CALLS",
+      "description": "Calls milestoneManager.createCheckpoint, milestoneManager.verifyCheckpoint"
+    },
+    {
+      "source": "file:server/api/checkpoint.js",
+      "target": "module:KimiClient",
+      "type": "CALLS",
+      "description": "Calls kimiClient.reviewCheckpoint"
+    },
+    {
+      "source": "file:server/api/checkpoint.js",
+      "target": "module:DB",
+      "type": "CALLS",
+      "description": "Calls db.getCheckpoint, db.logActivity"
+    },
+    {
+      "source": "file:server/api/checkpoint.js",
+      "target": "module:events",
+      "type": "CALLS",
+      "description": "Calls emitCheckpointCreated, emitCheckpointVerified"
+    },
+    {
+      "source": "file:server/api/plan.js",
+      "target": "module:DB",
+      "type": "CALLS",
+      "description": "Calls db.getPlan, db.getPlanItems, db.updatePlanItemStatus, db.updatePlanStatus, db.logActivity"
+    },
+    {
+      "source": "file:server/api/plan.js",
+      "target": "module:events",
+      "type": "CALLS",
+      "description": "Calls emitPlanCreated, emitPlanActivated, emitPlanCompleted, emitModelFallback"
+    },
+    {
+      "source": "file:server/api/status.js",
+      "target": "module:DB",
+      "type": "CALLS",
+      "description": "Calls db.db.prepare for status queries"
+    },
+    {
+      "source": "file:server/api/thread.js",
+      "target": "module:DB",
+      "type": "CALLS",
+      "description": "Calls db.getThread, db.createMessage, db.getThreadMessages"
+    },
+    {
+      "source": "file:server/api/internal-event.js",
+      "target": "file:server/websocket/broadcaster.js",
+      "type": "CALLS",
+      "description": "Calls broadcaster.broadcast"
+    },
+    {
+      "source": "file:server/index.js",
+      "target": "file:server/api/plan.js",
+      "type": "CALLS",
+      "description": "Routes to planRouter.createPlan, planRouter.activatePlan, etc."
+    },
+    {
+      "source": "file:server/index.js",
+      "target": "file:server/api/checkpoint.js",
+      "type": "CALLS",
+      "description": "Routes to checkpointRouter.createCheckpoint, checkpointRouter.verifyCheckpoint, etc."
+    },
+    {
+      "source": "file:server/index.js",
+      "target": "file:server/api/thread.js",
+      "type": "CALLS",
+      "description": "Routes to threadRouter.createThread, threadRouter.appendMessage, threadRouter.getThread"
+    },
+    {
+      "source": "file:server/index.js",
+      "target": "file:server/api/status.js",
+      "type": "CALLS",
+      "description": "Routes to statusRouter.getStatus, statusRouter.getAgentStatus"
+    },
+    {
+      "source": "file:server/index.js",
+      "target": "file:server/api/internal-event.js",
+      "type": "CALLS",
+      "description": "Routes to internalEventRouter.handleEvent"
+    },
+    {
+      "source": "module:AutoDispatcher",
+      "target": "file:server/lib/opencode-server.js",
+      "type": "CALLS",
+      "description": "Calls this.server.start, this.server.stop, this.server.isHealthy"
+    },
+    {
+      "source": "module:AutoDispatcher",
+      "target": "file:server/lib/subagent-runner.js",
+      "type": "CALLS",
+      "description": "Calls this.runner.run for direct execution fallback"
+    },
+    {
+      "source": "module:AutoExecutor",
+      "target": "file:server/lib/skill-classifier.js",
+      "type": "CALLS",
+      "description": "Calls createDefaultClassifier, classifier.classify"
+    },
+    {
+      "source": "module:MilestoneManager",
+      "target": "module:DB",
+      "type": "CALLS",
+      "description": "Calls db.getPlan, db.getPlanItems, db.createCheckpoint, db.verifyCheckpoint, db.logActivity"
+    },
+    {
+      "source": "module:events",
+      "target": "file:server/websocket/broadcaster.js",
+      "type": "CALLS",
+      "description": "Calls broadcaster.broadcast for real-time event distribution"
+    },
+    {
+      "source": "file:.opencode/plans/fallback-fix-plan.md",
+      "target": "module:DeepSeekClient",
+      "type": "REFERENCES",
+      "description": "Plan describes adding generatePlan method to DeepSeekClient"
+    },
+    {
+      "source": "file:.opencode/plans/fallback-fix-plan.md",
+      "target": "module:KimiClient",
+      "type": "REFERENCES",
+      "description": "Plan describes updating KimiClient's generatePlan for fallback support"
+    },
+    {
+      "source": "file:.opencode/plans/fallback-fix-plan.md",
+      "target": "file:index.js",
+      "type": "REFERENCES",
+      "description": "Plan describes updating index.js to pass deepseekClient"
+    },
+    {
+      "source": "file:.opencode/plans/real-api-test-plan.md",
+      "target": "module:KimiClient",
+      "type": "REFERENCES",
+      "description": "Test plan covers Kimi K2.6 Layer 1"
+    },
+    {
+      "source": "file:.opencode/plans/real-api-test-plan.md",
+      "target": "module:DeepSeekClient",
+      "type": "REFERENCES",
+      "description": "Test plan covers DeepSeek V4 Flash Layer 2"
+    },
+    {
+      "source": "file:docs/superpowers/specs/2026-06-02-orchestrator-e2e-design.md",
+      "target": "file:index.js",
+      "type": "REFERENCES",
+      "description": "Design doc for orchestrator E2E verification"
+    },
+    {
+      "source": "file:docs/superpowers/specs/2026-06-02-orchestrator-e2e-design.md",
+      "target": "file:server/index.js",
+      "type": "REFERENCES",
+      "description": "Design doc references server startup verification"
+    },
+    {
+      "source": "file:docs/superpowers/plans/2026-06-02-orchestrator-e2e.md",
+      "target": "file:docs/superpowers/specs/2026-06-02-orchestrator-e2e-design.md",
+      "type": "REFERENCES",
+      "description": "Implementation plan references the design spec"
+    }
+  ]
+}

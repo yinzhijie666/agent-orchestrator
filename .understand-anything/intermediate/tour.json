@@ -1,0 +1,88 @@
+{
+  "project": "agent-orchestrator",
+  "title": "Agent Orchestrator — Guided Learning Tour",
+  "description": "A step-by-step tour through the three-layer agent orchestration system: Kimi plans, DeepSeek builds, MiniMax queries.",
+  "steps": [
+    {
+      "order": 1,
+      "title": "Project Overview — Documentation & Configuration",
+      "description": "Start here to understand what this project does and how it's configured. README.md describes the three-layer architecture (Kimi → DeepSeek → MiniMax), the API endpoints, and plugin tools. CLAUDE.md contains the AI assistant's behavioral rules and project-specific constraints. opencode.json registers the plugin with OpenCode, and package.json defines dependencies and scripts.",
+      "nodeIds": [
+        "document:README.md",
+        "document:CLAUDE.md",
+        "document:docs/ARCHITECTURE.md",
+        "config:opencode.json",
+        "config:package.json"
+      ]
+    },
+    {
+      "order": 2,
+      "title": "Plugin Entry Point — index.js",
+      "description": "The heart of the system. AgentOrchestratorPlugin is an async function that OpenCode loads as a plugin. It initializes the SQLite database, creates the three model clients (Kimi, DeepSeek, MiniMax), starts the AutoDispatcher, and registers four tools: `agent` (auto-route requests), `agent_status` (system health), `agent_checkpoint` (milestone reviews), and `agent_execute_skills` (skill dispatch). The `agent` tool is the main entry — it calls `executePlanTask()` which asks Kimi to decide between 'plan mode' (analysis only) or 'build mode' (generate plan + execute items).",
+      "nodeIds": [
+        "file:index.js"
+      ]
+    },
+    {
+      "order": 3,
+      "title": "HTTP Server — server/index.js",
+      "description": "A standalone Bun HTTP server (port 8765) that exposes REST API endpoints and serves a real-time dashboard. It initializes the same SQLite database, sets up WebSocket for live event broadcasting, and routes requests to the API modules. This server runs independently from the plugin — the plugin registers tools with OpenCode, while the server provides external HTTP access for monitoring and direct API calls.",
+      "nodeIds": [
+        "file:server/index.js",
+        "file:server/websocket/server.js"
+      ]
+    },
+    {
+      "order": 4,
+      "title": "API Layer — REST Endpoints",
+      "description": "Five API modules handle HTTP requests: plan-api.js (create/retrieve/update plans), checkpoint-api.js (create/verify milestone checkpoints), thread-api.js (conversation thread management), status-api.js (system health and agent availability), and internal-event-api.js (internal event handling for inter-component communication). Each router reads from and writes to the shared SQLite database.",
+      "nodeIds": [
+        "file:server/api/plan.js",
+        "file:server/api/checkpoint.js",
+        "file:server/api/status.js",
+        "file:server/api/thread.js",
+        "file:server/api/internal-event.js"
+      ]
+    },
+    {
+      "order": 5,
+      "title": "Core Orchestration — Planning & Dispatching",
+      "description": "Three modules form the orchestration brain. PlanOrchestrator generates structured plans via Kimi (with DeepSeek fallback), validates them with PlanParser, and persists to the database. AutoDispatcher routes subagent tasks through two paths: D1 (direct LLM API via SubagentRunner) or D2 (long-lived opencode server process). AutoExecutor builds execution prompts for skill-based workflows, categorizing skills as INTERACTIVE (user input needed), TOOL_REQUIRED (needs bash/browse), or AUTO (can run headlessly in a subagent).",
+      "nodeIds": [
+        "file:server/lib/plan-orchestrator.js",
+        "file:server/lib/auto-dispatcher.js",
+        "file:server/lib/auto-executor.js",
+        "file:server/lib/subagent-runner.js"
+      ]
+    },
+    {
+      "order": 6,
+      "title": "Model Clients — Three-Layer LLM Architecture",
+      "description": "Each model has a dedicated client extending BaseModelClient. KimiClient (Moonshot K2.6) handles planning: task mode analysis, plan generation, checkpoint review, and recommendation generation — it's the 'brain' that decides what to do. DeepSeekClient (V4 Flash) handles execution: code generation, task execution, and serves as Kimi's fallback. MiniMaxClient (M3) handles queries: code search and verification tasks. The `chatWithFallback()` pattern ensures resilience — if Kimi fails, DeepSeek takes over plan generation.",
+      "nodeIds": [
+        "file:server/lib/model-clients/kimi-client.js",
+        "file:server/lib/model-clients/deepseek-client.js",
+        "file:server/lib/model-clients/minimax-client.js"
+      ]
+    },
+    {
+      "order": 7,
+      "title": "Infrastructure — Database, Events & WebSocket",
+      "description": "The persistence and communication layer. DB (db.js) wraps Bun's SQLite with methods for plans, plan items, checkpoints, activity logs, and threads. The schema (db-schema.js) defines 7 tables. Events (events.js) provides typed event emission for plan lifecycle (created/completed), item progress (started/completed), checkpoint creation/verification, and model fallback notifications. The WebSocket server broadcasts these events in real-time to the dashboard and any connected clients.",
+      "nodeIds": [
+        "file:server/lib/db.js",
+        "file:server/lib/events.js",
+        "file:server/websocket/server.js"
+      ]
+    },
+    {
+      "order": 8,
+      "title": "Checkpoint System — Milestone Quality Gates",
+      "description": "The quality assurance mechanism. MilestoneManager tracks plan progress and triggers checkpoints every N completed items (default: 4). When a checkpoint is created, it collects all agent outputs up to the milestone index. Kimi then reviews the checkpoint — verifying that work quality meets standards before allowing continuation. If Kimi is unavailable, checkpoints auto-pass with a warning. The checkpoint API (checkpoint-api.js) exposes this for external access, while the `agent_checkpoint` tool provides it to OpenCode.",
+      "nodeIds": [
+        "file:server/lib/milestone-manager.js",
+        "file:server/api/checkpoint.js"
+      ]
+    }
+  ]
+}

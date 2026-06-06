@@ -1,0 +1,114 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 5,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "scripts/codegraph-capability-matrix.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 122,
+      "nonEmptyLines": 113,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/skills-inventory.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 81,
+      "nonEmptyLines": 74,
+      "functions": [
+        {
+          "name": "check_skill",
+          "startLine": 19,
+          "endLine": 32,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/verify-skills-execution.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 391,
+      "nonEmptyLines": 352,
+      "functions": [
+        {
+          "name": "check_freshness",
+          "startLine": 35,
+          "endLine": 60,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/workflow-dry-run.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 540,
+      "nonEmptyLines": 471,
+      "functions": [
+        {
+          "name": "check_product_freshness",
+          "startLine": 33,
+          "endLine": 59,
+          "params": []
+        },
+        {
+          "name": "check_command_checkpoint",
+          "startLine": 62,
+          "endLine": 79,
+          "params": []
+        },
+        {
+          "name": "run_interactive_checkpoint",
+          "startLine": 82,
+          "endLine": 137,
+          "params": []
+        },
+        {
+          "name": "run_tool_checkpoint",
+          "startLine": 140,
+          "endLine": 211,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/workflow-preflight-check.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 281,
+      "nonEmptyLines": 257,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

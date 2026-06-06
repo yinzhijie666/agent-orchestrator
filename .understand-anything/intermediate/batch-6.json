@@ -1,0 +1,357 @@
+{
+  "nodes": [
+    {
+      "id": "tests/auto-dispatcher.test.js",
+      "kind": "test_file",
+      "name": "auto-dispatcher.test.js",
+      "filePath": "tests/auto-dispatcher.test.js",
+      "language": "javascript",
+      "lineCount": 193,
+      "description": "Unit tests for AutoDispatcher: constructor state, D2 enable/disable, dispatch counter, and config defaults"
+    },
+    {
+      "id": "tests/auto-executor.test.js",
+      "kind": "test_file",
+      "name": "auto-executor.test.js",
+      "filePath": "tests/auto-executor.test.js",
+      "language": "javascript",
+      "lineCount": 177,
+      "description": "Unit tests for AutoExecutor.buildPrompt: tier ordering (P0 before P1), empty tier exclusion, prompt schema"
+    },
+    {
+      "id": "tests/db-lazy.test.js",
+      "kind": "test_file",
+      "name": "db-lazy.test.js",
+      "filePath": "tests/db-lazy.test.js",
+      "language": "javascript",
+      "lineCount": 29,
+      "description": "Tests DB lazy loading: importing db.js does not create sqlite file; getDefaultDB returns singleton"
+    },
+    {
+      "id": "tests/db-schema.test.js",
+      "kind": "test_file",
+      "name": "db-schema.test.js",
+      "filePath": "tests/db-schema.test.js",
+      "language": "javascript",
+      "lineCount": 58,
+      "description": "Validates SCHEMA_SQL contains all 6 tables (plans, plan_items, checkpoints, agent_threads, messages, activity_log) and required columns"
+    },
+    {
+      "id": "tests/dispatcher-counter.test.js",
+      "kind": "test_file",
+      "name": "dispatcher-counter.test.js",
+      "filePath": "tests/dispatcher-counter.test.js",
+      "language": "javascript",
+      "lineCount": 89,
+      "description": "Tests AutoDispatcher dispatch counting with mock LLM client, verifies dispatch count increments"
+    },
+    {
+      "id": "tests/e2e/auto-dispatcher-flow.test.js",
+      "kind": "test_file",
+      "name": "auto-dispatcher-flow.test.js",
+      "filePath": "tests/e2e/auto-dispatcher-flow.test.js",
+      "language": "javascript",
+      "lineCount": 184,
+      "description": "E2E test for AutoDispatcher L3 auto-dispatch path: start, dispatch with real LLM call, unified envelope, status, stop"
+    },
+    {
+      "id": "tests/e2e/auto-exec-flow.test.js",
+      "kind": "test_file",
+      "name": "auto-exec-flow.test.js",
+      "filePath": "tests/e2e/auto-exec-flow.test.js",
+      "language": "javascript",
+      "lineCount": 230,
+      "description": "E2E test for skill auto-execution flow: server start, plan creation via HTTP API, agent_execute_skills tool, AUTO_EXEC_SKILLS gating"
+    },
+    {
+      "id": "tests/events.test.js",
+      "kind": "test_file",
+      "name": "events.test.js",
+      "filePath": "tests/events.test.js",
+      "language": "javascript",
+      "lineCount": 99,
+      "description": "Tests events module emit functions: plan.created, plan.activated, plan.completed, item.started, item.completed, checkpoint events, model.fallback"
+    },
+    {
+      "id": "tests/execute-skills.test.js",
+      "kind": "test_file",
+      "name": "execute-skills.test.js",
+      "filePath": "tests/execute-skills.test.js",
+      "language": "javascript",
+      "lineCount": 199,
+      "description": "Tests agent_execute_skills tool via AgentOrchestratorPlugin: skill parsing, plan creation, tool invocation, result validation"
+    },
+    {
+      "id": "tests/fallback.test.js",
+      "kind": "test_file",
+      "name": "fallback.test.js",
+      "filePath": "tests/fallback.test.js",
+      "language": "javascript",
+      "lineCount": 215,
+      "description": "Tests BaseModelClient fallback chain: shouldFallback for network errors, not for 401; KimiClient and DeepSeekClient integration"
+    },
+    {
+      "id": "tests/http-bridge.test.js",
+      "kind": "test_file",
+      "name": "http-bridge.test.js",
+      "filePath": "tests/http-bridge.test.js",
+      "language": "javascript",
+      "lineCount": 77,
+      "description": "Tests PR7 events.js mode switching: markAsServerProcess makes emit use local broadcaster; verifies event shapes"
+    },
+    {
+      "id": "tests/milestone-atomic.test.js",
+      "kind": "test_file",
+      "name": "milestone-atomic.test.js",
+      "filePath": "tests/milestone-atomic.test.js",
+      "language": "javascript",
+      "lineCount": 107,
+      "description": "Tests MilestoneManager atomic increment for checkpoint verification with real SQLite DB"
+    },
+    {
+      "id": "tests/milestone-manager.test.js",
+      "kind": "test_file",
+      "name": "milestone-manager.test.js",
+      "filePath": "tests/milestone-manager.test.js",
+      "language": "javascript",
+      "lineCount": 13,
+      "description": "Tests MilestoneManager import succeeds and AgentRouter is no longer in agent-router.js"
+    },
+    {
+      "id": "tests/models.test.js",
+      "kind": "test_file",
+      "name": "models.test.js",
+      "filePath": "tests/models.test.js",
+      "language": "javascript",
+      "lineCount": 257,
+      "description": "Tests model configuration: Kimi, DeepSeek, MiniMax client configs, BaseModelClient.chatWithFallback, provider selection"
+    },
+    {
+      "id": "tests/opencode-server.test.js",
+      "kind": "test_file",
+      "name": "opencode-server.test.js",
+      "filePath": "tests/opencode-server.test.js",
+      "language": "javascript",
+      "lineCount": 50,
+      "description": "Tests OpencodeServer: global registry on start, stop idempotency and port release, signal handlers"
+    },
+    {
+      "id": "tests/orchestrator.test.js",
+      "kind": "test_file",
+      "name": "orchestrator.test.js",
+      "filePath": "tests/orchestrator.test.js",
+      "language": "javascript",
+      "lineCount": 188,
+      "description": "Integration tests: database init, all tables exist, MilestoneManager, PlanParser, KimiClient plan generation"
+    },
+    {
+      "id": "tests/plan-orchestrator.test.js",
+      "kind": "test_file",
+      "name": "plan-orchestrator.test.js",
+      "filePath": "tests/plan-orchestrator.test.js",
+      "language": "javascript",
+      "lineCount": 175,
+      "description": "Tests PlanOrchestrator: plan generation with mock Kimi/DeepSeek clients, error handling, invalid plan rejection"
+    },
+    {
+      "id": "tests/plugin-checkpoint.test.js",
+      "kind": "test_file",
+      "name": "plugin-checkpoint.test.js",
+      "filePath": "tests/plugin-checkpoint.test.js",
+      "language": "javascript",
+      "lineCount": 86,
+      "description": "Tests agent_checkpoint tool: create rejects when no items completed, verify flow, PR2 Stages 2.2/2.5/2.6"
+    },
+    {
+      "id": "tests/pr4-bugfixes.test.js",
+      "kind": "test_file",
+      "name": "pr4-bugfixes.test.js",
+      "filePath": "tests/pr4-bugfixes.test.js",
+      "language": "javascript",
+      "lineCount": 82,
+      "description": "Tests PR4 bugfix: user 'failed' override not blocked by Kimi fallback (auto-pass overridden)"
+    },
+    {
+      "id": "tests/pr4-mock.test.js",
+      "kind": "test_file",
+      "name": "pr4-mock.test.js",
+      "filePath": "tests/pr4-mock.test.js",
+      "language": "javascript",
+      "lineCount": 60,
+      "description": "Tests PR4 with mocked Kimi failure: user 'failed' override works when KimiClient.reviewCheckpoint throws 401"
+    },
+    {
+      "id": "tests/prompts.test.js",
+      "kind": "test_file",
+      "name": "prompts.test.js",
+      "filePath": "tests/prompts.test.js",
+      "language": "javascript",
+      "lineCount": 248,
+      "description": "Tests LLM prompts: Kimi generatePlan system prompt, DeepSeek/MiniMax prompt structure, capability list inclusion"
+    },
+    {
+      "id": "tests/real-api.test.js",
+      "kind": "test_file",
+      "name": "real-api.test.js",
+      "filePath": "tests/real-api.test.js",
+      "language": "javascript",
+      "lineCount": 255,
+      "description": "Real API integration tests: loads .env, tests Kimi/DeepSeek/MiniMax with actual API keys (skips if no key)"
+    },
+    {
+      "id": "tests/round4-prompt-skills.test.js",
+      "kind": "test_file",
+      "name": "round4-prompt-skills.test.js",
+      "filePath": "tests/round4-prompt-skills.test.js",
+      "language": "javascript",
+      "lineCount": 169,
+      "description": "Round 4 fixes: AutoExecutor output schema matches SubagentRunner, short tier names (P0/P1/P2), CAPABILITY_LIST"
+    },
+    {
+      "id": "tests/scripts/codegraph-capability-matrix.test.js",
+      "kind": "test_file",
+      "name": "codegraph-capability-matrix.test.js",
+      "filePath": "tests/scripts/codegraph-capability-matrix.test.js",
+      "language": "javascript",
+      "lineCount": 48,
+      "description": "Tests codegraph-capability-matrix.sh: generates valid JSON with tool/version/cli/mcp schema"
+    },
+    {
+      "id": "tests/scripts/preflight-check.test.js",
+      "kind": "test_file",
+      "name": "preflight-check.test.js",
+      "filePath": "tests/scripts/preflight-check.test.js",
+      "language": "javascript",
+      "lineCount": 63,
+      "description": "Tests workflow-preflight-check.sh: runs with appropriate exit code (0 or 1), outputs check results"
+    },
+    {
+      "id": "tests/scripts/skills-inventory.test.js",
+      "kind": "test_file",
+      "name": "skills-inventory.test.js",
+      "filePath": "tests/scripts/skills-inventory.test.js",
+      "language": "javascript",
+      "lineCount": 35,
+      "description": "Tests skills-inventory.sh: reports 31/31 found, lists Karpathy/Superpowers/GStack sections, all entries show pass"
+    },
+    {
+      "id": "tests/scripts/verify-skills-execution.test.js",
+      "kind": "test_file",
+      "name": "verify-skills-execution.test.js",
+      "filePath": "tests/scripts/verify-skills-execution.test.js",
+      "language": "javascript",
+      "lineCount": 67,
+      "description": "Tests verify-skills-execution.sh: script exists, contains all 8 check headers, defines P0 brainstorming/writing-plans checks"
+    },
+    {
+      "id": "tests/skill-classifier.test.js",
+      "kind": "test_file",
+      "name": "skill-classifier.test.js",
+      "filePath": "tests/skill-classifier.test.js",
+      "language": "javascript",
+      "lineCount": 68,
+      "description": "Tests SkillClassifier: classifies all 31 skills without UNKNOWN, INTERACTIVE (7), TOOL_REQUIRED (10), AUTOMATIC categories"
+    },
+    {
+      "id": "tests/skills.test.js",
+      "kind": "test_file",
+      "name": "skills.test.js",
+      "filePath": "tests/skills.test.js",
+      "language": "javascript",
+      "lineCount": 175,
+      "description": "Tests PlanParser suggested_skills: P0/P1/P2 object format parsing via KimiClient, skill tier normalization"
+    },
+    {
+      "id": "tests/subagent-runner-fallback.test.js",
+      "kind": "test_file",
+      "name": "subagent-runner-fallback.test.js",
+      "filePath": "tests/subagent-runner-fallback.test.js",
+      "language": "javascript",
+      "lineCount": 84,
+      "description": "Tests SubagentRunner fallback chain: cheap (MiniMax) primary failure falls back to DeepSeek, PR2 Stage 4.1"
+    },
+    {
+      "id": "tests/subagent-runner.test.js",
+      "kind": "test_file",
+      "name": "subagent-runner.test.js",
+      "filePath": "tests/subagent-runner.test.js",
+      "language": "javascript",
+      "lineCount": 171,
+      "description": "Tests SubagentRunner: constructor timeout, default fallback, JSON parsing, result validation, error handling"
+    },
+    {
+      "id": "tests/write-forbidden.test.js",
+      "kind": "test_file",
+      "name": "write-forbidden.test.js",
+      "filePath": "tests/write-forbidden.test.js",
+      "language": "javascript",
+      "lineCount": 30,
+      "description": "Tests MiniMaxClient writeForbidden: isReadOnly returns true, writeForbidden throws, no write methods on prototype"
+    }
+  ],
+  "edges": [
+    {"from": "tests/auto-dispatcher.test.js", "to": "server/lib/auto-dispatcher.js", "kind": "tests", "label": "tests AutoDispatcher"},
+    {"from": "tests/auto-executor.test.js", "to": "server/lib/auto-executor.js", "kind": "tests", "label": "tests AutoExecutor.buildPrompt"},
+    {"from": "tests/db-lazy.test.js", "to": "server/lib/db.js", "kind": "tests", "label": "tests DB lazy loading"},
+    {"from": "tests/db-schema.test.js", "to": "server/lib/db-schema.js", "kind": "tests", "label": "tests SCHEMA_SQL"},
+    {"from": "tests/dispatcher-counter.test.js", "to": "server/lib/auto-dispatcher.js", "kind": "tests", "label": "tests AutoDispatcher dispatch counter"},
+    {"from": "tests/e2e/auto-dispatcher-flow.test.js", "to": "server/lib/auto-dispatcher.js", "kind": "tests", "label": "E2E tests AutoDispatcher"},
+    {"from": "tests/e2e/auto-dispatcher-flow.test.js", "to": "server/lib/auto-executor.js", "kind": "tests", "label": "E2E tests AutoExecutor"},
+    {"from": "tests/events.test.js", "to": "server/websocket/broadcaster.js", "kind": "tests", "label": "tests broadcaster"},
+    {"from": "tests/events.test.js", "to": "server/lib/events.js", "kind": "tests", "label": "tests event emitters"},
+    {"from": "tests/execute-skills.test.js", "to": "index.js", "kind": "tests", "label": "tests AgentOrchestratorPlugin agent_execute_skills"},
+    {"from": "tests/execute-skills.test.js", "to": "server/lib/db.js", "kind": "tests", "label": "uses DB for test setup"},
+    {"from": "tests/fallback.test.js", "to": "server/lib/model-clients/base-client.js", "kind": "tests", "label": "tests BaseModelClient.shouldFallback"},
+    {"from": "tests/fallback.test.js", "to": "server/lib/model-clients/kimi-client.js", "kind": "tests", "label": "tests KimiClient fallback"},
+    {"from": "tests/fallback.test.js", "to": "server/lib/model-clients/deepseek-client.js", "kind": "tests", "label": "tests DeepSeekClient fallback"},
+    {"from": "tests/http-bridge.test.js", "to": "server/websocket/broadcaster.js", "kind": "tests", "label": "tests PR7 events mode switching"},
+    {"from": "tests/http-bridge.test.js", "to": "server/lib/events.js", "kind": "tests", "label": "tests markAsServerProcess"},
+    {"from": "tests/milestone-atomic.test.js", "to": "server/lib/db.js", "kind": "tests", "label": "uses DB"},
+    {"from": "tests/milestone-atomic.test.js", "to": "server/lib/db-schema.js", "kind": "tests", "label": "uses SCHEMA_SQL"},
+    {"from": "tests/milestone-atomic.test.js", "to": "server/lib/milestone-manager.js", "kind": "tests", "label": "tests MilestoneManager atomic increment"},
+    {"from": "tests/milestone-manager.test.js", "to": "server/lib/milestone-manager.js", "kind": "tests", "label": "tests MilestoneManager import"},
+    {"from": "tests/milestone-manager.test.js", "to": "server/lib/agent-router.js", "kind": "tests", "label": "verifies AgentRouter removed"},
+    {"from": "tests/models.test.js", "to": "server/config/default.json", "kind": "tests", "label": "tests model configuration"},
+    {"from": "tests/models.test.js", "to": "server/lib/model-clients/base-client.js", "kind": "tests", "label": "tests BaseModelClient"},
+    {"from": "tests/models.test.js", "to": "server/lib/model-clients/kimi-client.js", "kind": "tests", "label": "tests KimiClient config"},
+    {"from": "tests/models.test.js", "to": "server/lib/model-clients/deepseek-client.js", "kind": "tests", "label": "tests DeepSeekClient config"},
+    {"from": "tests/models.test.js", "to": "server/lib/model-clients/minimax-client.js", "kind": "tests", "label": "tests MiniMaxClient config"},
+    {"from": "tests/opencode-server.test.js", "to": "server/lib/opencode-server.js", "kind": "tests", "label": "tests OpencodeServer lifecycle"},
+    {"from": "tests/orchestrator.test.js", "to": "server/lib/db.js", "kind": "tests", "label": "tests database init"},
+    {"from": "tests/orchestrator.test.js", "to": "server/lib/milestone-manager.js", "kind": "tests", "label": "tests MilestoneManager"},
+    {"from": "tests/orchestrator.test.js", "to": "server/lib/plan-parser.js", "kind": "tests", "label": "tests PlanParser"},
+    {"from": "tests/orchestrator.test.js", "to": "server/lib/model-clients/kimi-client.js", "kind": "tests", "label": "tests KimiClient plan generation"},
+    {"from": "tests/plan-orchestrator.test.js", "to": "server/lib/plan-orchestrator.js", "kind": "tests", "label": "tests PlanOrchestrator"},
+    {"from": "tests/plan-orchestrator.test.js", "to": "server/lib/db.js", "kind": "tests", "label": "uses DB"},
+    {"from": "tests/plan-orchestrator.test.js", "to": "server/lib/db-schema.js", "kind": "tests", "label": "uses SCHEMA_SQL"},
+    {"from": "tests/plugin-checkpoint.test.js", "to": "index.js", "kind": "tests", "label": "tests agent_checkpoint tool"},
+    {"from": "tests/plugin-checkpoint.test.js", "to": "server/lib/db.js", "kind": "tests", "label": "uses DB"},
+    {"from": "tests/pr4-bugfixes.test.js", "to": "index.js", "kind": "tests", "label": "tests PR4 user failed override"},
+    {"from": "tests/pr4-bugfixes.test.js", "to": "server/lib/db.js", "kind": "tests", "label": "uses DB"},
+    {"from": "tests/pr4-mock.test.js", "to": "index.js", "kind": "tests", "label": "tests PR4 with mocked Kimi failure"},
+    {"from": "tests/pr4-mock.test.js", "to": "server/lib/db.js", "kind": "tests", "label": "uses DB"},
+    {"from": "tests/pr4-mock.test.js", "to": "server/lib/model-clients/kimi-client.js", "kind": "tests", "label": "mocks KimiClient.reviewCheckpoint"},
+    {"from": "tests/prompts.test.js", "to": "server/lib/model-clients/kimi-client.js", "kind": "tests", "label": "tests Kimi prompts"},
+    {"from": "tests/prompts.test.js", "to": "server/lib/model-clients/deepseek-client.js", "kind": "tests", "label": "tests DeepSeek prompts"},
+    {"from": "tests/prompts.test.js", "to": "server/lib/model-clients/minimax-client.js", "kind": "tests", "label": "tests MiniMax prompts"},
+    {"from": "tests/real-api.test.js", "to": "server/lib/model-clients/kimi-client.js", "kind": "tests", "label": "real API test KimiClient"},
+    {"from": "tests/real-api.test.js", "to": "server/lib/model-clients/deepseek-client.js", "kind": "tests", "label": "real API test DeepSeekClient"},
+    {"from": "tests/real-api.test.js", "to": "server/lib/model-clients/minimax-client.js", "kind": "tests", "label": "real API test MiniMaxClient"},
+    {"from": "tests/real-api.test.js", "to": "server/config/default.json", "kind": "tests", "label": "reads config for API keys"},
+    {"from": "tests/round4-prompt-skills.test.js", "to": "server/lib/auto-executor.js", "kind": "tests", "label": "tests AutoExecutor output schema"},
+    {"from": "tests/round4-prompt-skills.test.js", "to": "server/lib/model-clients/kimi-client.js", "kind": "tests", "label": "tests CAPABILITY_LIST"},
+    {"from": "tests/scripts/codegraph-capability-matrix.test.js", "to": "scripts/codegraph-capability-matrix.sh", "kind": "tests", "label": "tests script output JSON schema"},
+    {"from": "tests/scripts/preflight-check.test.js", "to": "scripts/workflow-preflight-check.sh", "kind": "tests", "label": "tests script exit code and output"},
+    {"from": "tests/scripts/skills-inventory.test.js", "to": "scripts/skills-inventory.sh", "kind": "tests", "label": "tests 31/31 skills found"},
+    {"from": "tests/scripts/verify-skills-execution.test.js", "to": "scripts/verify-skills-execution.sh", "kind": "tests", "label": "tests 8 check headers"},
+    {"from": "tests/skill-classifier.test.js", "to": "server/lib/skill-classifier.js", "kind": "tests", "label": "tests SkillClassifier categories"},
+    {"from": "tests/skills.test.js", "to": "server/lib/plan-parser.js", "kind": "tests", "label": "tests PlanParser suggested_skills"},
+    {"from": "tests/skills.test.js", "to": "server/lib/model-clients/kimi-client.js", "kind": "tests", "label": "tests KimiClient parsePlan"},
+    {"from": "tests/skills.test.js", "to": "index.js", "kind": "tests", "label": "tests AgentOrchestratorPlugin"},
+    {"from": "tests/skills.test.js", "to": "server/config/default.json", "kind": "tests", "label": "reads config"},
+    {"from": "tests/subagent-runner-fallback.test.js", "to": "server/lib/subagent-runner.js", "kind": "tests", "label": "tests SubagentRunner fallback chain"},
+    {"from": "tests/subagent-runner-fallback.test.js", "to": "server/lib/model-clients/base-client.js", "kind": "tests", "label": "tests BaseModelClient chatWithFallback"},
+    {"from": "tests/subagent-runner.test.js", "to": "server/lib/subagent-runner.js", "kind": "tests", "label": "tests SubagentRunner"},
+    {"from": "tests/write-forbidden.test.js", "to": "server/lib/model-clients/minimax-client.js", "kind": "tests", "label": "tests MiniMaxClient writeForbidden"}
+  ]
+}

@@ -1,6 +1,6 @@
 # Agent Orchestrator
 
-> Three-layer agent orchestration: **Kimi K2.6** plans, **DeepSeek V4 Flash** builds, **MiniMax M3** queries.
+> Three-layer agent orchestration: **Kimi K2.6** plans, **DeepSeek V4 Flash** builds, **OpenCode Zen** queries.
 
 ## Quick Start
 
@@ -11,7 +11,7 @@ cd ~/agent-orchestrator
 # 2. Set API keys (or edit .env)
 export KIMI_API_KEY=sk-...       # Moonshot API Key (OpenCode GO套餐)
 export DEEPSEEK_API_KEY=sk-...   # DeepSeek API Key
-export MINIMAX_API_KEY=sk-...    # MiniMax API Key
+export OPENCODE_API_KEY=sk-...   # OpenCode API Key (for Kimi + OpenCode Zen)
 
 # 3. Initialize database
 bun run init-db
@@ -27,9 +27,9 @@ open http://127.0.0.1:8765/dashboard
 
 | Model | Provider | Endpoint | Status |
 |-------|----------|----------|--------|
-| **Kimi K2.6** | Moonshot | `https://api.moonshot.cn/v1` | ⏳ Waiting for API Key verification |
-| **DeepSeek V4 Flash** | DeepSeek | `https://api.deepseek.com/v1` | ✅ Connected (2 models) |
-| **MiniMax M3** | MiniMax | `https://api.minimax.chat/v1` | ✅ Connected (8 models) |
+| **Kimi K2.6** | OpenCode GO | `https://opencode.ai/zen/go/v1` | ✅ Connected |
+| **DeepSeek V4 Flash** | DeepSeek | `https://api.deepseek.com/v1` | ✅ Connected |
+| **DeepSeek V4 Flash Free** | OpenCode Zen | `https://opencode.ai/zen/v1` | ✅ Connected |
 
 ### Kimi Configuration (OpenCode GO)
 

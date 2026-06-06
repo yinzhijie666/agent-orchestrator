@@ -38,9 +38,20 @@ function isRealKey(key) {
   return key && key.startsWith("sk-") && key.length > 10;
 }
 
+// Map client names to config keys (handles renames like minimax -> opencode-zen)
+const CONFIG_KEY_MAP = {
+  kimi: "kimi",
+  deepseek: "deepseek",
+  minimax: "opencode-zen",
+  "opencode-zen": "opencode-zen",
+};
+
 function shouldSkip(clientName) {
   if (IN_CI && !FORCE_REAL) return true;
-  const envVar = config.models[clientName.toLowerCase()].api_key_env;
+  const configKey = CONFIG_KEY_MAP[clientName.toLowerCase()] || clientName.toLowerCase();
+  const modelConfig = config.models[configKey];
+  if (!modelConfig) return true;
+  const envVar = modelConfig.api_key_env;
   const key = process.env[envVar];
   if (!isRealKey(key)) return true;
   return false;
@@ -50,7 +61,7 @@ const skipOrTest = (clientName) => shouldSkip(clientName) ? test.skip : test;
 
 const kimiClient = new KimiClient(config.models.kimi);
 const deepseekClient = new DeepSeekClient(config.models.deepseek);
-const minimaxClient = new MiniMaxClient(config.models.minimax);
+const minimaxClient = new MiniMaxClient(config.models["opencode-zen"]);
 
 describe("Layer 1: Kimi K2.6 — Strategic", () => {
   beforeAll(() => {

@@ -1,0 +1,3425 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": ".codegraphignore",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 6,
+      "nonEmptyLines": 6,
+      "metrics": {}
+    },
+    {
+      "path": ".gstack/audit-reports/dry-run-2026-06-05.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 7,
+      "nonEmptyLines": 6,
+      "sections": [
+        {
+          "heading": "Dry-Run Audit Report",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "失败项",
+          "level": 2,
+          "line": 6
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": ".gstack/skill-execution-log.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 78,
+      "nonEmptyLines": 58,
+      "sections": [
+        {
+          "heading": "Skill Execution Log",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Phase 1: 工具执行结果",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "CodeGraph context",
+          "level": 3,
+          "line": 11
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": ".opencode/plans/fallback-fix-plan.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 127,
+      "nonEmptyLines": 90,
+      "sections": [
+        {
+          "heading": "Fallback 修复方案 — 实施计划",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "方式 A：可选参数传 fallbackClient",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "步骤 1：DeepSeekClient 加 generatePlan 方法",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "步骤 2：KimiClient 的 generatePlan 支持可选的 fallbackClient",
+          "level": 2,
+          "line": 34
+        },
+        {
+          "heading": "步骤 3：更新 index.js 传入 deepseekClient",
+          "level": 2,
+          "line": 64
+        },
+        {
+          "heading": "步骤 4：更新 plan.js 传入 deepseekClient",
+          "level": 2,
+          "line": 78
+        },
+        {
+          "heading": "步骤 5：更新测试文件",
+          "level": 2,
+          "line": 91
+        },
+        {
+          "heading": "tests/fallback.test.js — 追加真实 fallback 测试",
+          "level": 3,
+          "line": 93
+        },
+        {
+          "heading": "实施顺序",
+          "level": 2,
+          "line": 102
+        },
+        {
+          "heading": "验证方式",
+          "level": 2,
+          "line": 116
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    },
+    {
+      "path": ".opencode/plans/real-api-test-plan.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 41,
+      "nonEmptyLines": 32,
+      "sections": [
+        {
+          "heading": "真实 API 三层测试方案",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "文件",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "覆盖的 Client",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "四个 describe 块",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "Layer 1: Kimi K2.6 (3 tests)",
+          "level": 3,
+          "line": 13
+        },
+        {
+          "heading": "Layer 2: DeepSeek V4 Flash (3 tests)",
+          "level": 3,
+          "line": 18
+        },
+        {
+          "heading": "Layer 3: MiniMax M3 (4 tests)",
+          "level": 3,
+          "line": 23
+        },
+        {
+          "heading": "Three-Layer Chain (1 test)",
+          "level": 3,
+          "line": 29
+        },
+        {
+          "heading": "安全机制",
+          "level": 2,
+          "line": 32
+        },
+        {
+          "heading": "运行方式",
+          "level": 2,
+          "line": 38
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    },
+    {
+      "path": ".understand-anything/.understandignore",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 32,
+      "nonEmptyLines": 27,
+      "metrics": {}
+    },
+    {
+      "path": "docs/superpowers/plans/2026-06-02-orchestrator-e2e.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 65,
+      "nonEmptyLines": 42,
+      "sections": [
+        {
+          "heading": "agent-orchestrator 端到端连通验证 实施计划",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Task 1: 启动 HTTP 服务器并验证 API 可用",
+          "level": 3,
+          "line": 13
+        },
+        {
+          "heading": "Task 2: 验证插件被 OpenCode 加载",
+          "level": 3,
+          "line": 27
+        },
+        {
+          "heading": "Task 3: 检查工具名冲突",
+          "level": 3,
+          "line": 37
+        },
+        {
+          "heading": "Task 4: 验证模型 API 连通性",
+          "level": 3,
+          "line": 42
+        },
+        {
+          "heading": "Task 5: 回归测试",
+          "level": 3,
+          "line": 53
+        },
+        {
+          "heading": "Task 6: 写设计文档和实施计划",
+          "level": 3,
+          "line": 59
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-02-orchestrator-e2e-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 50,
+      "nonEmptyLines": 36,
+      "sections": [
+        {
+          "heading": "agent-orchestrator 端到端连通验证 — 设计文档",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "目标",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "范围",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "验证步骤",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "S1. 启动 HTTP 服务器",
+          "level": 3,
+          "line": 17
+        },
+        {
+          "heading": "S2. 验证插件加载",
+          "level": 3,
+          "line": 22
+        },
+        {
+          "heading": "S3. 检查工具名冲突",
+          "level": 3,
+          "line": 28
+        },
+        {
+          "heading": "S4. 验证模型 API 连通性",
+          "level": 3,
+          "line": 32
+        },
+        {
+          "heading": "S5. 回归测试",
+          "level": 3,
+          "line": 38
+        },
+        {
+          "heading": "S6. 故障修复",
+          "level": 3,
+          "line": 42
+        },
+        {
+          "heading": "回滚策略",
+          "level": 2,
+          "line": 46
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "path": "index.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 699,
+      "nonEmptyLines": 626,
+      "functions": [
+        {
+          "name": "initSchema",
+          "startLine": 32,
+          "endLine": 34,
+          "params": [
+            "database"
+          ]
+        },
+        {
+          "name": "executePlanTask",
+          "startLine": 36,
+          "endLine": 144,
+          "params": [
+            "task",
+            "context",
+            "kimiClient",
+            "deepseekClient",
+            "minimaxClient",
+            "db"
+          ]
+        },
+        {
+          "name": "generateRecommendations",
+          "startLine": 146,
+          "endLine": 167,
+          "params": [
+            "planOrTask",
+            "kimiClient",
+            "deepseekClient"
+          ]
+        },
+        {
+          "name": "formatSuggestedSkills",
+          "startLine": 169,
+          "endLine": 186,
+          "params": [
+            "skills"
+          ]
+        },
+        {
+          "name": "parseSkillAction",
+          "startLine": 188,
+          "endLine": 197,
+          "params": [
+            "entry"
+          ]
+        },
+        {
+          "name": "loadEnvFile",
+          "startLine": 199,
+          "endLine": 219,
+          "params": [
+            "envPath"
+          ]
+        },
+        {
+          "name": "AgentOrchestratorPlugin",
+          "startLine": 221,
+          "endLine": 682,
+          "params": []
+        },
+        {
+          "name": "attachDispatcherSignalHandlers",
+          "startLine": 685,
+          "endLine": 699,
+          "params": [
+            "dispatcher"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "AgentOrchestratorPlugin",
+          "line": 221,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "initSchema",
+          "callee": "database.exec",
+          "lineNumber": 33
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "kimiClient.analyzeTaskMode",
+          "lineNumber": 40
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "console.error",
+          "lineNumber": 42
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "kimiClient.chatWithFallback",
+          "lineNumber": 49
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "generateRecommendations",
+          "lineNumber": 63
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "PlanOrchestrator.generateAndPersist",
+          "lineNumber": 68
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "emitPlanCreated",
+          "lineNumber": 78
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "emitModelFallback",
+          "lineNumber": 80
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "db.updatePlanItemStatus",
+          "lineNumber": 92
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "db.logActivity",
+          "lineNumber": 93
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "emitItemStarted",
+          "lineNumber": 94
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "deepseekClient.executeTask",
+          "lineNumber": 99
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "db.updatePlanItemStatus",
+          "lineNumber": 101
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "db.logActivity",
+          "lineNumber": 102
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "emitItemCompleted",
+          "lineNumber": 103
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "minimaxClient.searchCode",
+          "lineNumber": 106
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "db.updatePlanItemStatus",
+          "lineNumber": 107
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "db.logActivity",
+          "lineNumber": 108
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "emitItemCompleted",
+          "lineNumber": 109
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "execResults.push",
+          "lineNumber": 111
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "console.error",
+          "lineNumber": 113
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "db.updatePlanItemStatus",
+          "lineNumber": 114
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "db.logActivity",
+          "lineNumber": 115
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "emitItemCompleted",
+          "lineNumber": 116
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "execResults.push",
+          "lineNumber": 117
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "execResults.filter",
+          "lineNumber": 121
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "execResults.filter",
+          "lineNumber": 122
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "db.updatePlanStatus",
+          "lineNumber": 125
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "db.logActivity",
+          "lineNumber": 126
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "emitPlanCompleted",
+          "lineNumber": 132
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "generateRecommendations",
+          "lineNumber": 133
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "planDoc.items.map(i =>\n    `${i.idx + 1}. [${i.executor}] ${i.title}${i.description ? ': ' + i.description : ''}`\n  ).join",
+          "lineNumber": 135
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "planDoc.items.map",
+          "lineNumber": 135
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "execResults.map(r =>\n    `  ${r.status === 'completed' ? '✅' : '❌'} [${r.executor}] Item ${r.idx + 1}${r.error ? ': ' + r.error : ''}`\n  ).join",
+          "lineNumber": 139
+        },
+        {
+          "caller": "executePlanTask",
+          "callee": "execResults.map",
+          "lineNumber": 139
+        },
+        {
+          "caller": "generateRecommendations",
+          "callee": "kimiClient.chatWithFallback",
+          "lineNumber": 148
+        },
+        {
+          "caller": "generateRecommendations",
+          "callee": "JSON.stringify",
+          "lineNumber": 159
+        },
+        {
+          "caller": "generateRecommendations",
+          "callee": "planOrTask.items.map",
+          "lineNumber": 159
+        },
+        {
+          "caller": "generateRecommendations",
+          "callee": "console.error",
+          "lineNumber": 164
+        },
+        {
+          "caller": "formatSuggestedSkills",
+          "callee": "skills.P0_critical.join",
+          "lineNumber": 177
+        },
+        {
+          "caller": "formatSuggestedSkills",
+          "callee": "skills.P1_important.join",
+          "lineNumber": 180
+        },
+        {
+          "caller": "formatSuggestedSkills",
+          "callee": "skills.P2_nice_to_have.join",
+          "lineNumber": 183
+        },
+        {
+          "caller": "parseSkillAction",
+          "callee": "String",
+          "lineNumber": 189
+        },
+        {
+          "caller": "parseSkillAction",
+          "callee": "entry.startsWith",
+          "lineNumber": 190
+        },
+        {
+          "caller": "parseSkillAction",
+          "callee": "entry.slice(6).trim",
+          "lineNumber": 190
+        },
+        {
+          "caller": "parseSkillAction",
+          "callee": "entry.slice",
+          "lineNumber": 190
+        },
+        {
+          "caller": "parseSkillAction",
+          "callee": "entry.startsWith",
+          "lineNumber": 191
+        },
+        {
+          "caller": "parseSkillAction",
+          "callee": "entry.startsWith",
+          "lineNumber": 192
+        },
+        {
+          "caller": "parseSkillAction",
+          "callee": "entry.includes",
+          "lineNumber": 193
+        },
+        {
+          "caller": "parseSkillAction",
+          "callee": "entry.includes",
+          "lineNumber": 193
+        },
+        {
+          "caller": "loadEnvFile",
+          "callee": "readFileSync",
+          "lineNumber": 201
+        },
+        {
+          "caller": "loadEnvFile",
+          "callee": "text.split",
+          "lineNumber": 202
+        },
+        {
+          "caller": "loadEnvFile",
+          "callee": "line.trim",
+          "lineNumber": 203
+        },
+        {
+          "caller": "loadEnvFile",
+          "callee": "trimmed.startsWith",
+          "lineNumber": 204
+        },
+        {
+          "caller": "loadEnvFile",
+          "callee": "trimmed.indexOf",
+          "lineNumber": 205
+        },
+        {
+          "caller": "loadEnvFile",
+          "callee": "trimmed.slice(0, eqIdx).trim",
+          "lineNumber": 207
+        },
+        {
+          "caller": "loadEnvFile",
+          "callee": "trimmed.slice",
+          "lineNumber": 207
+        },
+        {
+          "caller": "loadEnvFile",
+          "callee": "trimmed.slice(eqIdx + 1).trim",
+          "lineNumber": 208
+        },
+        {
+          "caller": "loadEnvFile",
+          "callee": "trimmed.slice",
+          "lineNumber": 208
+        },
+        {
+          "caller": "loadEnvFile",
+          "callee": "value.startsWith",
+          "lineNumber": 209
+        },
+        {
+          "caller": "loadEnvFile",
+          "callee": "value.endsWith",
+          "lineNumber": 209
+        },
+        {
+          "caller": "loadEnvFile",
+          "callee": "value.startsWith",
+          "lineNumber": 209
+        },
+        {
+          "caller": "loadEnvFile",
+          "callee": "value.endsWith",
+          "lineNumber": 209
+        },
+        {
+          "caller": "loadEnvFile",
+          "callee": "value.slice",
+          "lineNumber": 210
+        },
+        {
+          "caller": "loadEnvFile",
+          "callee": "console.warn",
+          "lineNumber": 217
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "loadEnvFile",
+          "lineNumber": 222
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "join",
+          "lineNumber": 222
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "join",
+          "lineNumber": 224
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "join",
+          "lineNumber": 225
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "mkdir",
+          "lineNumber": 230
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "dirname",
+          "lineNumber": 230
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "initSchema",
+          "lineNumber": 232
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "database.close",
+          "lineNumber": 233
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "console.warn",
+          "lineNumber": 237
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "console.log",
+          "lineNumber": 244
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "autoDispatcher.start",
+          "lineNumber": 247
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "console.log",
+          "lineNumber": 249
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "attachDispatcherSignalHandlers",
+          "lineNumber": 250
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "console.log",
+          "lineNumber": 252
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "console.warn",
+          "lineNumber": 256
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "autoDispatcher.stop",
+          "lineNumber": 258
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "tool",
+          "lineNumber": 268
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.object",
+          "lineNumber": 270
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.string().describe",
+          "lineNumber": 271
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.string",
+          "lineNumber": 271
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.string().optional().describe",
+          "lineNumber": 272
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.string().optional",
+          "lineNumber": 272
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.string",
+          "lineNumber": 272
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "executePlanTask",
+          "lineNumber": 276
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "formatSuggestedSkills",
+          "lineNumber": 280
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "formatSuggestedSkills",
+          "lineNumber": 294
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "tool",
+          "lineNumber": 308
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.object",
+          "lineNumber": 310
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.db.prepare(\n              \"SELECT status, COUNT(*) as count FROM plans GROUP BY status\"\n            ).all",
+          "lineNumber": 316
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.db.prepare",
+          "lineNumber": 316
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.db.prepare(\"SELECT COUNT(*) as count FROM plan_items\").get",
+          "lineNumber": 320
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.db.prepare",
+          "lineNumber": 320
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.db.prepare(\"SELECT COUNT(*) as count FROM plan_items WHERE status = 'completed'\").get",
+          "lineNumber": 321
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.db.prepare",
+          "lineNumber": 321
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.db.prepare(\"SELECT COUNT(*) as count FROM checkpoints WHERE verification_status = 'pending'\").get",
+          "lineNumber": 322
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.db.prepare",
+          "lineNumber": 322
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.db.prepare(\n              \"SELECT id, title, status FROM plans ORDER BY created_at DESC LIMIT 5\"\n            ).all",
+          "lineNumber": 324
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.db.prepare",
+          "lineNumber": 324
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "Object.values(counts).reduce",
+          "lineNumber": 338
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "Object.values",
+          "lineNumber": 338
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "p.id.slice",
+          "lineNumber": 350
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "tool",
+          "lineNumber": 365
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.object",
+          "lineNumber": 367
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.enum(['create', 'verify']).describe",
+          "lineNumber": 368
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.enum",
+          "lineNumber": 368
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.string().describe",
+          "lineNumber": 369
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.string",
+          "lineNumber": 369
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.string().optional().describe",
+          "lineNumber": 370
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.string().optional",
+          "lineNumber": 370
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.string",
+          "lineNumber": 370
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.getPlanItems",
+          "lineNumber": 378
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "items.filter",
+          "lineNumber": 379
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "Math.min",
+          "lineNumber": 384
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "Math.ceil",
+          "lineNumber": 385
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "randomUUID",
+          "lineNumber": 389
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.createCheckpoint",
+          "lineNumber": 390
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "items\n                    .filter(i => i.idx < milestoneIdx)\n                    .map",
+          "lineNumber": 395
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "items\n                    .filter",
+          "lineNumber": 395
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.logActivity",
+          "lineNumber": 403
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "emitCheckpointCreated",
+          "lineNumber": 409
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.db.prepare(\n                \"SELECT * FROM checkpoints WHERE plan_id = ? AND verification_status = 'pending' ORDER BY created_at DESC LIMIT 1\"\n              ).get",
+          "lineNumber": 415
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.db.prepare",
+          "lineNumber": 415
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.getPlan",
+          "lineNumber": 423
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "kimiClient.reviewCheckpoint",
+          "lineNumber": 432
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "console.error",
+          "lineNumber": 434
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.logActivity",
+          "lineNumber": 440
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.verifyCheckpoint",
+          "lineNumber": 459
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.db.prepare(\n                  \"UPDATE plans SET milestones_completed = milestones_completed + 1 WHERE id = ?\"\n                ).run",
+          "lineNumber": 462
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.db.prepare",
+          "lineNumber": 462
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.logActivity",
+          "lineNumber": 467
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "emitCheckpointVerified",
+          "lineNumber": 476
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "tool",
+          "lineNumber": 486
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.object",
+          "lineNumber": 488
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.string().optional().describe",
+          "lineNumber": 489
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.string().optional",
+          "lineNumber": 489
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "z.string",
+          "lineNumber": 489
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "JSON.stringify",
+          "lineNumber": 494
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.getPlan",
+          "lineNumber": 505
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.getRecentPlan",
+          "lineNumber": 505
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "JSON.stringify",
+          "lineNumber": 509
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "JSON.parse",
+          "lineNumber": 519
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "parseSkillAction",
+          "lineNumber": 530
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "rawItems.push",
+          "lineNumber": 531
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "AutoExecutor.validate",
+          "lineNumber": 535
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "AutoExecutor.buildPrompt",
+          "lineNumber": 549
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "manualSkills.map",
+          "lineNumber": 556
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "JSON.stringify",
+          "lineNumber": 569
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "manualSkills.filter(s => s.category === 'INTERACTIVE').map",
+          "lineNumber": 574
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "manualSkills.filter",
+          "lineNumber": 574
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "manualSkills.filter(s => s.category === 'TOOL_REQUIRED').map",
+          "lineNumber": 575
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "manualSkills.filter",
+          "lineNumber": 575
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "autoSkills.map",
+          "lineNumber": 576
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "autoDispatcher.getStatus",
+          "lineNumber": 590
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "manualInstructions.map(s => s.name).join",
+          "lineNumber": 594
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "manualInstructions.map",
+          "lineNumber": 594
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "output.system.includes",
+          "lineNumber": 610
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "db.close",
+          "lineNumber": 673
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "autoDispatcher.stop",
+          "lineNumber": 675
+        },
+        {
+          "caller": "AgentOrchestratorPlugin",
+          "callee": "console.warn",
+          "lineNumber": 676
+        },
+        {
+          "caller": "attachDispatcherSignalHandlers",
+          "callee": "_attachedDispatchers.has",
+          "lineNumber": 686
+        },
+        {
+          "caller": "attachDispatcherSignalHandlers",
+          "callee": "_attachedDispatchers.add",
+          "lineNumber": 687
+        },
+        {
+          "caller": "stop",
+          "callee": "dispatcher.stop",
+          "lineNumber": 689
+        },
+        {
+          "caller": "attachDispatcherSignalHandlers",
+          "callee": "process.on",
+          "lineNumber": 692
+        },
+        {
+          "caller": "attachDispatcherSignalHandlers",
+          "callee": "process.on",
+          "lineNumber": 694
+        },
+        {
+          "caller": "attachDispatcherSignalHandlers",
+          "callee": "dispatcher.server.process.kill",
+          "lineNumber": 696
+        }
+      ],
+      "metrics": {
+        "importCount": 10,
+        "exportCount": 1,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/api/checkpoint.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 125,
+      "nonEmptyLines": 103,
+      "callGraph": [
+        {
+          "caller": "createCheckpoint",
+          "callee": "req.json",
+          "lineNumber": 15
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "JSON.stringify",
+          "lineNumber": 19
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "this.milestoneManager.createCheckpoint",
+          "lineNumber": 23
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "emitCheckpointCreated",
+          "lineNumber": 24
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "JSON.stringify",
+          "lineNumber": 26
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "console.error",
+          "lineNumber": 28
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "JSON.stringify",
+          "lineNumber": 29
+        },
+        {
+          "caller": "getCheckpoint",
+          "callee": "db.getCheckpoint",
+          "lineNumber": 34
+        },
+        {
+          "caller": "getCheckpoint",
+          "callee": "JSON.stringify",
+          "lineNumber": 36
+        },
+        {
+          "caller": "getCheckpoint",
+          "callee": "JSON.stringify",
+          "lineNumber": 39
+        },
+        {
+          "caller": "getCheckpoint",
+          "callee": "JSON.parse",
+          "lineNumber": 41
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "req.json",
+          "lineNumber": 46
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "['passed', 'failed'].includes",
+          "lineNumber": 51
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "JSON.stringify",
+          "lineNumber": 52
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "db.getCheckpoint",
+          "lineNumber": 57
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "this.kimiClient.reviewCheckpoint",
+          "lineNumber": 60
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "console.error",
+          "lineNumber": 62
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "db.logActivity",
+          "lineNumber": 71
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "this.milestoneManager.verifyCheckpoint",
+          "lineNumber": 93
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "db.db.prepare(\n          \"UPDATE plans SET milestones_completed = milestones_completed + 1 WHERE id = ?\"\n        ).run",
+          "lineNumber": 96
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "db.db.prepare",
+          "lineNumber": 96
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "emitCheckpointVerified",
+          "lineNumber": 107
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "JSON.stringify",
+          "lineNumber": 109
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "console.error",
+          "lineNumber": 111
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "JSON.stringify",
+          "lineNumber": 112
+        },
+        {
+          "caller": "getPendingCheckpoints",
+          "callee": "db.db.prepare(\n      \"SELECT * FROM checkpoints WHERE plan_id = ? AND verification_status = 'pending' ORDER BY created_at DESC\"\n    ).all",
+          "lineNumber": 117
+        },
+        {
+          "caller": "getPendingCheckpoints",
+          "callee": "db.db.prepare",
+          "lineNumber": 117
+        },
+        {
+          "caller": "getPendingCheckpoints",
+          "callee": "JSON.stringify",
+          "lineNumber": 121
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/api/internal-event.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 18,
+      "nonEmptyLines": 16,
+      "callGraph": [
+        {
+          "caller": "handleEvent",
+          "callee": "req.json",
+          "lineNumber": 6
+        },
+        {
+          "caller": "handleEvent",
+          "callee": "JSON.stringify",
+          "lineNumber": 8
+        },
+        {
+          "caller": "handleEvent",
+          "callee": "broadcaster.broadcast",
+          "lineNumber": 10
+        },
+        {
+          "caller": "handleEvent",
+          "callee": "JSON.stringify",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handleEvent",
+          "callee": "JSON.stringify",
+          "lineNumber": 13
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/api/plan.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 129,
+      "nonEmptyLines": 109,
+      "callGraph": [
+        {
+          "caller": "createPlan",
+          "callee": "req.json",
+          "lineNumber": 13
+        },
+        {
+          "caller": "createPlan",
+          "callee": "JSON.stringify",
+          "lineNumber": 17
+        },
+        {
+          "caller": "createPlan",
+          "callee": "PlanOrchestrator.generateAndPersist",
+          "lineNumber": 22
+        },
+        {
+          "caller": "createPlan",
+          "callee": "console.error",
+          "lineNumber": 32
+        },
+        {
+          "caller": "createPlan",
+          "callee": "JSON.stringify",
+          "lineNumber": 34
+        },
+        {
+          "caller": "createPlan",
+          "callee": "emitPlanCreated",
+          "lineNumber": 42
+        },
+        {
+          "caller": "createPlan",
+          "callee": "emitModelFallback",
+          "lineNumber": 44
+        },
+        {
+          "caller": "createPlan",
+          "callee": "JSON.stringify",
+          "lineNumber": 47
+        },
+        {
+          "caller": "getPlan",
+          "callee": "db.getPlan",
+          "lineNumber": 58
+        },
+        {
+          "caller": "getPlan",
+          "callee": "JSON.stringify",
+          "lineNumber": 60
+        },
+        {
+          "caller": "getPlan",
+          "callee": "db.getPlanItems",
+          "lineNumber": 63
+        },
+        {
+          "caller": "getPlan",
+          "callee": "JSON.parse",
+          "lineNumber": 65
+        },
+        {
+          "caller": "getPlan",
+          "callee": "JSON.stringify",
+          "lineNumber": 66
+        },
+        {
+          "caller": "getPlanItems",
+          "callee": "db.getPlanItems",
+          "lineNumber": 74
+        },
+        {
+          "caller": "getPlanItems",
+          "callee": "JSON.stringify",
+          "lineNumber": 75
+        },
+        {
+          "caller": "updatePlanItem",
+          "callee": "req.json",
+          "lineNumber": 79
+        },
+        {
+          "caller": "updatePlanItem",
+          "callee": "db.updatePlanItemStatus",
+          "lineNumber": 82
+        },
+        {
+          "caller": "updatePlanItem",
+          "callee": "parseInt",
+          "lineNumber": 82
+        },
+        {
+          "caller": "updatePlanItem",
+          "callee": "db.logActivity",
+          "lineNumber": 84
+        },
+        {
+          "caller": "updatePlanItem",
+          "callee": "JSON.stringify",
+          "lineNumber": 91
+        },
+        {
+          "caller": "activatePlan",
+          "callee": "db.updatePlanStatus",
+          "lineNumber": 95
+        },
+        {
+          "caller": "activatePlan",
+          "callee": "db.logActivity",
+          "lineNumber": 97
+        },
+        {
+          "caller": "activatePlan",
+          "callee": "emitPlanActivated",
+          "lineNumber": 104
+        },
+        {
+          "caller": "activatePlan",
+          "callee": "JSON.stringify",
+          "lineNumber": 106
+        },
+        {
+          "caller": "completePlan",
+          "callee": "req.json",
+          "lineNumber": 111
+        },
+        {
+          "caller": "completePlan",
+          "callee": "VALID_STATUSES.includes",
+          "lineNumber": 113
+        },
+        {
+          "caller": "completePlan",
+          "callee": "db.updatePlanStatus",
+          "lineNumber": 114
+        },
+        {
+          "caller": "completePlan",
+          "callee": "JSON.stringify",
+          "lineNumber": 116
+        },
+        {
+          "caller": "completePlan",
+          "callee": "db.logActivity",
+          "lineNumber": 118
+        },
+        {
+          "caller": "completePlan",
+          "callee": "emitPlanCompleted",
+          "lineNumber": 124
+        },
+        {
+          "caller": "completePlan",
+          "callee": "JSON.stringify",
+          "lineNumber": 125
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/api/status.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 39,
+      "nonEmptyLines": 34,
+      "callGraph": [
+        {
+          "caller": "getStatus",
+          "callee": "db.db.prepare(\"SELECT status, COUNT(*) as count FROM plans GROUP BY status\").all",
+          "lineNumber": 5
+        },
+        {
+          "caller": "getStatus",
+          "callee": "db.db.prepare",
+          "lineNumber": 5
+        },
+        {
+          "caller": "getStatus",
+          "callee": "db.db.prepare(\"SELECT COUNT(*) as count FROM plan_items\").get",
+          "lineNumber": 6
+        },
+        {
+          "caller": "getStatus",
+          "callee": "db.db.prepare",
+          "lineNumber": 6
+        },
+        {
+          "caller": "getStatus",
+          "callee": "db.db.prepare(\"SELECT COUNT(*) as count FROM plan_items WHERE status = 'completed'\").get",
+          "lineNumber": 7
+        },
+        {
+          "caller": "getStatus",
+          "callee": "db.db.prepare",
+          "lineNumber": 7
+        },
+        {
+          "caller": "getStatus",
+          "callee": "db.db.prepare(\"SELECT COUNT(*) as count FROM checkpoints WHERE verification_status = 'pending'\").get",
+          "lineNumber": 8
+        },
+        {
+          "caller": "getStatus",
+          "callee": "db.db.prepare",
+          "lineNumber": 8
+        },
+        {
+          "caller": "getStatus",
+          "callee": "JSON.stringify",
+          "lineNumber": 10
+        },
+        {
+          "caller": "getStatus",
+          "callee": "new Date().toISOString",
+          "lineNumber": 13
+        },
+        {
+          "caller": "getAgentStatus",
+          "callee": "JSON.stringify",
+          "lineNumber": 32
+        },
+        {
+          "caller": "getAgentStatus",
+          "callee": "new Date().toISOString",
+          "lineNumber": 34
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/api/thread.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 50,
+      "nonEmptyLines": 40,
+      "callGraph": [
+        {
+          "caller": "createThread",
+          "callee": "JSON.stringify",
+          "lineNumber": 6
+        },
+        {
+          "caller": "getThread",
+          "callee": "db.getThread",
+          "lineNumber": 13
+        },
+        {
+          "caller": "getThread",
+          "callee": "JSON.stringify",
+          "lineNumber": 15
+        },
+        {
+          "caller": "getThread",
+          "callee": "db.getThreadMessages",
+          "lineNumber": 18
+        },
+        {
+          "caller": "getThread",
+          "callee": "JSON.stringify",
+          "lineNumber": 20
+        },
+        {
+          "caller": "getThread",
+          "callee": "JSON.parse",
+          "lineNumber": 22
+        },
+        {
+          "caller": "getThread",
+          "callee": "JSON.parse",
+          "lineNumber": 23
+        },
+        {
+          "caller": "appendMessage",
+          "callee": "req.json",
+          "lineNumber": 29
+        },
+        {
+          "caller": "appendMessage",
+          "callee": "JSON.stringify",
+          "lineNumber": 33
+        },
+        {
+          "caller": "appendMessage",
+          "callee": "db.createMessage",
+          "lineNumber": 36
+        },
+        {
+          "caller": "appendMessage",
+          "callee": "db.db.prepare(\"UPDATE agent_threads SET updated_at = ? WHERE id = ?\").run",
+          "lineNumber": 44
+        },
+        {
+          "caller": "appendMessage",
+          "callee": "db.db.prepare",
+          "lineNumber": 44
+        },
+        {
+          "caller": "appendMessage",
+          "callee": "new Date().toISOString",
+          "lineNumber": 44
+        },
+        {
+          "caller": "appendMessage",
+          "callee": "JSON.stringify",
+          "lineNumber": 46
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/index.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 167,
+      "nonEmptyLines": 148,
+      "functions": [
+        {
+          "name": "handleRequest",
+          "startLine": 36,
+          "endLine": 129,
+          "params": [
+            "req"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "server",
+          "line": 167,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handleRequest",
+          "callee": "path.match",
+          "lineNumber": 56
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "path.match",
+          "lineNumber": 57
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "path.match",
+          "lineNumber": 58
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "path.match",
+          "lineNumber": 59
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "path.match",
+          "lineNumber": 60
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "path.match",
+          "lineNumber": 61
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "path.match",
+          "lineNumber": 62
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "path.match",
+          "lineNumber": 63
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "path.match",
+          "lineNumber": 64
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "planRouter.createPlan",
+          "lineNumber": 67
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "planRouter.activatePlan",
+          "lineNumber": 69
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "planRouter.completePlan",
+          "lineNumber": 71
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "planRouter.updatePlanItem",
+          "lineNumber": 73
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "planRouter.getPlanItems",
+          "lineNumber": 75
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "planRouter.getPlan",
+          "lineNumber": 77
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "checkpointRouter.createCheckpoint",
+          "lineNumber": 79
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "checkpointRouter.verifyCheckpoint",
+          "lineNumber": 81
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "checkpointRouter.getCheckpoint",
+          "lineNumber": 83
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "url.searchParams.get",
+          "lineNumber": 86
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "checkpointRouter.getPendingCheckpoints",
+          "lineNumber": 88
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "JSON.stringify",
+          "lineNumber": 90
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "threadRouter.createThread",
+          "lineNumber": 93
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "threadRouter.appendMessage",
+          "lineNumber": 95
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "threadRouter.getThread",
+          "lineNumber": 97
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "statusRouter.getStatus",
+          "lineNumber": 99
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "statusRouter.getAgentStatus",
+          "lineNumber": 101
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "internalEventRouter.handleEvent",
+          "lineNumber": 103
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "join",
+          "lineNumber": 106
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "Bun.file",
+          "lineNumber": 107
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "JSON.stringify",
+          "lineNumber": 112
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "Object.entries(corsHeaders).forEach",
+          "lineNumber": 116
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "Object.entries",
+          "lineNumber": 116
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "response.headers.set",
+          "lineNumber": 117
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "console.error",
+          "lineNumber": 123
+        },
+        {
+          "caller": "handleRequest",
+          "callee": "JSON.stringify",
+          "lineNumber": 124
+        }
+      ],
+      "metrics": {
+        "importCount": 9,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/lib/agent-router.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 4,
+      "nonEmptyLines": 3,
+      "exports": [
+        {
+          "name": "MilestoneManager",
+          "line": 3,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/lib/auto-dispatcher.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 146,
+      "nonEmptyLines": 134,
+      "classes": [
+        {
+          "name": "AutoDispatcher",
+          "startLine": 13,
+          "endLine": 144,
+          "methods": [
+            "constructor",
+            "start",
+            "dispatch",
+            "ensureHealthy",
+            "stop",
+            "getStatus",
+            "_isServerPreferred"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "AutoDispatcher",
+          "line": 13,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "start",
+          "callee": "this._isServerPreferred",
+          "lineNumber": 26
+        },
+        {
+          "caller": "start",
+          "callee": "this.server.start",
+          "lineNumber": 36
+        },
+        {
+          "caller": "start",
+          "callee": "console.log",
+          "lineNumber": 38
+        },
+        {
+          "caller": "start",
+          "callee": "console.warn",
+          "lineNumber": 43
+        },
+        {
+          "caller": "dispatch",
+          "callee": "this.runner.run",
+          "lineNumber": 52
+        },
+        {
+          "caller": "dispatch",
+          "callee": "this.ensureHealthy",
+          "lineNumber": 57
+        },
+        {
+          "caller": "dispatch",
+          "callee": "this.server.isHealthy",
+          "lineNumber": 58
+        },
+        {
+          "caller": "dispatch",
+          "callee": "this._dispatchViaServer",
+          "lineNumber": 60
+        },
+        {
+          "caller": "dispatch",
+          "callee": "console.warn",
+          "lineNumber": 65
+        },
+        {
+          "caller": "dispatch",
+          "callee": "console.warn",
+          "lineNumber": 67
+        },
+        {
+          "caller": "dispatch",
+          "callee": "this.runner.run",
+          "lineNumber": 72
+        },
+        {
+          "caller": "ensureHealthy",
+          "callee": "this._isServerPreferred",
+          "lineNumber": 77
+        },
+        {
+          "caller": "ensureHealthy",
+          "callee": "this.server.isHealthy",
+          "lineNumber": 80
+        },
+        {
+          "caller": "ensureHealthy",
+          "callee": "console.warn",
+          "lineNumber": 84
+        },
+        {
+          "caller": "ensureHealthy",
+          "callee": "console.log",
+          "lineNumber": 89
+        },
+        {
+          "caller": "ensureHealthy",
+          "callee": "this.server.stop",
+          "lineNumber": 91
+        },
+        {
+          "caller": "ensureHealthy",
+          "callee": "console.warn",
+          "lineNumber": 92
+        },
+        {
+          "caller": "ensureHealthy",
+          "callee": "this.server.start",
+          "lineNumber": 103
+        },
+        {
+          "caller": "stop",
+          "callee": "this.server.stop",
+          "lineNumber": 118
+        },
+        {
+          "caller": "getStatus",
+          "callee": "this.server?.isHealthy",
+          "lineNumber": 134
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/lib/auto-executor.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 196,
+      "nonEmptyLines": 165,
+      "classes": [
+        {
+          "name": "AutoExecutor",
+          "startLine": 30,
+          "endLine": 194,
+          "methods": [
+            "generateInstruction",
+            "buildPrompt",
+            "validate"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "AutoExecutor",
+          "line": 30,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "buildPrompt",
+          "callee": "createDefaultClassifier",
+          "lineNumber": 77
+        },
+        {
+          "caller": "buildPrompt",
+          "callee": "classifier.classify",
+          "lineNumber": 83
+        },
+        {
+          "caller": "buildPrompt",
+          "callee": "classifier.skillEntries.find",
+          "lineNumber": 83
+        },
+        {
+          "caller": "buildPrompt",
+          "callee": "autoSkills.push",
+          "lineNumber": 87
+        },
+        {
+          "caller": "buildPrompt",
+          "callee": "manualSkills.push",
+          "lineNumber": 89
+        },
+        {
+          "caller": "buildPrompt",
+          "callee": "grouped[tier].push",
+          "lineNumber": 102
+        },
+        {
+          "caller": "buildPrompt",
+          "callee": "sections.push",
+          "lineNumber": 106
+        },
+        {
+          "caller": "buildPrompt",
+          "callee": "sections.push",
+          "lineNumber": 123
+        },
+        {
+          "caller": "buildPrompt",
+          "callee": "AutoExecutor.generateInstruction",
+          "lineNumber": 125
+        },
+        {
+          "caller": "buildPrompt",
+          "callee": "sections.push",
+          "lineNumber": 126
+        },
+        {
+          "caller": "buildPrompt",
+          "callee": "sections.push",
+          "lineNumber": 129
+        },
+        {
+          "caller": "buildPrompt",
+          "callee": "sections.push",
+          "lineNumber": 132
+        },
+        {
+          "caller": "buildPrompt",
+          "callee": "sections.join",
+          "lineNumber": 159
+        },
+        {
+          "caller": "validate",
+          "callee": "Array.isArray",
+          "lineNumber": 171
+        },
+        {
+          "caller": "validate",
+          "callee": "TIER_ORDER.includes",
+          "lineNumber": 178
+        },
+        {
+          "caller": "validate",
+          "callee": "['skill', 'command', 'codegraph', 'memory', 'unknown'].includes",
+          "lineNumber": 179
+        },
+        {
+          "caller": "validate",
+          "callee": "cleaned.push",
+          "lineNumber": 184
+        },
+        {
+          "caller": "validate",
+          "callee": "console.warn",
+          "lineNumber": 188
+        },
+        {
+          "caller": "validate",
+          "callee": "cleaned.slice",
+          "lineNumber": 189
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/lib/db-schema.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 64,
+      "nonEmptyLines": 64,
+      "exports": [
+        {
+          "name": "SCHEMA_SQL",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/lib/db.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 183,
+      "nonEmptyLines": 158,
+      "functions": [
+        {
+          "name": "getDefaultDB",
+          "startLine": 174,
+          "endLine": 177,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "DB",
+          "startLine": 9,
+          "endLine": 171,
+          "methods": [
+            "constructor",
+            "createPlan",
+            "getPlan",
+            "getRecentPlan",
+            "updatePlanStatus",
+            "updatePlanMilestones",
+            "createPlanItem",
+            "getPlanItem",
+            "getPlanItems",
+            "updatePlanItemStatus",
+            "createCheckpoint",
+            "getCheckpoint",
+            "verifyCheckpoint",
+            "createThread",
+            "getThread",
+            "updateThread",
+            "getRecentPlans",
+            "createMessage",
+            "getThreadMessages",
+            "logActivity",
+            "getActivityLog",
+            "cleanupActivityLog",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "getDefaultDB",
+          "line": 174,
+          "isDefault": false
+        },
+        {
+          "name": "DB",
+          "line": 183,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "join",
+          "lineNumber": 11
+        },
+        {
+          "caller": "constructor",
+          "callee": "dirname",
+          "lineNumber": 12
+        },
+        {
+          "caller": "constructor",
+          "callee": "mkdirSync",
+          "lineNumber": 15
+        },
+        {
+          "caller": "createPlan",
+          "callee": "this.db.prepare",
+          "lineNumber": 23
+        },
+        {
+          "caller": "createPlan",
+          "callee": "new Date().toISOString",
+          "lineNumber": 26
+        },
+        {
+          "caller": "createPlan",
+          "callee": "stmt.run",
+          "lineNumber": 27
+        },
+        {
+          "caller": "createPlan",
+          "callee": "this.getPlan",
+          "lineNumber": 28
+        },
+        {
+          "caller": "getPlan",
+          "callee": "this.db.prepare(\"SELECT * FROM plans WHERE id = ?\").get",
+          "lineNumber": 32
+        },
+        {
+          "caller": "getPlan",
+          "callee": "this.db.prepare",
+          "lineNumber": 32
+        },
+        {
+          "caller": "getRecentPlan",
+          "callee": "this.db.prepare(\n      \"SELECT * FROM plans ORDER BY created_at DESC LIMIT 1\"\n    ).get",
+          "lineNumber": 36
+        },
+        {
+          "caller": "getRecentPlan",
+          "callee": "this.db.prepare",
+          "lineNumber": 36
+        },
+        {
+          "caller": "updatePlanStatus",
+          "callee": "['completed', 'completed_with_errors', 'failed', 'cancelled'].includes",
+          "lineNumber": 43
+        },
+        {
+          "caller": "updatePlanStatus",
+          "callee": "new Date().toISOString",
+          "lineNumber": 44
+        },
+        {
+          "caller": "updatePlanStatus",
+          "callee": "Object.keys",
+          "lineNumber": 46
+        },
+        {
+          "caller": "updatePlanStatus",
+          "callee": "keys.map(k => `${k} = ?`).join",
+          "lineNumber": 47
+        },
+        {
+          "caller": "updatePlanStatus",
+          "callee": "keys.map",
+          "lineNumber": 47
+        },
+        {
+          "caller": "updatePlanStatus",
+          "callee": "this.db.prepare(sql).run",
+          "lineNumber": 48
+        },
+        {
+          "caller": "updatePlanStatus",
+          "callee": "this.db.prepare",
+          "lineNumber": 48
+        },
+        {
+          "caller": "updatePlanStatus",
+          "callee": "keys.map",
+          "lineNumber": 48
+        },
+        {
+          "caller": "updatePlanStatus",
+          "callee": "this.getPlan",
+          "lineNumber": 49
+        },
+        {
+          "caller": "updatePlanMilestones",
+          "callee": "this.db.prepare(\"UPDATE plans SET milestones_completed = ? WHERE id = ?\").run",
+          "lineNumber": 53
+        },
+        {
+          "caller": "updatePlanMilestones",
+          "callee": "this.db.prepare",
+          "lineNumber": 53
+        },
+        {
+          "caller": "updatePlanMilestones",
+          "callee": "this.getPlan",
+          "lineNumber": 54
+        },
+        {
+          "caller": "createPlanItem",
+          "callee": "this.db.prepare",
+          "lineNumber": 59
+        },
+        {
+          "caller": "createPlanItem",
+          "callee": "stmt.run",
+          "lineNumber": 62
+        },
+        {
+          "caller": "createPlanItem",
+          "callee": "this.getPlanItem",
+          "lineNumber": 63
+        },
+        {
+          "caller": "getPlanItem",
+          "callee": "this.db.prepare(\"SELECT * FROM plan_items WHERE plan_id = ? AND idx = ?\").get",
+          "lineNumber": 67
+        },
+        {
+          "caller": "getPlanItem",
+          "callee": "this.db.prepare",
+          "lineNumber": 67
+        },
+        {
+          "caller": "getPlanItems",
+          "callee": "this.db.prepare(\"SELECT * FROM plan_items WHERE plan_id = ? ORDER BY idx\").all",
+          "lineNumber": 71
+        },
+        {
+          "caller": "getPlanItems",
+          "callee": "this.db.prepare",
+          "lineNumber": 71
+        },
+        {
+          "caller": "updatePlanItemStatus",
+          "callee": "new Date().toISOString",
+          "lineNumber": 78
+        },
+        {
+          "caller": "updatePlanItemStatus",
+          "callee": "Object.keys",
+          "lineNumber": 80
+        },
+        {
+          "caller": "updatePlanItemStatus",
+          "callee": "keys.map(k => `${k} = ?`).join",
+          "lineNumber": 81
+        },
+        {
+          "caller": "updatePlanItemStatus",
+          "callee": "keys.map",
+          "lineNumber": 81
+        },
+        {
+          "caller": "updatePlanItemStatus",
+          "callee": "this.db.prepare(sql).run",
+          "lineNumber": 82
+        },
+        {
+          "caller": "updatePlanItemStatus",
+          "callee": "this.db.prepare",
+          "lineNumber": 82
+        },
+        {
+          "caller": "updatePlanItemStatus",
+          "callee": "keys.map",
+          "lineNumber": 82
+        },
+        {
+          "caller": "updatePlanItemStatus",
+          "callee": "this.getPlanItem",
+          "lineNumber": 83
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "this.db.prepare",
+          "lineNumber": 88
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "stmt.run",
+          "lineNumber": 91
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "JSON.stringify",
+          "lineNumber": 91
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "this.getCheckpoint",
+          "lineNumber": 92
+        },
+        {
+          "caller": "getCheckpoint",
+          "callee": "this.db.prepare(\"SELECT * FROM checkpoints WHERE id = ?\").get",
+          "lineNumber": 96
+        },
+        {
+          "caller": "getCheckpoint",
+          "callee": "this.db.prepare",
+          "lineNumber": 96
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "this.db.prepare(\n      \"UPDATE checkpoints SET verification_status = ?, verification_feedback = ?, verified_by = 'kimi', verified_at = ? WHERE id = ?\"\n    ).run",
+          "lineNumber": 100
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "this.db.prepare",
+          "lineNumber": 100
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "new Date().toISOString",
+          "lineNumber": 102
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "this.getCheckpoint",
+          "lineNumber": 103
+        },
+        {
+          "caller": "createThread",
+          "callee": "this.db.prepare",
+          "lineNumber": 108
+        },
+        {
+          "caller": "createThread",
+          "callee": "stmt.run",
+          "lineNumber": 111
+        },
+        {
+          "caller": "createThread",
+          "callee": "JSON.stringify",
+          "lineNumber": 111
+        },
+        {
+          "caller": "createThread",
+          "callee": "JSON.stringify",
+          "lineNumber": 111
+        },
+        {
+          "caller": "createThread",
+          "callee": "this.getThread",
+          "lineNumber": 112
+        },
+        {
+          "caller": "getThread",
+          "callee": "this.db.prepare(\"SELECT * FROM agent_threads WHERE id = ?\").get",
+          "lineNumber": 116
+        },
+        {
+          "caller": "getThread",
+          "callee": "this.db.prepare",
+          "lineNumber": 116
+        },
+        {
+          "caller": "updateThread",
+          "callee": "Object.keys",
+          "lineNumber": 120
+        },
+        {
+          "caller": "updateThread",
+          "callee": "keys.map(k => `${k} = ?`).join",
+          "lineNumber": 122
+        },
+        {
+          "caller": "updateThread",
+          "callee": "keys.map",
+          "lineNumber": 122
+        },
+        {
+          "caller": "updateThread",
+          "callee": "keys.map",
+          "lineNumber": 123
+        },
+        {
+          "caller": "updateThread",
+          "callee": "datetimeFields.includes",
+          "lineNumber": 124
+        },
+        {
+          "caller": "updateThread",
+          "callee": "JSON.stringify",
+          "lineNumber": 126
+        },
+        {
+          "caller": "updateThread",
+          "callee": "this.db.prepare(sql).run",
+          "lineNumber": 128
+        },
+        {
+          "caller": "updateThread",
+          "callee": "this.db.prepare",
+          "lineNumber": 128
+        },
+        {
+          "caller": "updateThread",
+          "callee": "this.getThread",
+          "lineNumber": 129
+        },
+        {
+          "caller": "getRecentPlans",
+          "callee": "this.db.prepare(\n      \"SELECT * FROM plans ORDER BY created_at DESC LIMIT ?\"\n    ).all",
+          "lineNumber": 133
+        },
+        {
+          "caller": "getRecentPlans",
+          "callee": "this.db.prepare",
+          "lineNumber": 133
+        },
+        {
+          "caller": "createMessage",
+          "callee": "this.db.prepare",
+          "lineNumber": 140
+        },
+        {
+          "caller": "createMessage",
+          "callee": "stmt.run",
+          "lineNumber": 143
+        },
+        {
+          "caller": "createMessage",
+          "callee": "this.db.prepare(\"SELECT * FROM messages WHERE thread_id = ? ORDER BY id DESC LIMIT 1\").get",
+          "lineNumber": 144
+        },
+        {
+          "caller": "createMessage",
+          "callee": "this.db.prepare",
+          "lineNumber": 144
+        },
+        {
+          "caller": "getThreadMessages",
+          "callee": "this.db.prepare(\"SELECT * FROM messages WHERE thread_id = ? ORDER BY timestamp DESC LIMIT ?\").all",
+          "lineNumber": 148
+        },
+        {
+          "caller": "getThreadMessages",
+          "callee": "this.db.prepare",
+          "lineNumber": 148
+        },
+        {
+          "caller": "logActivity",
+          "callee": "this.db.prepare",
+          "lineNumber": 153
+        },
+        {
+          "caller": "logActivity",
+          "callee": "stmt.run",
+          "lineNumber": 156
+        },
+        {
+          "caller": "logActivity",
+          "callee": "JSON.stringify",
+          "lineNumber": 156
+        },
+        {
+          "caller": "getActivityLog",
+          "callee": "this.db.prepare(\"SELECT * FROM activity_log WHERE plan_id = ? ORDER BY timestamp DESC LIMIT ?\").all",
+          "lineNumber": 160
+        },
+        {
+          "caller": "getActivityLog",
+          "callee": "this.db.prepare",
+          "lineNumber": 160
+        },
+        {
+          "caller": "cleanupActivityLog",
+          "callee": "new Date(Date.now() - days * 86400000).toISOString",
+          "lineNumber": 164
+        },
+        {
+          "caller": "cleanupActivityLog",
+          "callee": "Date.now",
+          "lineNumber": 164
+        },
+        {
+          "caller": "cleanupActivityLog",
+          "callee": "this.db.prepare(\"DELETE FROM activity_log WHERE timestamp < ?\").run",
+          "lineNumber": 165
+        },
+        {
+          "caller": "cleanupActivityLog",
+          "callee": "this.db.prepare",
+          "lineNumber": 165
+        },
+        {
+          "caller": "close",
+          "callee": "this.db.close",
+          "lineNumber": 169
+        },
+        {
+          "caller": "get",
+          "callee": "getDefaultDB",
+          "lineNumber": 180
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/lib/events.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 74,
+      "nonEmptyLines": 63,
+      "functions": [
+        {
+          "name": "markAsServerProcess",
+          "startLine": 6,
+          "endLine": 8,
+          "params": []
+        },
+        {
+          "name": "emit",
+          "startLine": 10,
+          "endLine": 20,
+          "params": [
+            "type",
+            "payload"
+          ]
+        },
+        {
+          "name": "emitPlanCreated",
+          "startLine": 22,
+          "endLine": 28,
+          "params": [
+            "planId",
+            "plan"
+          ]
+        },
+        {
+          "name": "emitPlanActivated",
+          "startLine": 30,
+          "endLine": 32,
+          "params": [
+            "planId"
+          ]
+        },
+        {
+          "name": "emitPlanCompleted",
+          "startLine": 34,
+          "endLine": 36,
+          "params": [
+            "planId",
+            "status"
+          ]
+        },
+        {
+          "name": "emitItemStarted",
+          "startLine": 38,
+          "endLine": 45,
+          "params": [
+            "planId",
+            "item"
+          ]
+        },
+        {
+          "name": "emitItemCompleted",
+          "startLine": 47,
+          "endLine": 55,
+          "params": [
+            "planId",
+            "item",
+            "status"
+          ]
+        },
+        {
+          "name": "emitCheckpointCreated",
+          "startLine": 57,
+          "endLine": 63,
+          "params": [
+            "planId",
+            "checkpointId",
+            "milestoneIdx"
+          ]
+        },
+        {
+          "name": "emitCheckpointVerified",
+          "startLine": 65,
+          "endLine": 70,
+          "params": [
+            "checkpointId",
+            "result",
+            "planId"
+          ]
+        },
+        {
+          "name": "emitModelFallback",
+          "startLine": 72,
+          "endLine": 74,
+          "params": [
+            "from",
+            "to",
+            "reason"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "markAsServerProcess",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "emitPlanCreated",
+          "line": 22,
+          "isDefault": false
+        },
+        {
+          "name": "emitPlanActivated",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "emitPlanCompleted",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "emitItemStarted",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "emitItemCompleted",
+          "line": 47,
+          "isDefault": false
+        },
+        {
+          "name": "emitCheckpointCreated",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "emitCheckpointVerified",
+          "line": 65,
+          "isDefault": false
+        },
+        {
+          "name": "emitModelFallback",
+          "line": 72,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "emit",
+          "callee": "broadcaster.broadcast",
+          "lineNumber": 12
+        },
+        {
+          "caller": "emit",
+          "callee": "fetch(PLUGIN_EMIT_URL, {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application/json\" },\n      body: JSON.stringify({ type, payload, planId }),\n    }).catch",
+          "lineNumber": 14
+        },
+        {
+          "caller": "emit",
+          "callee": "fetch",
+          "lineNumber": 14
+        },
+        {
+          "caller": "emit",
+          "callee": "JSON.stringify",
+          "lineNumber": 17
+        },
+        {
+          "caller": "emit",
+          "callee": "console.warn",
+          "lineNumber": 18
+        },
+        {
+          "caller": "emitPlanCreated",
+          "callee": "emit",
+          "lineNumber": 23
+        },
+        {
+          "caller": "emitPlanActivated",
+          "callee": "emit",
+          "lineNumber": 31
+        },
+        {
+          "caller": "emitPlanCompleted",
+          "callee": "emit",
+          "lineNumber": 35
+        },
+        {
+          "caller": "emitItemStarted",
+          "callee": "emit",
+          "lineNumber": 39
+        },
+        {
+          "caller": "emitItemCompleted",
+          "callee": "emit",
+          "lineNumber": 48
+        },
+        {
+          "caller": "emitCheckpointCreated",
+          "callee": "emit",
+          "lineNumber": 58
+        },
+        {
+          "caller": "emitCheckpointVerified",
+          "callee": "emit",
+          "lineNumber": 66
+        },
+        {
+          "caller": "emitModelFallback",
+          "callee": "emit",
+          "lineNumber": 73
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 9,
+        "functionCount": 10,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/lib/milestone-manager.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 90,
+      "nonEmptyLines": 73,
+      "classes": [
+        {
+          "name": "MilestoneManager",
+          "startLine": 5,
+          "endLine": 87,
+          "methods": [
+            "constructor",
+            "shouldCheckpoint",
+            "getNextCheckpointIndex",
+            "createCheckpoint",
+            "_collectAgentOutput",
+            "verifyCheckpoint",
+            "getPendingCheckpoints"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "MilestoneManager",
+          "line": 89,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "shouldCheckpoint",
+          "callee": "db.getPlan",
+          "lineNumber": 11
+        },
+        {
+          "caller": "shouldCheckpoint",
+          "callee": "db.getPlanItems",
+          "lineNumber": 14
+        },
+        {
+          "caller": "shouldCheckpoint",
+          "callee": "items.filter",
+          "lineNumber": 15
+        },
+        {
+          "caller": "getNextCheckpointIndex",
+          "callee": "db.getPlanItems",
+          "lineNumber": 22
+        },
+        {
+          "caller": "getNextCheckpointIndex",
+          "callee": "items.filter",
+          "lineNumber": 23
+        },
+        {
+          "caller": "getNextCheckpointIndex",
+          "callee": "Math.ceil",
+          "lineNumber": 24
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "db.getPlanItems",
+          "lineNumber": 28
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "items.filter",
+          "lineNumber": 29
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "this._collectAgentOutput",
+          "lineNumber": 32
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "this._collectAgentOutput",
+          "lineNumber": 33
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "this._collectAgentOutput",
+          "lineNumber": 34
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "randomUUID",
+          "lineNumber": 38
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "db.createCheckpoint",
+          "lineNumber": 45
+        },
+        {
+          "caller": "createCheckpoint",
+          "callee": "db.logActivity",
+          "lineNumber": 47
+        },
+        {
+          "caller": "_collectAgentOutput",
+          "callee": "items\n      .filter(i => i.executor === agent && i.idx < milestoneIdx)\n      .map",
+          "lineNumber": 58
+        },
+        {
+          "caller": "_collectAgentOutput",
+          "callee": "items\n      .filter",
+          "lineNumber": 58
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "db.verifyCheckpoint",
+          "lineNumber": 70
+        },
+        {
+          "caller": "verifyCheckpoint",
+          "callee": "db.logActivity",
+          "lineNumber": 72
+        },
+        {
+          "caller": "getPendingCheckpoints",
+          "callee": "db.db.prepare(\n      \"SELECT * FROM checkpoints WHERE plan_id = ? AND verification_status = 'pending' ORDER BY created_at DESC\"\n    ).all",
+          "lineNumber": 83
+        },
+        {
+          "caller": "getPendingCheckpoints",
+          "callee": "db.db.prepare",
+          "lineNumber": 83
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/lib/model-clients/base-client.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 112,
+      "nonEmptyLines": 97,
+      "classes": [
+        {
+          "name": "BaseModelClient",
+          "startLine": 2,
+          "endLine": 110,
+          "methods": [
+            "constructor",
+            "chat",
+            "shouldFallback",
+            "chatWithFallback"
+          ],
+          "properties": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "chat",
+          "callee": "fetch",
+          "lineNumber": 19
+        },
+        {
+          "caller": "chat",
+          "callee": "JSON.stringify",
+          "lineNumber": 25
+        },
+        {
+          "caller": "chat",
+          "callee": "response.text",
+          "lineNumber": 37
+        },
+        {
+          "caller": "chat",
+          "callee": "response.json",
+          "lineNumber": 44
+        },
+        {
+          "caller": "shouldFallback",
+          "callee": "networkErrors.some",
+          "lineNumber": 57
+        },
+        {
+          "caller": "shouldFallback",
+          "callee": "error.message?.includes",
+          "lineNumber": 58
+        },
+        {
+          "caller": "chatWithFallback",
+          "callee": "this.chat",
+          "lineNumber": 71
+        },
+        {
+          "caller": "chatWithFallback",
+          "callee": "console.error",
+          "lineNumber": 79
+        },
+        {
+          "caller": "chatWithFallback",
+          "callee": "this.shouldFallback",
+          "lineNumber": 81
+        },
+        {
+          "caller": "chatWithFallback",
+          "callee": "console.log",
+          "lineNumber": 82
+        },
+        {
+          "caller": "chatWithFallback",
+          "callee": "fallbackClient.chat",
+          "lineNumber": 85
+        },
+        {
+          "caller": "chatWithFallback",
+          "callee": "console.error",
+          "lineNumber": 95
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/lib/model-clients/deepseek-client.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 80,
+      "nonEmptyLines": 69,
+      "classes": [
+        {
+          "name": "DeepSeekClient",
+          "startLine": 3,
+          "endLine": 78,
+          "methods": [
+            "constructor",
+            "executeTask",
+            "generatePlan",
+            "generateCode",
+            "parseExecutionResult"
+          ],
+          "properties": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 5
+        },
+        {
+          "caller": "executeTask",
+          "callee": "this.chat",
+          "lineNumber": 27
+        },
+        {
+          "caller": "executeTask",
+          "callee": "this.parseExecutionResult",
+          "lineNumber": 28
+        },
+        {
+          "caller": "generatePlan",
+          "callee": "this.chat",
+          "lineNumber": 43
+        },
+        {
+          "caller": "generatePlan",
+          "callee": "JSON.parse",
+          "lineNumber": 44
+        },
+        {
+          "caller": "generateCode",
+          "callee": "this.chat",
+          "lineNumber": 59
+        },
+        {
+          "caller": "parseExecutionResult",
+          "callee": "JSON.parse",
+          "lineNumber": 64
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/lib/model-clients/kimi-client.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 141,
+      "nonEmptyLines": 125,
+      "classes": [
+        {
+          "name": "KimiClient",
+          "startLine": 11,
+          "endLine": 139,
+          "methods": [
+            "constructor",
+            "generatePlan",
+            "analyzeTaskMode",
+            "reviewCheckpoint",
+            "parsePlan"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "CAPABILITY_LIST",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 13
+        },
+        {
+          "caller": "generatePlan",
+          "callee": "this.chatWithFallback",
+          "lineNumber": 54
+        },
+        {
+          "caller": "generatePlan",
+          "callee": "this.parsePlan",
+          "lineNumber": 55
+        },
+        {
+          "caller": "analyzeTaskMode",
+          "callee": "this.chatWithFallback",
+          "lineNumber": 83
+        },
+        {
+          "caller": "analyzeTaskMode",
+          "callee": "JSON.parse",
+          "lineNumber": 84
+        },
+        {
+          "caller": "reviewCheckpoint",
+          "callee": "JSON.parse",
+          "lineNumber": 93
+        },
+        {
+          "caller": "reviewCheckpoint",
+          "callee": "JSON.stringify",
+          "lineNumber": 102
+        },
+        {
+          "caller": "reviewCheckpoint",
+          "callee": "this.chatWithFallback",
+          "lineNumber": 106
+        },
+        {
+          "caller": "reviewCheckpoint",
+          "callee": "JSON.parse",
+          "lineNumber": 111
+        },
+        {
+          "caller": "parsePlan",
+          "callee": "JSON.parse",
+          "lineNumber": 116
+        },
+        {
+          "caller": "parsePlan",
+          "callee": "(plan.items || []).map",
+          "lineNumber": 119
+        },
+        {
+          "caller": "parsePlan",
+          "callee": "['kimi', 'deepseek', 'minimax'].includes",
+          "lineNumber": 123
+        },
+        {
+          "caller": "parsePlan",
+          "callee": "(() => {\n          const s = plan.suggested_skills;\n          if (!s) return {};\n          if (Array.isArray(s)) return { P1_important: s };\n          if (s.P0_critical || s.P1_important || s.P2_nice_to_have) return s;\n          return {};\n        })",
+          "lineNumber": 127
+        },
+        {
+          "caller": "parsePlan",
+          "callee": "Array.isArray",
+          "lineNumber": 130
+        },
+        {
+          "caller": "parsePlan",
+          "callee": "response.slice",
+          "lineNumber": 136
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    }
+  ]
+}

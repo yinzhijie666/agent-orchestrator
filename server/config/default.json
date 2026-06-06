@@ -40,7 +40,7 @@
       "max_tokens": 384000,
       "provider": "deepseek"
     },
-    "minimax": {
+    "opencode-zen": {
       "api_key_env": "OPENCODE_API_KEY",
       "base_url": "https://opencode.ai/zen/v1",
       "model": "deepseek-v4-flash-free",

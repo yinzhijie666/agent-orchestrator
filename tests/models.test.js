@@ -27,8 +27,8 @@ describe("Model Configuration", () => {
     expect(ds.max_tokens).toBe(384000);
   });
 
-  test("MiniMax config has correct model name and base URL", () => {
-    const mm = config.models.minimax;
+  test("OpenCode Zen config has correct model name and base URL", () => {
+    const mm = config.models["opencode-zen"];
     expect(mm.model).toBe("deepseek-v4-flash-free");
     expect(mm.base_url).toContain("opencode.ai");
     expect(mm.api_key_env).toBe("OPENCODE_API_KEY");
@@ -39,7 +39,7 @@ describe("Model Configuration", () => {
   test("Models key environment variable names", () => {
     expect(config.models.kimi.api_key_env).toBe("OPENCODE_API_KEY");
     expect(config.models.deepseek.api_key_env).toBe("DEEPSEEK_API_KEY");
-    expect(config.models.minimax.api_key_env).toBe("OPENCODE_API_KEY");
+    expect(config.models["opencode-zen"].api_key_env).toBe("OPENCODE_API_KEY");
   });
 });
 
@@ -209,7 +209,7 @@ describe("Client Instantiation", () => {
   });
 
   test("MiniMaxClient instantiates from config", () => {
-    const client = new MiniMaxClient(config.models.minimax);
+    const client = new MiniMaxClient(config.models["opencode-zen"]);
     expect(client.model).toBe("deepseek-v4-flash-free");
     expect(client.provider).toBe("opencode-zen");
   });
@@ -250,7 +250,7 @@ describe("API Connectivity", () => {
   }, 30000);
 
   itOrSkip("MiniMax API responds to chat request", async () => {
-    const client = new MiniMaxClient(config.models.minimax);
+    const client = new MiniMaxClient(config.models["opencode-zen"]);
     const result = await client.searchCode("What is 1+1?");
     expect(result).toBeTruthy();
   }, 30000);

@@ -24,6 +24,7 @@ import MiniMaxClient from './server/lib/model-clients/minimax-client.js';
 import { PlanOrchestrator } from './server/lib/plan-orchestrator.js';
 import { AutoExecutor } from './server/lib/auto-executor.js';
 import { AutoDispatcher } from './server/lib/auto-dispatcher.js';
+import { WorkflowValidator, ALL_REQUIRED_SKILLS } from './server/lib/workflow-validator.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MILESTONE_INTERVAL = config.milestone?.interval || 4;
@@ -49,7 +50,10 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, minima
       const analysisResult = await kimiClient.chatWithFallback([
         {
           role: 'system',
-          content: '你是分析 agent。只读分析任务，提供深入见解。不要写代码。分析结束时给出明确的结论和建议。\n\n可用能力清单（推荐 3-5 项）:\n云端[76类]: frontend backend cloud security ai-ml testing database mobile devops\nSuperpowers[14]: brainstorming test-driven-development systematic-debugging\nGStack[16]: /qa /review /browse /ship /design-review\n本地: /understand-explain /understand-diff /graphify query verify.sh oh-my-memory\nCodeGraph[16]: codegraph_context codegraph_query codegraph_callers codegraph_callees codegraph_impact codegraph_files codegraph_status codegraph_init codegraph_index codegraph_sync codegraph_serve codegraph_unlock codegraph_affected codegraph_install codegraph_uninstall'
+          content: `你是分析 agent。只读分析任务，提供深入见解。不要写代码。分析结束时给出明确的结论和建议。
+
+可用能力清单（推荐 3-5 项）:
+${CAPABILITY_LIST}`
         },
         {
           role: 'user',
@@ -261,7 +265,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
   }
   const kimiClient = new KimiClient(config.models.kimi);
   const deepseekClient = new DeepSeekClient(config.models.deepseek);
-  const minimaxClient = new MiniMaxClient(config.models.minimax);
+  const minimaxClient = new MiniMaxClient(config.models["opencode-zen"]);
 
   return {
     tool: {
@@ -298,6 +302,15 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 output += `\n\n💡 建议后续:\n${result.recommendations}`;
               }
             }
+
+            // Add workflow status report
+            try {
+              const workflowReport = WorkflowValidator.generateReport(__dirname);
+              output += '\n\n' + WorkflowValidator.formatReport(workflowReport);
+            } catch (e) {
+              // WorkflowValidator is non-critical, don't fail the tool
+            }
+
             return { output };
           } catch (err) {
             return { output: `Error: ${err.message}` };
@@ -529,6 +542,13 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
               for (const entry of list) {
                 const action = parseSkillAction(entry);
                 rawItems.push({ tier, entry, ...action });
+              }
+            }
+
+            // Supplement with WORKFLOW.md required skills if missing
+            for (const skill of ALL_REQUIRED_SKILLS) {
+              if (!rawItems.some(item => item.value === skill || item.entry === skill)) {
+                rawItems.push({ tier: 'P1_important', entry: `skill ${skill}`, type: 'skill', value: skill });
               }
             }
 
