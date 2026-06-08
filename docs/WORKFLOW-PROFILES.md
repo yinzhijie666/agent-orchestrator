@@ -97,8 +97,8 @@ Phase 2 = 纯分析 + 报告产出，**不修改代码**。
 
 ```
 组 1 — 分析 (7, 按序)
-  andrej-karpathy → brainstorming → plan-eng-review
-  → plan-design-review (恢复) → design-consultation
+  andrej-karpathy → plan-eng-review → plan-design-review
+  → brainstorming → design-consultation
   → plan-ceo-review → office-hours
 
 组 2 — 质量验证 (6, 可并行)

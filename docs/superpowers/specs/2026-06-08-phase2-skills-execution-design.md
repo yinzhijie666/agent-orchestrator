@@ -48,9 +48,9 @@ Phase 5: 实施（12 skills）
 | Skill | 执行内容 | 产出文件 |
 |-------|---------|----------|
 | `andrej-karpathy` | 加载编码原则，对项目做 10 原则评分 | `01-karpathy-principles.md` |
-| `brainstorming` | 项目全面脑暴，产出改进方向 spec | `02-brainstorming.md` |
-| `plan-eng-review` | 审查项目架构(plugin/server/db/API) | `03-architecture-review.md` |
-| `plan-design-review` | ← **恢复**。审查设计模式(events/checkpoint/dispatch) | `04-design-pattern-review.md` |
+| `plan-eng-review` | 审查项目当前架构(plugin/server/db/API) | `02-architecture-review.md` |
+| `plan-design-review` | 审查设计模式(events/checkpoint/dispatch) | `03-design-pattern-review.md` |
+| `brainstorming` | 基于当前架构认知，脑暴改进方向 | `04-brainstorming.md` |
 | `design-consultation` | 设计建议(API/WS/dashboard) | `05-design-consultation.md` |
 | `plan-ceo-review` | 项目方向与战略评估 | `06-direction-review.md` |
 | `office-hours` | YC 式项目方向问诊 | `07-office-hours.md` |
@@ -85,6 +85,8 @@ ls docs/phase2-skills/*.md | wc -l
 # 测试无回归
 bun test
 ```
+
+> Phase 3 深度分析的技术依赖是 Phase 1 的图谱文件，非 Phase 2 报告。Phase 2 报告为人工阅读和 Phase 5 修复提供上下文。
 
 ## Phase 5：实施（14 skills）
 
