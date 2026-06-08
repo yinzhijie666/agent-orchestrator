@@ -56,29 +56,31 @@
         "phases": [1, 4],
         "phase_1_steps": 4,
         "phase_4_steps": 1,
-        "total_steps": 13,
+        "total_steps": 6,
         "use_case": "日常 commit 前自检"
       },
       "standard": {
         "phases": [1, 2, 4],
         "phase_1_steps": 4,
-        "phase_2_steps": 31,
+        "phase_2_steps": 15,
         "phase_4_steps": 2,
-        "total_steps": 54,
+        "total_steps": 21,
         "use_case": "重大功能前（推荐默认）"
       },
       "full": {
-        "phases": [1, 2, 3, 4],
+        "phases": [1, 2, 3, 4, 5],
         "phase_1_steps": 4,
-        "phase_2_steps": 31,
+        "phase_2_steps": 16,
         "phase_3_steps": 32,
         "phase_4_steps": 2,
+        "phase_5_steps": 15,
         "total_steps": 69,
         "use_case": "发版、重大重构"
       },
       "audit": {
         "extends": "full",
         "extras": ["auto-generate-audit-report"],
+        "phase_4_steps": 7,
         "total_steps": 74,
         "use_case": "审计场景，产出 audit-report-<date>.md"
       }
