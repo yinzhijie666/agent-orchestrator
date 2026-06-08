@@ -170,7 +170,7 @@ ${CAPABILITY_LIST}
   }
 }
 
-function formatSuggestedSkills(skills) {
+export function formatSuggestedSkills(skills) {
   if (!skills || typeof skills !== 'object') return '';
   const hasSkills = (skills.P0_critical?.length || 0) +
                     (skills.P1_important?.length || 0) +
@@ -590,7 +590,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 skills_to_execute: validated,
                 total: validated.length,
                 dispatch_result: autoDispatched ? {
-                  mode: autoDispatched ? 'd2' : 'd1',
+                  mode: 'd2',
                   prompt: autoExecPrompt,
                 } : null,
                 breakdown: {

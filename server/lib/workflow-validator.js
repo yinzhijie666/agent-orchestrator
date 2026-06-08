@@ -3,6 +3,7 @@
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { getDefaultSkillEntries } from './skill-classifier.js';
 
 // WORKFLOW_PHASES constant - must match WORKFLOW.md definition
 export const WORKFLOW_PHASES = {
@@ -76,7 +77,15 @@ export class WorkflowValidator {
    * @returns {{passed: number, total: number, missing: string[]}}
    */
   static checkPhase2(loadedSkills = []) {
-    const loaded = new Set(loadedSkills);
+    let skills;
+    if (loadedSkills.length === 0) {
+      skills = getDefaultSkillEntries()
+        .filter(e => existsSync(e.path))
+        .map(e => e.name);
+    } else {
+      skills = loadedSkills;
+    }
+    const loaded = new Set(skills);
     const missing = ALL_REQUIRED_SKILLS.filter(s => !loaded.has(s));
     const passed = ALL_REQUIRED_SKILLS.length - missing.length;
 

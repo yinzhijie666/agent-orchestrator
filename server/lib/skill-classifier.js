@@ -139,7 +139,7 @@ export class SkillClassifier {
   }
 }
 
-export function createDefaultClassifier() {
+export function getDefaultSkillEntries() {
   const home = process.env.HOME || '/home/yin';
   const entries = [];
 
@@ -155,5 +155,9 @@ export function createDefaultClassifier() {
     entries.push({ name: s, path: join(gsBase, s, 'SKILL.md') });
   }
 
-  return new SkillClassifier(entries);
+  return entries;
+}
+
+export function createDefaultClassifier() {
+  return new SkillClassifier(getDefaultSkillEntries());
 }

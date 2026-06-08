@@ -99,6 +99,13 @@ describe("WorkflowValidator", () => {
       expect(result.missing.length).toBe(30);
       expect(result.missing).toContain("andrej-karpathy");
     });
+
+    test("auto-detects installed skills from filesystem", () => {
+      const result = WorkflowValidator.checkPhase2();
+      expect(result.total).toBe(31);
+      // System should have at least Karpathy skill installed
+      expect(result.passed).toBeGreaterThan(0);
+    });
   });
 
   describe("checkPhase3", () => {
