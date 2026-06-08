@@ -583,13 +583,16 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             }));
 
             const autoDispatched = !!(autoDispatcher && autoDispatcher.d2Enabled);
-            const dispatchResult = null;
 
             return {
               output: JSON.stringify({
                 plan_id: plan.id,
                 skills_to_execute: validated,
                 total: validated.length,
+                dispatch_result: autoDispatched ? {
+                  mode: autoDispatched ? 'd2' : 'd1',
+                  prompt: autoExecPrompt,
+                } : null,
                 breakdown: {
                   INTERACTIVE: manualSkills.filter(s => s.category === 'INTERACTIVE').map(s => s.value || s.entry),
                   TOOL_REQUIRED: manualSkills.filter(s => s.category === 'TOOL_REQUIRED').map(s => s.value || s.entry),
@@ -608,11 +611,11 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 auto_dispatched: autoDispatched,
                 dispatcher_status: autoDispatcher ? autoDispatcher.getStatus() : null,
                 next_step: autoDispatched
-                  ? `Auto-exec prompt built — ready to dispatch subagent via task tool. ${autoExecPrompt ? 'auto_exec.prompt available.' : ''}`
+                  ? `Auto-exec prompt built — ready to dispatch subagent via D2 server. ${autoExecPrompt ? 'auto_exec.prompt available.' : ''}`
                   : (manualInstructions.length > 0
                     ? `Execute ${manualInstructions.length} manual skills in main session (P0 → P1 → P2): ${manualInstructions.map(s => s.name).join(', ')}`
                     : (autoExecEnabled
-                      ? 'Auto-exec prompt built — dispatch via task tool with subagent_type="general".'
+                      ? 'D2 server unavailable. AUTO skills must be executed manually in main session.'
                       : (validated.length > 0
                         ? 'Auto-exec disabled. Manually execute each skill in P0 → P1 → P2 order.'
                         : 'No skills suggested. Proceed with normal execution.')))
@@ -685,7 +688,15 @@ When \`manual_instructions[]\` is non-empty:
   - \`memory\` → search oh-my-memory
 - If a skill execution fails, log the error and continue to the next skill
 - Report all results at the end
-- P0 must succeed; P1/P2 may be skipped`;
+- P0 must succeed; P1/P2 may be skipped
+
+### Model Fallback Behavior
+When Kimi (planning model) is unavailable:
+- \`analyzeTaskMode\` falls back to DeepSeek for mode decision
+- \`generatePlan\` falls back to DeepSeek for plan creation
+- \`reviewCheckpoint\` auto-passes with "Kimi unavailable" note
+- Fallback info is logged in plan metadata (\`fallback_used\`, \`fallbackInfo\`)
+- Output includes ⚠️ warning when Kimi was unavailable and fallback was used`;
     },
 
     dispose: async () => {

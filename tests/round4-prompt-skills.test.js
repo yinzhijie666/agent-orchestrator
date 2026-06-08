@@ -67,7 +67,7 @@ describe("Round 4: Prompt + Skills fixes", () => {
     test("contains all expected capability categories", () => {
       expect(CAPABILITY_LIST).toContain("Superpowers[14]");
       expect(CAPABILITY_LIST).toContain("GStack[16]");
-      expect(CAPABILITY_LIST).toContain("CodeGraph[16]");
+      expect(CAPABILITY_LIST).toContain("CodeGraph[9]");
       expect(CAPABILITY_LIST).toContain("云端[76类]");
     });
 
@@ -92,7 +92,7 @@ describe("Round 4: Prompt + Skills fixes", () => {
       await client.generatePlan("Test");
       const systemMsg = capturedMessages[0].content;
       expect(systemMsg).toContain("Superpowers[14]");
-      expect(systemMsg).toContain("CodeGraph[16]");
+      expect(systemMsg).toContain("CodeGraph[9]");
     });
 
     test("analyzeTaskMode uses CAPABILITY_LIST", async () => {
@@ -109,7 +109,7 @@ describe("Round 4: Prompt + Skills fixes", () => {
       await client.analyzeTaskMode("Test");
       const systemMsg = capturedMessages[0].content;
       expect(systemMsg).toContain("Superpowers[14]");
-      expect(systemMsg).toContain("CodeGraph[16]");
+      expect(systemMsg).toContain("CodeGraph[9]");
     });
   });
 

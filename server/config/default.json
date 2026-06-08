@@ -56,7 +56,7 @@
         "phases": [1, 4],
         "phase_1_steps": 4,
         "phase_4_steps": 1,
-        "total_steps": 5,
+        "total_steps": 13,
         "use_case": "日常 commit 前自检"
       },
       "standard": {
@@ -64,7 +64,7 @@
         "phase_1_steps": 4,
         "phase_2_steps": 31,
         "phase_4_steps": 2,
-        "total_steps": 37,
+        "total_steps": 54,
         "use_case": "重大功能前（推荐默认）"
       },
       "full": {
@@ -79,7 +79,7 @@
       "audit": {
         "extends": "full",
         "extras": ["auto-generate-audit-report"],
-        "total_steps": 69,
+        "total_steps": 74,
         "use_case": "审计场景，产出 audit-report-<date>.md"
       }
     }

@@ -2,9 +2,9 @@ import BaseModelClient from "./base-client.js";
 
 const CAPABILITY_LIST = `云端[76类]: frontend backend cloud security ai-ml testing database mobile devops
 Superpowers[14]: brainstorming writing-plans executing-plans test-driven-development systematic-debugging subagent-driven-development verification-before-completion requesting-code-review receiving-code-review dispatching-parallel-agents finishing-a-development-branch using-git-worktrees using-superpowers writing-skills
-GStack[16]: /qa /review /browse /ship /design-review /debug /retro /document-release /plan-eng-review /design-consultation /office-hours /plan-ceo-review /plan-design-review /qa-only /setup-browser-cookies /ship
+GStack[16]: /qa /review /browse /ship /design-review /debug /retro /document-release /plan-eng-review /design-consultation /office-hours /plan-ceo-review /plan-design-review /qa-only /setup-browser-cookies /gstack-upgrade
 本地: /understand-explain /understand-diff /understand-domain /understand-onboard /graphify query verify.sh oh-my-memory skills-manager
-CodeGraph[16]: codegraph_context codegraph_query codegraph_callers codegraph_callees codegraph_impact codegraph_files codegraph_status codegraph_init codegraph_index codegraph_sync codegraph_serve codegraph_unlock codegraph_affected codegraph_install codegraph_uninstall`;
+CodeGraph[9]: codegraph_context codegraph_search codegraph_node codegraph_explore codegraph_trace codegraph_callers codegraph_callees codegraph_impact codegraph_files`;
 
 export { CAPABILITY_LIST };
 
