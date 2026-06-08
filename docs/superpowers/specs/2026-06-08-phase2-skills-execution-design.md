@@ -95,24 +95,24 @@ bun test
 | Skill | 执行内容 | 产出 |
 |-------|---------|------|
 | `using-git-worktrees` | 隔离工作区 | worktree 创建 |
-| `writing-plans` | 基于 Phase 4 bug list 制定修复计划 | `docs/phase5/fix-plan.md` |
+| `writing-plans` | 基于 Phase 4 bug list 制定修复计划。将 bug 按模块/类型拆分为独立任务组 | `docs/phase5/fix-plan.md` |
 
-### Phase 5.2 — 修复（4 skills）
+### Phase 5.2 — 修复（5 skills）
 
 | Skill | 执行内容 | 验证 |
 |-------|---------|------|
 | `dispatching-parallel-agents` | 并发调度修复任务（子 agent 各自执行 TDD+实现）| agent 并行结果 |
 | `verification-before-completion` | 汇聚子 agent 结果，验证全部修复无回归 | bun test + verify.sh |
 | `browse` | browser 截图验证（仅前端变更时执行）| `docs/phase5/browse.md` + 截图 |
+| `document-release` | ← **从 5.3 移来**。更新 README 等文档（与代码修复在同一 commit） | `docs/phase5/document-release.md` |
 | `finishing-a-development-branch` | commit 或 PR | commit |
 
 > DPA 派发后，子 agent 各自执行 TDD + 实现。主 session 跳过 TDD/executing-plans（已在子 agent 内部完成）。
 
-### Phase 5.3 — 文档与发布（3 skills）
+### Phase 5.3 — 文档与发布（2 skills）
 
 | Skill | 执行内容 | 产出 |
 |-------|---------|------|
-| `document-release` | 更新 README 等文档 | `docs/phase5/document-release.md` |
 | `writing-skills` | 可选。为项目写 `agent-orchestrator-workflow` skill | 新 SKILL.md |
 | `ship` | 发布准备检查 | `docs/phase5/ship.md` |
 
