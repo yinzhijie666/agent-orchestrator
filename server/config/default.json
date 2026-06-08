@@ -73,15 +73,15 @@
         "phase_2_steps": 14,
         "phase_3_steps": 32,
         "phase_4_steps": 2,
-        "phase_5_steps": 14,
-        "total_steps": 66,
+        "phase_5_steps": 12,
+        "total_steps": 64,
         "use_case": "发版、重大重构"
       },
       "audit": {
         "extends": "full",
         "extras": ["auto-generate-audit-report"],
         "phase_4_steps": 7,
-        "total_steps": 71,
+        "total_steps": 69,
         "use_case": "审计场景，产出 audit-report-<date>.md"
       }
     }

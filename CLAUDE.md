@@ -24,7 +24,7 @@ bash scripts/workflow-preflight-check.sh
 
 工作流定义见 [WORKFLOW.md](~/.config/opencode/WORKFLOW.md)（Phase 1-4 分析 + Phase 5 修复）。
 
-**核心变更（v3）：Phase 2 拆为纯分析（16 skills），组 3 移入 Phase 5（15 skills）**
+**核心变更（v3.4）：Phase 2 拆为纯分析（14 skills），Phase 5（12 skills）**
 
 - **Phase 1-2**（分析）= 知识图谱 + 技能分析，不修改代码
 - **Phase 3-4**（验证）= 深度分析 + 审计，产出 bug list

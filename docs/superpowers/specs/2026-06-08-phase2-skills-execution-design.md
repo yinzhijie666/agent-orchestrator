@@ -32,8 +32,10 @@ Phase 3: 深度分析（32 步，不变）
 
 Phase 4: 审计（7 轮）
   orchestrator-audit 7 rounds + verify.sh
+  产出结构化 bug list，供 Phase 5 DPA 子 agent 消费
+  格式: [{type, file, line, severity, description, fix_suggestion}]
 
-Phase 5: 实施（14 skills）
+Phase 5: 实施（12 skills）
   基于 Phase 4 bug list 修复 + 文档 + 收尾
 ```
 
@@ -138,8 +140,8 @@ bash /home/yin/.config/opencode/scripts/workflow-phase.sh --complete phase5
 |---------|---------|---------|---------|---------|---------|--------|------|------|
 | minimal | 4 步 | ❌ skip | ❌ skip | 1 步 | ❌ skip | 5 | 5 min | 仅快速自检，无分析无修复 |
 | standard | 4 步 | 组 1(7)+组 2(6) | ❌ skip | 2 步 | ❌ skip | 19 | 15 min | 分析+验证，产出问题报告供后续手动修复 |
-| full | 4 步 | 全部 14 | 32 步 | 2 步 | 全部 14 | 66 | 90 min | 全量：分析→验证→审计→修复→文档 |
-| audit | 4 步 | 全部 14 | 32 步 | 7 轮 | 全部 14 | 71 | 120 min | full + 深度审计 |
+| full | 4 步 | 全部 14 | 32 步 | 2 步 | 全部 12 | 64 | 90 min | 全量：分析→验证→审计→修复→文档 |
+| audit | 4 步 | 全部 14 | 32 步 | 7 轮 | 全部 12 | 69 | 120 min | full + 深度审计 |
 
 ## 执行前置条件
 
