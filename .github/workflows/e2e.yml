@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [master, main]
   pull_request:
-    branches: [master]
+    branches: [master, main]
 
 jobs:
   test:
@@ -15,7 +15,37 @@ jobs:
         with:
           bun-version: latest
       - run: bun install
-      - run: bun test
+
+      - name: Setup test baseline
+        run: |
+          chmod +x scripts/test-baseline.sh
+          bash scripts/test-baseline.sh --show || echo "No baseline yet"
+
+      - name: Run tests
+        id: tests
+        run: |
+          bun test 2>&1 | tee .gstack/test-raw-output.txt
         env:
           AGENT_ORCHESTRATOR_API_KEY: ""
           AUTO_EXEC_DISPATCH: "false"
+
+      - name: Save baseline
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        run: |
+          bash scripts/test-baseline.sh --save
+
+      - name: Verify against baseline
+        if: always()
+        run: |
+          if [ -f .gstack/test-baseline.json ]; then
+            bash scripts/test-baseline.sh --verify || echo "⚠️ 测试基线差异"
+          else
+            echo "ℹ️ 首次运行，基线将在 push 后保存"
+          fi
+
+      - name: Count pass rate
+        if: always()
+        run: |
+          PASS=$(grep -oP '\d+(?= pass)' .gstack/test-raw-output.txt | tail -1)
+          FAIL=$(grep -oP '\d+(?= fail)' .gstack/test-raw-output.txt | tail -1)
+          echo "✅ 通过: $PASS  ❌ 失败: $FAIL"

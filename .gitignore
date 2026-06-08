@@ -3,6 +3,8 @@
 .env
 node_modules/
 server/state/db.sqlite
+server/state/db.sqlite-shm
+server/state/db.sqlite-wal
 *.log
 .DS_Store
 tests/*.sqlite

@@ -19,7 +19,7 @@ beforeAll(() => {
   }
 }, 60000);
 
-describe("workflow-preflight-check.sh (11 checks)", () => {
+describe("workflow-preflight-check.sh (14 checks)", () => {
   test("runs with appropriate exit code", () => {
     // When knowledge-graph.json doesn't exist, exit code is 1
     // When it exists, exit code is 0
@@ -33,11 +33,14 @@ describe("workflow-preflight-check.sh (11 checks)", () => {
   });
 
   test("outputs all check headers", () => {
-    expect(result).toContain("[1/11]");
-    expect(result).toContain("[7/11]");
+    expect(result).toContain("[1/14]");
+    expect(result).toContain("[7/14]");
     expect(result).toContain("/understand knowledge graph");
-    expect(result).toContain("[8/11]");
-    expect(result).toContain("[10/11]");
+    expect(result).toContain("[8/14]");
+    expect(result).toContain("[10/14]");
+    expect(result).toContain("[12/14]");
+    expect(result).toContain("[13/14]");
+    expect(result).toContain("[14/14]");
   });
 
   test("reports 31 skills correctly", () => {

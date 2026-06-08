@@ -8,7 +8,7 @@ set -e
 
 ERRORS=0
 WARNINGS=0
-TOTAL_CHECKS=11
+TOTAL_CHECKS=14
 
 # 添加 bun 全局安装路径到 PATH（包含 codegraph 等 CLI 工具）
 export PATH="$HOME/.bun/install/global/node_modules/.bin:$HOME/.bun/bin:$PATH"
@@ -257,6 +257,50 @@ elif [ $TOTAL_FOUND -ge 25 ]; then
 else
   echo "  ❌ 31 skills 严重缺失 (找到 $TOTAL_FOUND/31)"
   ERRORS=$((ERRORS+1))
+fi
+
+# 12. 测试基线存在性
+echo "[12/$TOTAL_CHECKS] 检查测试基线..."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$PROJECT_ROOT/.gstack/test-baseline.json" ]; then
+  BASELINE_DATE=$(python3 -c "import json; d=json.load(open('$PROJECT_ROOT/.gstack/test-baseline.json')); print(d.get('timestamp','')[:19])" 2>/dev/null || echo "unknown")
+  echo "  ✅ 测试基线存在 ($BASELINE_DATE)"
+else
+  echo "  ⚠️  无测试基线（首次运行请执行 bash scripts/test-baseline.sh --save）"
+  WARNINGS=$((WARNINGS+1))
+fi
+
+# 13. 端口可用性
+echo "[13/$TOTAL_CHECKS] 检查端口可用性..."
+if command -v netstat &>/dev/null; then
+  PORT=18765
+  if netstat -tln 2>/dev/null | grep -q ":$PORT "; then
+    echo "  ⚠️  默认端口 $PORT 已被占用（测试服务可能冲突）"
+    WARNINGS=$((WARNINGS+1))
+  else
+    echo "  ✅ 端口 $PORT 可用"
+  fi
+else
+  echo "  ⚠️  无法检查端口（netstat 不可用）"
+  WARNINGS=$((WARNINGS+1))
+fi
+
+# 14. Phase Gate 状态
+echo "[14/$TOTAL_CHECKS] 检查 Phase Gate 状态..."
+GATE_DIR="$PROJECT_ROOT/.gstack"
+GATES=("preflight" "phase1" "phase2" "phase3" "phase4" "phase5")
+COMPLETED=0
+for g in "${GATES[@]}"; do
+  if [ -f "$GATE_DIR/phase-${g}.complete" ]; then
+    GATE_DATE=$(head -1 "$GATE_DIR/phase-${g}.complete" 2>/dev/null | sed 's/ .*//' || echo "?")
+    COMPLETED=$((COMPLETED + 1))
+  fi
+done
+if [ "$COMPLETED" -ge 1 ]; then
+  echo "  ✅ 已完成 $COMPLETED 个 Phase 门控"
+else
+  echo "  ⚠️  未开始任何 Phase（首次运行可跳过）"
+  WARNINGS=$((WARNINGS+1))
 fi
 
 # 汇总结果
