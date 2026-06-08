@@ -22,11 +22,16 @@
 bash scripts/workflow-preflight-check.sh
 ```
 
-工作流定义见 [WORKFLOW.md](~/.config/opencode/WORKFLOW.md)（Phase 1-4 纯分析流程）。
+工作流定义见 [WORKFLOW.md](~/.config/opencode/WORKFLOW.md)（Phase 1-4 分析 + Phase 5 修复）。
 
-**核心区分：**
-- **Phase 1-4**（工作流）= 纯分析，不修改代码，不触发 P0 技能
+**核心变更（v2）：Phase 2 从"加载"升级为"按产出物类型真实执行"**
+
+- **Phase 2**（技能执行）= 按 5 组流水线执行 31 个 skills，产出可验证工件
+- **Phase 1-4**（分析+执行）= 知识图谱 → 技能执行 → 深度分析 → 审计
 - **Phase 5**（问题修复）= 实施活动，修改代码，触发 P0 技能
+
+Phase 2 详细方案见 `docs/superpowers/specs/2026-06-08-phase2-skills-execution-design.md`
+Profile 选择见 `docs/WORKFLOW-PROFILES.md`
 
 ## 问题修复
 
@@ -40,7 +45,7 @@ bash scripts/workflow-preflight-check.sh
 
 ## P0 技能触发规则
 
-P0 技能在**问题修复阶段**触发，不在工作流分析阶段触发：
+P0 技能在**问题修复阶段**触发，不在工作流分析阶段触发（Phase 2 技能执行除外，P0 skill 在组 3 实施中触发）：
 
 | P0 技能             | 触发条件                     | 验证                |
 | ------------------- | ---------------------------- | ------------------- |
@@ -49,6 +54,9 @@ P0 技能在**问题修复阶段**触发，不在工作流分析阶段触发：
 | TDD                 | 任何代码变更                 | RED→GREEN→REFACTOR  |
 | verification        | 任何"完成"声明前             | 5 步 Gate Function  |
 | finishing-branch    | 实施完成                     | 用户选择 4 选项     |
+
+> **Phase 2 中的 P0 技能**：在组 3（工程实施）中按流水线触发。
+> brainstorming+writing-plans 在组 1 分析阶段、TDD+verification 在组 3 实施阶段、finishing-branch 在组 5。
 
 ## Skill Auto-Execution Protocol
 
