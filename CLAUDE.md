@@ -37,9 +37,10 @@ Profile 选择见 `docs/WORKFLOW-PROFILES.md`
 
 审计或分析发现问题后，执行问题修复流程（Phase 5）：
 1. 输出问题清单
-2. 制定修复方案（writing-plans）
-3. 逐个 Task 修复（TDD + verification）
-4. finishing-a-development-branch
+2. 制定修复方案（writing-plans）+ 隔离工作区（worktrees）
+3. DPA 并发调度子 agent（各自 TDD + 实现）
+4. 汇聚验证 + browse 截图 + 文档更新
+5. finishing-a-development-branch
 
 详细流程见 [AUDIT.md](~/.config/opencode/AUDIT.md)。
 
@@ -56,7 +57,7 @@ P0 技能在**问题修复阶段**触发，不在工作流分析阶段触发：
 | finishing-branch    | 实施完成                     | 用户选择 4 选项     |
 
 > **Phase 2 中的 P0 技能**：在 Phase 5 工程实施中按流水线触发。
-> brainstorming+writing-plans 在 Phase 2 分析阶段、TDD+verification+finishing-branch 在 Phase 5 实施阶段。
+> brainstorming 在 Phase 2 分析阶段，writing-plans + TDD(子 agent) + verification + finishing-branch 在 Phase 5 实施阶段。
 
 ## Skill Auto-Execution Protocol
 

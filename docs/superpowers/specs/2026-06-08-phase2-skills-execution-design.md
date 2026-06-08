@@ -1,9 +1,9 @@
-# Phase 2 & 5 Skills 执行设计方案（v3.2）
+# Phase 2 & 5 Skills 执行设计方案（v3.6）
 
 > 修订日期: 2026-06-08
-> 版本: v3.2
-> 核心变更：Phase 2 拆为纯分析（14 skills），Phase 5 实施（14 skills），共 28 skills。
-> v3.2 撤销 v3.1 错误合并（恢复 `plan-design-review`），删 2 冗余（`debug` + `subagent-driven-development`），移 1 到正确 Phase（`verification-before-completion` → Phase 5）。
+> 版本: v3.6
+> 核心变更：Phase 2 拆为纯分析（14 skills），Phase 5 实施（12 skills），共 26 skills。
+> 迭代历史：v3.2 去重 debug+SAD → v3.3 DPA 拥有 TDD → v3.4 步数修正 → v3.5 doc-release 前移 → v3.6 组 1 顺序调整。
 
 ## v3.1 → v3.2 修复明细
 
@@ -88,7 +88,7 @@ bun test
 
 > Phase 3 深度分析的技术依赖是 Phase 1 的图谱文件，非 Phase 2 报告。Phase 2 报告为人工阅读和 Phase 5 修复提供上下文。
 
-## Phase 5：实施（14 skills）
+## Phase 5：实施（12 skills）
 
 基于 Phase 4 审计发现的 bug list 实施修复。
 

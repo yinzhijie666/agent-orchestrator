@@ -1,7 +1,7 @@
 # 工作流 Profile 系统
 
 > **目的**：让"完整工作流"从一刀切的 69 步变成按需选择，避免日常开发也跑全量。
-> 2026-06-08 更新 (v3.2)：Phase 2（14 skills）+ Phase 5（14 skills），恢复 plan-design-review，去重 debug+SAD。
+> 2026-06-08 更新 (v3.6)：Phase 2（14 skills）+ Phase 5（12 skills），组 1 顺序优化，文档版本统一。
 
 ## Design Rationale
 
@@ -12,9 +12,9 @@ v2 将 Phase 2 分为 5 组，其中组 3（工程实施）包含 TDD/executing-
 - **契约违反**：Phase 1-4 定义为"纯分析"，但组 3 写代码
 - **范围重叠**：组 3 与 Phase 5 做完全相同的事
 
-### v3.2 的解法
+### v3.6 的解法
 
-**Phase 2 拆为纯分析**（14 skills）+ **Phase 5（14 skills）**：
+**Phase 2 拆为纯分析**（14 skills）+ **Phase 5（12 skills）**：
 
 ```
 Phase 1: 知识图谱 (4 步，不变)
@@ -30,7 +30,7 @@ Phase 3: 深度分析 (32 步，不变)
 Phase 4: 审计 (7 轮)
   产出 bug list + optimization list
 
-Phase 5: 实施 (14 skills)
+Phase 5: 实施 (12 skills)
   基于 Phase 4 bug list 修复 + 文档 + 收尾
 ```
 
@@ -68,7 +68,7 @@ Phase 5: 实施 (14 skills)
 | 2     | 组 1(7) + 组 2(6) = 13 skills | 13 个 `docs/phase2-skills/` |
 | 4     | orchestrator-audit + verify  | 审计通过 + Golden 28      |
 
-**不包含**：Phase 3（深度分析 32 步）、Phase 5（实施 15 skills）。
+**不包含**：Phase 3（深度分析 32 步）、Phase 5（实施 12 skills）。
 
 ### full（64 步）
 
