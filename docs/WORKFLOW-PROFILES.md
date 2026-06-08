@@ -141,11 +141,11 @@ Phase 5.4 — 交互收尾 (3)
 bash scripts/workflow-preflight-check.sh
 
 # 初始化 profile
-bash /home/yin/.config/opencode/scripts/workflow-phase.sh --init full
+bash ~/.config/opencode/scripts/workflow-phase.sh --init full
 
 # Phase 门控
-bash /home/yin/.config/opencode/scripts/workflow-phase.sh --complete phase1
-bash /home/yin/.config/opencode/scripts/workflow-phase.sh --check phase2
+bash ~/.config/opencode/scripts/workflow-phase.sh --complete phase1
+bash ~/.config/opencode/scripts/workflow-phase.sh --check phase2
 
 # 产物验证
 bash scripts/test-baseline.sh --verify

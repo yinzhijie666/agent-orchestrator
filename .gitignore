@@ -1,6 +1,9 @@
 # Agent Orchestrator
 
 .env
+.understand-anything/
+.understand-anything/tmp/
+graphify-out/tmp/
 node_modules/
 server/state/db.sqlite
 server/state/db.sqlite-shm
