@@ -1,32 +1,21 @@
-# Phase 2 & 5 Skills 执行设计方案（v3）
+# Phase 2 & 5 Skills 执行设计方案（v3.2）
 
 > 修订日期: 2026-06-08
-> 版本: v3.1
-> 核心变更：Phase 2 拆为纯分析（15 skills），组 3（工程实施）移入 Phase 5（15 skills），消除循环依赖和范围重叠。
-> v3.1 修复：Group 1 去重 1 skill + Phase 5 执行顺序重整。
+> 版本: v3.2
+> 核心变更：Phase 2 拆为纯分析（14 skills），Phase 5 实施（14 skills），共 28 skills。
+> v3.2 撤销 v3.1 错误合并（恢复 `plan-design-review`），删 2 冗余（`debug` + `subagent-driven-development`），移 1 到正确 Phase（`verification-before-completion` → Phase 5）。
 
-## v2 → v3 重构原因
+## v3.1 → v3.2 修复明细
 
-| Bug | 根因 | v3 解法 |
-|-----|------|---------|
-| 🔴 Phase 2 组 3 与 Phase 4 循环依赖 | 组 3 需要审计发现但审计在 Phase 4 | 组 3 移入 Phase 5，审计先行 |
-| 🔴 组 3 违反"Phase 1-4 纯分析"契约 | Phase 2 包含代码修改 | Phase 1-4 恢复纯分析 |
-| 🟠 组 3 与 Phase 5 范围重叠 | 两者都做 TDD+修复 | 组 3 = Phase 5，消除重复 |
-| 🟡 Karpathy 位置错误 | 在组 4 末尾 | 移到 Phase 2 组 1 首位 |
-| 🟡 Gate 不验证产出 | 只标记状态不检查文件 | `--complete` 增加产物检查 |
-| ⚪ Profile 缺 Phase 5 | profiles 只定义了 Phase 1-4 | 全部 profile 加 Phase 5 |
-| ⚪ 硬编码项目路径 | workflow-phase.sh 写死路径 | 环境变量/参数替代 |
-
-## v3 → v3.1 修复明细
-
-| Bug | 修复 |
-|-----|------|
-| 🟡 Group 1 plan-review 无 plan 可审查 | 删 `plan-design-review`（已有 `design-review` 在 Group 2） |
-| 🟡 Phase 5.2 顺序颠倒 | 重构：subagent/dispatch → TDD → verification → browse → commit |
-| ⚪ worktree 位置 | 移到 Phase 5.1 首位 |
-| ⚪ browse 位置 | 移到 Phase 5.2（verification 后） |
-| ⚪ writing-skills 无 topic | 预定义 topic: `agent-orchestrator-workflow` |
-| ⚪ minimal 步数 | total_steps 6 → 5（与 phase 1+4 实际计数一致） |
+| Bug | v3.1 错误 | v3.2 修复 |
+|-----|-----------|-----------|
+| 🔴 `verification-before-completion` 在 Phase 2 无验证目标 | 放在 Phase 2 组 2 | 移到 Phase 5.2 |
+| 🟡 SAD + DPA 互斥 | 两者都在 Phase 5.2 | 删 SAD，DPA 保留 |
+| 🟡 `design-review` 不实际支持架构审查 | 错误合并 `plan-design-review` | **恢复 `plan-design-review`** |
+| ⚪ `debug` + `systematic-debugging` 重叠 | 两者都在 Phase 2 组 2 | 删 `debug` |
+| 🟡 `browse` 条件苛刻 | 放在 Phase 5.2 | 标为条件性（仅前端变更） |
+| ⚪ Standard 有验证无修复 | Profile 选择问题 | 加注释说明 |
+| ⚪ Minimal 无前置分析 | Profile 选择问题 | 加注释说明 |
 
 ## 新 Phase 结构
 
@@ -34,8 +23,8 @@
 Phase 1: 知识图谱（4 步，不变）
   graphify . + /understand + codegraph init -i + graphify . --mcp
 
-Phase 2: 技能分析（16 skills）
-  组 1 分析(7) + 组 2 验证(8) + retro(1)
+Phase 2: 技能分析（14 skills）
+  组 1 分析(7) + 组 2 验证(6) + retro(1)
   纯分析 + 报告产出，不修改代码
 
 Phase 3: 深度分析（32 步，不变）
@@ -44,58 +33,58 @@ Phase 3: 深度分析（32 步，不变）
 Phase 4: 审计（7 轮）
   orchestrator-audit 7 rounds + verify.sh
 
-Phase 5: 实施（15 skills）
+Phase 5: 实施（14 skills）
   基于 Phase 4 bug list 修复 + 文档 + 收尾
 ```
 
-## Phase 2：技能分析（15 skills）
+## Phase 2：技能分析（14 skills）
 
 纯分析阶段，不修改代码，产出 `docs/phase2-skills/` 报告。
 
-### 组 1 — 分析（6 skills，按顺序执行）
+### 组 1 — 分析（7 skills，按顺序执行）
 
 | Skill | 执行内容 | 产出文件 |
 |-------|---------|----------|
 | `andrej-karpathy` | 加载编码原则，对项目做 10 原则评分 | `01-karpathy-principles.md` |
 | `brainstorming` | 项目全面脑暴，产出改进方向 spec | `02-brainstorming.md` |
 | `plan-eng-review` | 审查项目架构(plugin/server/db/API) | `03-architecture-review.md` |
-| `design-consultation` | 设计建议(API/WS/dashboard) | `04-design-consultation.md` |
-| `plan-ceo-review` | 项目方向与战略评估 | `05-direction-review.md` |
-| `office-hours` | YC 式项目方向问诊 | `06-office-hours.md` |
+| `plan-design-review` | ← **恢复**。审查设计模式(events/checkpoint/dispatch) | `04-design-pattern-review.md` |
+| `design-consultation` | 设计建议(API/WS/dashboard) | `05-design-consultation.md` |
+| `plan-ceo-review` | 项目方向与战略评估 | `06-direction-review.md` |
+| `office-hours` | YC 式项目方向问诊 | `07-office-hours.md` |
 
-> `plan-design-review` 已合并到组 2 的 `design-review`（检查 UI/设计模式）。
-
-### 组 2 — 质量验证（8 skills，可并行）
+### 组 2 — 质量验证（6 skills，可并行）
 
 | Skill | 执行内容 | 产出文件 |
 |-------|---------|----------|
-| `review` | 代码审查，找具体代码问题 | `07-review.md` |
-| `design-review` | 审查设计模式 + UI（含 `plan-design-review` 职责）| `08-design-review.md` |
-| `qa` | 全功能 QA | `09-qa.md` |
-| `qa-only` | 仅 QA 不改代码 | `10-qa-only.md` |
-| `systematic-debugging` | 系统性扫描代码问题 | `11-systematic-debugging.md` |
-| `verification-before-completion` | 项目当前健康度验证 | `12-verification.md` |
-| `debug` | 对发现的 bug 做深度分析 | `13-debug.md` |
-| `gstack-upgrade` | 环境健康检查 | `14-gstack-upgrade.md` |
+| `review` | 代码审查，找具体代码问题 | `08-review.md` |
+| `design-review` | UI 审查（需 browser）| `09-design-review.md` |
+| `qa` | 全功能 QA | `10-qa.md` |
+| `qa-only` | 仅 QA 不改代码 | `11-qa-only.md` |
+| `systematic-debugging` | 系统性扫描代码问题（覆盖 debug 职责）| `12-systematic-debugging.md` |
+| `gstack-upgrade` | 环境健康检查 | `13-gstack-upgrade.md` |
+
+> `debug` 已合并到 `systematic-debugging`（覆盖 debug 全部职责）。
+> `verification-before-completion` 移到 Phase 5.2（需要一个有代码变更的环境才有验证意义）。
 
 ### 组 3 — 回顾（1 skill，收尾）
 
 | Skill | 执行内容 | 产出文件 |
 |-------|---------|----------|
-| `retro` | git 历史回顾报告 | `15-retro.md` |
+| `retro` | git 历史回顾报告 | `14-retro.md` |
 
 ### Phase 2 验证
 
 ```bash
 # 确认 Phase 2 完成
 ls docs/phase2-skills/*.md | wc -l
-# 预期: 15 个文件
+# 预期: 14 个文件
 
 # 测试无回归
 bun test
 ```
 
-## Phase 5：实施（15 skills）
+## Phase 5：实施（14 skills）
 
 基于 Phase 4 审计发现的 bug list 实施修复。
 
@@ -106,17 +95,18 @@ bun test
 | `using-git-worktrees` | 隔离工作区 | worktree 创建 |
 | `writing-plans` | 基于 Phase 4 bug list 制定修复计划 | `docs/phase5/fix-plan.md` |
 
-### Phase 5.2 — 修复（7 skills）
+### Phase 5.2 — 修复（6 skills）
 
 | Skill | 执行内容 | 验证 |
 |-------|---------|------|
-| `subagent-driven-development` | 并行拆分修复任务 | 各 agent 独立产出 |
-| `dispatching-parallel-agents` | 调度并发修复任务 | agent 并行结果 |
+| `dispatching-parallel-agents` | 并发调度修复任务 | agent 并行结果 |
 | `test-driven-development` | RED: 为每个修复写测试 | `bun test` 新测试失败 |
 | `executing-plans` | GREEN: 实施修复代码 | `bun test` 全部通过 |
-| `verification-before-completion` | 验证全部修复无回归 | bun test + verify.sh |
-| `browse` | browser 截图验证（前端变更）| `docs/phase5/browse.md` + 截图 |
+| `verification-before-completion` | ← **从 Phase 2 移来**。验证全部修复无回归 | bun test + verify.sh |
+| `browse` | browser 截图验证（仅前端变更时执行）| `docs/phase5/browse.md` + 截图 |
 | `finishing-a-development-branch` | commit 或 PR | commit |
+
+> `subagent-driven-development` 已移除（`dispatching-parallel-agents` 覆盖全部并行场景）。
 
 ### Phase 5.3 — 文档与发布（3 skills）
 
@@ -146,12 +136,12 @@ bash /home/yin/.config/opencode/scripts/workflow-phase.sh --complete phase5
 
 ## Profile 适配
 
-| Profile | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | 总步数 | 耗时 |
-|---------|---------|---------|---------|---------|---------|--------|------|
-| minimal | 4 步 | ❌ skip | ❌ skip | 1 步 | ❌ skip | 5 | 5 min |
-| standard | 4 步 | 组 1(6)+组 2(8) | ❌ skip | 2 步 | ❌ skip | 20 | 15 min |
-| full | 4 步 | 全部 15 | 32 步 | 2 步 | 全部 15 | 68 | 90 min |
-| audit | 4 步 | 全部 15 | 32 步 | 7 轮 | 全部 15 | 73 | 120 min |
+| Profile | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | 总步数 | 耗时 | 说明 |
+|---------|---------|---------|---------|---------|---------|--------|------|------|
+| minimal | 4 步 | ❌ skip | ❌ skip | 1 步 | ❌ skip | 5 | 5 min | 仅快速自检，无分析无修复 |
+| standard | 4 步 | 组 1(7)+组 2(6) | ❌ skip | 2 步 | ❌ skip | 19 | 15 min | 分析+验证，产出问题报告供后续手动修复 |
+| full | 4 步 | 全部 14 | 32 步 | 2 步 | 全部 14 | 66 | 90 min | 全量：分析→验证→审计→修复→文档 |
+| audit | 4 步 | 全部 14 | 32 步 | 7 轮 | 全部 14 | 71 | 120 min | full + 深度审计 |
 
 ## 执行前置条件
 

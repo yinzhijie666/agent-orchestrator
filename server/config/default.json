@@ -62,26 +62,26 @@
       "standard": {
         "phases": [1, 2, 4],
         "phase_1_steps": 4,
-        "phase_2_steps": 14,
+        "phase_2_steps": 13,
         "phase_4_steps": 2,
-        "total_steps": 20,
+        "total_steps": 19,
         "use_case": "重大功能前（推荐默认）"
       },
       "full": {
         "phases": [1, 2, 3, 4, 5],
         "phase_1_steps": 4,
-        "phase_2_steps": 15,
+        "phase_2_steps": 14,
         "phase_3_steps": 32,
         "phase_4_steps": 2,
-        "phase_5_steps": 15,
-        "total_steps": 68,
+        "phase_5_steps": 14,
+        "total_steps": 66,
         "use_case": "发版、重大重构"
       },
       "audit": {
         "extends": "full",
         "extras": ["auto-generate-audit-report"],
         "phase_4_steps": 7,
-        "total_steps": 73,
+        "total_steps": 71,
         "use_case": "审计场景，产出 audit-report-<date>.md"
       }
     }
