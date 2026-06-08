@@ -133,7 +133,7 @@ bun test
 bun test
 
 # Phase Gate 验证
-bash /home/yin/.config/opencode/scripts/workflow-phase.sh --complete phase5
+bash ~/.config/opencode/scripts/workflow-phase.sh --complete phase5
 ```
 
 ## Profile 适配
@@ -157,7 +157,7 @@ codegraph status
 bash scripts/test-baseline.sh --save
 
 # Profile init
-bash /home/yin/.config/opencode/scripts/workflow-phase.sh --init full
+bash ~/.config/opencode/scripts/workflow-phase.sh --init full
 ```
 
 ## 错误处理

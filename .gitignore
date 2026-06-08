@@ -4,6 +4,7 @@
 .understand-anything/
 .understand-anything/tmp/
 graphify-out/tmp/
+docs/superpowers/reports/phase2-skills-execution-report.md
 node_modules/
 server/state/db.sqlite
 server/state/db.sqlite-shm

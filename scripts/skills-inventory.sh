@@ -38,7 +38,7 @@ check_skill "andrej-karpathy" "$HOME/.config/opencode/skills/andrej-karpathy/SKI
 
 echo ""
 echo "[Superpowers - 14]"
-SUPERPOWERS_DIR=$(find /home/yin/.cache/opencode/packages -maxdepth 8 -type d -path "*/superpowers/skills" 2>/dev/null | head -1)
+SUPERPOWERS_DIR=$(find "$HOME/.cache/opencode/packages" -maxdepth 8 -type d -path "*/superpowers/skills" 2>/dev/null | head -1)
 if [ -n "$SUPERPOWERS_DIR" ]; then
   for skill_dir in "$SUPERPOWERS_DIR"/*/; do
     [ -d "$skill_dir" ] || continue

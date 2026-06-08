@@ -298,7 +298,7 @@ if [ "$PHASE_2" = true ]; then
   echo -e "${BLUE}[Phase 2: 技能加载 - 31 步]${NC}"
   KARPATHY_OK=0
   [ -f "$HOME/.config/opencode/skills/andrej-karpathy/SKILL.md" ] && KARPATHY_OK=1
-  SUPERPOWERS_DIR=$(find /home/yin/.cache/opencode/packages -maxdepth 8 -type d -path "*/superpowers/skills" 2>/dev/null | head -1)
+  SUPERPOWERS_DIR=$(find "$HOME/.cache/opencode/packages" -maxdepth 8 -type d -path "*/superpowers/skills" 2>/dev/null | head -1)
   SUPERPOWERS_COUNT=0
   [ -n "$SUPERPOWERS_DIR" ] && SUPERPOWERS_COUNT=$(find "$SUPERPOWERS_DIR" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l)
   GSTACK_COUNT=$(ls -d "$HOME/.opencode/plugins/gstack-opencode/.opencode/skills"/*/ 2>/dev/null | wc -l)

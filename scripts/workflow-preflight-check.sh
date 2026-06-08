@@ -234,8 +234,8 @@ KARPATHY_OK=0
 [ -f ~/.config/opencode/skills/andrej-karpathy/SKILL.md ] && KARPATHY_OK=1
 
 SUPERPOWERS_DIR=""
-if [ -d /home/yin/.cache/opencode/packages ]; then
-  SUPERPOWERS_DIR=$(find /home/yin/.cache/opencode/packages -maxdepth 8 -type d -path "*/superpowers/skills" 2>/dev/null | head -1)
+if [ -d "$HOME/.cache/opencode/packages" ]; then
+  SUPERPOWERS_DIR=$(find "$HOME/.cache/opencode/packages" -maxdepth 8 -type d -path "*/superpowers/skills" 2>/dev/null | head -1)
 fi
 if [ -n "$SUPERPOWERS_DIR" ] && [ -d "$SUPERPOWERS_DIR" ]; then
   SUPERPOWERS_COUNT=$(find "$SUPERPOWERS_DIR" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l)
