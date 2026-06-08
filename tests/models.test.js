@@ -6,7 +6,7 @@ import config from "../server/config/default.json" with { type: "json" };
 import BaseModelClient from "../server/lib/model-clients/base-client.js";
 import KimiClient from "../server/lib/model-clients/kimi-client.js";
 import DeepSeekClient from "../server/lib/model-clients/deepseek-client.js";
-import MiniMaxClient from "../server/lib/model-clients/minimax-client.js";
+import ZenClient from "../server/lib/model-clients/zen-client.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -208,8 +208,8 @@ describe("Client Instantiation", () => {
     expect(client.provider).toBe("deepseek");
   });
 
-  test("MiniMaxClient instantiates from config", () => {
-    const client = new MiniMaxClient(config.models["opencode-zen"]);
+  test("ZenClient instantiates from config", () => {
+    const client = new ZenClient(config.models["opencode-zen"]);
     expect(client.model).toBe("deepseek-v4-flash-free");
     expect(client.provider).toBe("opencode-zen");
   });
@@ -249,8 +249,8 @@ describe("API Connectivity", () => {
     expect(result).toBeTruthy();
   }, 30000);
 
-  itOrSkip("MiniMax API responds to chat request", async () => {
-    const client = new MiniMaxClient(config.models["opencode-zen"]);
+  itOrSkip("Zen API responds to chat request", async () => {
+    const client = new ZenClient(config.models["opencode-zen"]);
     const result = await client.searchCode("What is 1+1?");
     expect(result).toBeTruthy();
   }, 30000);

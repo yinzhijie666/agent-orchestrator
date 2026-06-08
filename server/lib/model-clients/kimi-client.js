@@ -22,7 +22,7 @@ class KimiClient extends BaseModelClient {
 Each plan item must have:
 - title: concise task title (max 100 chars)
 - description: detailed task description
-- executor: one of ['kimi', 'deepseek', 'minimax']
+- executor: one of ['kimi', 'deepseek', 'zen']
 - acceptance_criteria: how to verify this item is complete
 
 可用能力（按 P0/P1/P2 优先级推荐 5-8 项到 "suggested_skills"）:
@@ -120,7 +120,7 @@ ${CAPABILITY_LIST}
           idx,
           title: item.title || `Item ${idx + 1}`,
           description: item.description || '',
-          executor: ['kimi', 'deepseek', 'minimax'].includes(item.executor) ? item.executor : 'deepseek',
+          executor: ['kimi', 'deepseek', 'zen', 'minimax'].includes(item.executor) ? item.executor : 'deepseek',
           acceptance_criteria: item.acceptance_criteria || '',
           status: 'pending'
         })),

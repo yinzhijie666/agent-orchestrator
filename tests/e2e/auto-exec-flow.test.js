@@ -45,7 +45,11 @@ async function waitForServer(url, timeoutMs = 15000) {
   return false;
 }
 
-describe("E2E: Skill Auto-Execution Flow", () => {
+// This test requires valid API keys and starts a real server process.
+// Skip unconditionally in unit test runs; run manually with: bun run tests/e2e/auto-exec-flow.test.js
+const describeOrSkip = describe.skip;
+
+describeOrSkip("E2E: Skill Auto-Execution Flow", () => {
   beforeAll(async () => {
     await mkdir(E2E_DIR, { recursive: true });
     await mkdir(LOG_DIR, { recursive: true });

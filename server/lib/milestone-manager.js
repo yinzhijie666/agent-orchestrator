@@ -3,8 +3,8 @@ import db from "./db.js";
 import { config } from "./config.js";
 
 class MilestoneManager {
-  constructor(interval = config.milestone.interval) {
-    this.interval = interval;
+  constructor(interval) {
+    this.interval = interval || config.milestone?.interval || 4;
   }
 
   shouldCheckpoint(planId) {
@@ -31,7 +31,7 @@ class MilestoneManager {
     const agentOutputs = {
       kimi: this._collectAgentOutput(items, 'kimi', milestoneIdx),
       deepseek: this._collectAgentOutput(items, 'deepseek', milestoneIdx),
-      minimax: this._collectAgentOutput(items, 'minimax', milestoneIdx),
+      zen: this._collectAgentOutput(items, 'zen', milestoneIdx),
     };
 
     const checkpoint = {

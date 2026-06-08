@@ -23,7 +23,7 @@ Based on **Karpathy Coding Principles**:
 - **Entry**: `PATCH /api/plans/:id/items/:idx` (status: active)
 - **Constraint**: Cannot deviate >20% from Plan Document
 
-### Layer 3: MiniMax M3 (Operational)
+### Layer 3: OpenCode Zen DeepSeek V4 Flash Free (Operational)
 - **Role**: Read-only queries, file reads, grep searches
 - **Frequency**: High (cheap, fast)
 - **Permission**: **READ-ONLY** — no writes allowed

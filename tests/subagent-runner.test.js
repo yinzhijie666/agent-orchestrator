@@ -115,14 +115,9 @@ describe("SubagentRunner", () => {
         return { content: '{"status":"success"}' };
       },
     };
-    let err;
-    try {
-      await r.run("p", { client: slowClient, timeoutMs: 100 });
-    } catch (e) {
-      err = e;
-    }
-    expect(err).toBeTruthy();
-    expect(err.message).toMatch(/timed out/);
+    const result = await r.run("p", { client: slowClient, timeoutMs: 100 });
+    expect(result.status).toBe("failure");
+    expect(result.summary).toMatch(/failed|timed out/i);
   });
 
   test("_parseResult handles all-skipped response (D1 no tool access)", () => {

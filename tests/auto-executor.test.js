@@ -136,23 +136,23 @@ describe("AutoExecutor.validate", () => {
     expect(cleaned[0].entry).toBe("codegraph_context");
   });
 
-  test("caps at max_skills", () => {
+  test("validates all skills without truncation", () => {
     const input = Array.from({ length: 25 }, (_, i) => ({
       tier: "P2_nice_to_have",
       entry: `skill${i}`,
       type: "skill",
       value: `skill${i}`,
     }));
-    const cleaned = AutoExecutor.validate(input, 10);
-    expect(cleaned.length).toBe(10);
+    const cleaned = AutoExecutor.validate(input);
+    expect(cleaned.length).toBe(25);
   });
 
-  test("normalizes invalid tier to P2_nice_to_have", () => {
+  test("normalizes invalid tier to P2", () => {
     const input = [
       { tier: "INVALID_TIER", entry: "codegraph_context", type: "codegraph", value: "codegraph_context" },
     ];
     const cleaned = AutoExecutor.validate(input);
-    expect(cleaned[0].tier).toBe("P2_nice_to_have");
+    expect(cleaned[0].tier).toBe("P2");
   });
 
   test("normalizes invalid type to unknown", () => {

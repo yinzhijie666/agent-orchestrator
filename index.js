@@ -20,7 +20,7 @@ import {
 } from './server/lib/events.js';
 import KimiClient, { CAPABILITY_LIST } from './server/lib/model-clients/kimi-client.js';
 import DeepSeekClient from './server/lib/model-clients/deepseek-client.js';
-import MiniMaxClient from './server/lib/model-clients/minimax-client.js';
+import ZenClient from './server/lib/model-clients/zen-client.js';
 import { PlanOrchestrator } from './server/lib/plan-orchestrator.js';
 import { AutoExecutor } from './server/lib/auto-executor.js';
 import { AutoDispatcher } from './server/lib/auto-dispatcher.js';
@@ -34,7 +34,7 @@ function initSchema(database) {
   database.exec(SCHEMA_SQL);
 }
 
-async function executePlanTask(task, context, kimiClient, deepseekClient, minimaxClient, db) {
+async function executePlanTask(task, context, kimiClient, deepseekClient, zenClient, db) {
   // Step 0: Kimi decides plan or build mode
   let modeAnalysis;
   try {
@@ -105,11 +105,11 @@ ${CAPABILITY_LIST}`
         db.updatePlanItemStatus(planId, item.idx, 'completed', result);
         db.logActivity({ plan_id: planId, agent: 'deepseek', action: 'item_completed', details: { idx: item.idx, title: item.title } });
         emitItemCompleted(planId, item, 'completed');
-      } else if (item.executor === 'minimax') {
+      } else if (item.executor === 'zen' || item.executor === 'minimax') {
         const query = `${item.title}: ${item.description || item.acceptance_criteria || ''}`;
-        result = await minimaxClient.searchCode(query, context);
+        result = await zenClient.searchCode(query, context);
         db.updatePlanItemStatus(planId, item.idx, 'completed', result);
-        db.logActivity({ plan_id: planId, agent: 'minimax', action: 'item_completed', details: { idx: item.idx, title: item.title } });
+        db.logActivity({ plan_id: planId, agent: 'zen', action: 'item_completed', details: { idx: item.idx, title: item.title } });
         emitItemCompleted(planId, item, 'completed');
       }
       execResults.push({ idx: item.idx, executor: item.executor, status: 'completed' });
@@ -265,19 +265,19 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
   }
   const kimiClient = new KimiClient(config.models.kimi);
   const deepseekClient = new DeepSeekClient(config.models.deepseek);
-  const minimaxClient = new MiniMaxClient(config.models["opencode-zen"]);
+  const zenClient = new ZenClient(config.models["opencode-zen"]);
 
   return {
     tool: {
       agent: tool({
-        description: 'Auto-route every user request. Kimi decides plan mode (analysis) or build mode (DeepSeek/MiniMax execute). Must be called for ALL user requests.',
+        description: 'Auto-route every user request. Kimi decides plan mode (analysis) or build mode (DeepSeek/Zen execute). Must be called for ALL user requests.',
         args: z.object({
           task: z.string().describe('The task or goal to accomplish'),
           context: z.string().optional().describe('Additional context for the task'),
         }),
         execute: async ({ task, context }) => {
           try {
-            const result = await executePlanTask(task, context || '', kimiClient, deepseekClient, minimaxClient, db);
+            const result = await executePlanTask(task, context || '', kimiClient, deepseekClient, zenClient, db);
             let output;
             if (result.mode === 'plan') {
               output = `📋 [Plan Mode] ${result.reason}\n\n${result.analysis}`;
@@ -340,7 +340,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
 
             const kimiOk = !!(process.env.KIMI_API_KEY || process.env.OPENCODE_API_KEY);
             const deepseekOk = !!process.env.DEEPSEEK_API_KEY;
-            const minimaxOk = !!process.env.MINIMAX_API_KEY;
+            const zenOk = !!process.env.OPENCODE_API_KEY;
 
             const counts = {};
             for (const row of planCounts) {
@@ -367,7 +367,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             output += `\nAgent Availability:\n`;
             output += `  🧠 Kimi:     ${kimiOk ? '✅' : '❌'}\n`;
             output += `  🔧 DeepSeek: ${deepseekOk ? '✅' : '❌'}\n`;
-            output += `  ⚡ MiniMax:  ${minimaxOk ? '✅' : '❌'}\n`;
+            output += `  ⚡ Zen:      ${zenOk ? '✅' : '❌'}\n`;
             return { output };
           } catch (err) {
             return { output: `Error: ${err.message}` };
@@ -545,14 +545,14 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
               }
             }
 
-            // Supplement with WORKFLOW.md required skills if missing
+            // Supplement with ALL_REQUIRED_SKILLS (only missing ones, tier P1)
             for (const skill of ALL_REQUIRED_SKILLS) {
               if (!rawItems.some(item => item.value === skill || item.entry === skill)) {
                 rawItems.push({ tier: 'P1_important', entry: `skill ${skill}`, type: 'skill', value: skill });
               }
             }
 
-            const validated = AutoExecutor.validate(rawItems, AUTO_EXEC_DEFAULTS.max_skills);
+            const validated = AutoExecutor.validate(rawItems);
 
             const envEnabled = process.env.AUTO_EXEC_SKILLS !== 'false';
             const configEnabled = AUTO_EXEC_DEFAULTS.enabled !== false;
@@ -606,14 +606,13 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 manual_count: manualInstructions.length,
                 auto_count: autoSkills.length,
                 auto_dispatched: autoDispatched,
-                dispatch_result: autoDispatched ? dispatchResult : null,
                 dispatcher_status: autoDispatcher ? autoDispatcher.getStatus() : null,
                 next_step: autoDispatched
-                  ? `Subagent auto-dispatched. ${dispatchResult?.summary || 'See dispatch_result.'}`
+                  ? `Auto-exec prompt built — ready to dispatch subagent via task tool. ${autoExecPrompt ? 'auto_exec.prompt available.' : ''}`
                   : (manualInstructions.length > 0
                     ? `Execute ${manualInstructions.length} manual skills in main session (P0 → P1 → P2): ${manualInstructions.map(s => s.name).join(', ')}`
                     : (autoExecEnabled
-                      ? 'All skills auto-executable. D1 subagent dispatched.'
+                      ? 'Auto-exec prompt built — dispatch via task tool with subagent_type="general".'
                       : (validated.length > 0
                         ? 'Auto-exec disabled. Manually execute each skill in P0 → P1 → P2 order.'
                         : 'No skills suggested. Proceed with normal execution.')))

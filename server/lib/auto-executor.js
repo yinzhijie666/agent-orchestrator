@@ -19,12 +19,12 @@ import { createDefaultClassifier } from './skill-classifier.js';
 
 const DEFAULT_MAX_SKILLS = 20;
 
-const TIER_ORDER = ['P0_critical', 'P1_important', 'P2_nice_to_have'];
+const TIER_ORDER = ['P0', 'P1', 'P2'];
 
 const TIER_LABELS = {
-  P0_critical: 'P0 (BLOCKING - must succeed all before proceeding)',
-  P1_important: 'P1 (Sequential, skip on failure)',
-  P2_nice_to_have: 'P2 (May be skipped if time-constrained)',
+  P0: 'P0 (BLOCKING - must succeed all before proceeding)',
+  P1: 'P1 (Sequential, skip on failure)',
+  P2: 'P2 (May be skipped if time-constrained)',
 };
 
 export class AutoExecutor {
@@ -96,10 +96,12 @@ export class AutoExecutor {
     }
 
     // Group AUTO skills by tier, preserving order
-    const grouped = { P0_critical: [], P1_important: [], P2_nice_to_have: [] };
+    // Normalize raw tier names (P0_critical → P0, P1_important → P1, P2_nice_to_have → P2)
+    const grouped = { P0: [], P1: [], P2: [] };
+    const tierMap = { P0_critical: 'P0', P1_important: 'P1', P2_nice_to_have: 'P2', P0: 'P0', P1: 'P1', P2: 'P2' };
     for (const s of autoSkills) {
-      const tier = grouped[s.tier] ? s.tier : 'P2_nice_to_have';
-      grouped[tier].push(s);
+      const normalized = tierMap[s.tier] || 'P2';
+      grouped[normalized].push(s);
     }
 
     const sections = [];
@@ -167,7 +169,7 @@ Return ONLY this JSON object (no prose before or after):
    * @param {number} [maxSkills=20] - maximum allowed
    * @returns {Array<{tier, entry, type, value}>} cleaned skills
    */
-  static validate(skills, maxSkills = DEFAULT_MAX_SKILLS) {
+  static validate(skills) {
     if (!Array.isArray(skills)) return [];
 
     const cleaned = [];
@@ -175,18 +177,18 @@ Return ONLY this JSON object (no prose before or after):
       if (!s || typeof s !== 'object') continue;
       if (typeof s.entry !== 'string' || s.entry.length === 0) continue;
 
-      const tier = TIER_ORDER.includes(s.tier) ? s.tier : 'P2_nice_to_have';
+      const rawTier = s.tier;
+      const tier = TIER_ORDER.includes(rawTier) ? rawTier
+        : rawTier === 'P0_critical' ? 'P0'
+        : rawTier === 'P1_important' ? 'P1'
+        : rawTier === 'P2_nice_to_have' ? 'P2'
+        : 'P2';
       const type = ['skill', 'command', 'codegraph', 'memory', 'unknown'].includes(s.type)
         ? s.type
         : 'unknown';
       const value = typeof s.value === 'string' ? s.value : s.entry;
 
       cleaned.push({ tier, entry: s.entry, type, value });
-    }
-
-    if (cleaned.length > maxSkills) {
-      console.warn(`[AutoExecutor] Truncating ${cleaned.length} skills to maxSkills=${maxSkills}`);
-      return cleaned.slice(0, maxSkills);
     }
 
     return cleaned;

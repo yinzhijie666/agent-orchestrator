@@ -30,7 +30,7 @@ describe("Kimi Prompts", () => {
     expect(systemMsg).toContain("structured plan documents");
     expect(systemMsg).toContain("kimi");
     expect(systemMsg).toContain("deepseek");
-    expect(systemMsg).toContain("minimax");
+    expect(systemMsg).toContain("zen");
   });
 
   test("generatePlan system prompt includes suggested_skills structure", async () => {

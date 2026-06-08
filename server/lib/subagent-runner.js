@@ -17,7 +17,7 @@ function pickClient(config, modelName) {
   return factory(config);
 }
 
-const SUBAGENT_SYSTEM_PROMPT = `You are a subagent executing a list of skills. The orchestrator has already
+export const SUBAGENT_SYSTEM_PROMPT = `You are a subagent executing a list of skills. The orchestrator has already
 collected, prioritized, and grouped the work for you. Your job is to execute each
 skill in tier order (P0 → P1 → P2) and report results as JSON.
 
@@ -44,6 +44,51 @@ Output schema (strict JSON, no markdown fencing):
   "p0_failures": ["<skill names that failed at P0>"],
   "summary": "<one-sentence human summary>"
 }`;
+
+export function parseSubagentResult(content) {
+  if (!content || typeof content !== "string") {
+    return {
+      status: "failure",
+      executed_skills: [],
+      p0_failures: [],
+      summary: "subagent returned empty content",
+    };
+  }
+  let text = content.trim();
+
+  if (text.startsWith("```")) {
+    const m = text.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?```\s*$/);
+    if (m) text = m[1];
+  }
+
+  text = text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+
+  const jsonStart = text.indexOf("{");
+  const jsonEnd = text.lastIndexOf("}");
+  if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+    text = text.slice(jsonStart, jsonEnd + 1);
+  }
+
+  try {
+    const parsed = JSON.parse(text);
+    if (!parsed.status) {
+      parsed.status = parsed.p0_failures?.length ? "failure" : "success";
+    }
+    if (!Array.isArray(parsed.executed_skills)) parsed.executed_skills = [];
+    if (!Array.isArray(parsed.p0_failures)) parsed.p0_failures = [];
+    if (!parsed.summary) parsed.summary = "";
+    return parsed;
+  } catch (e) {
+    return {
+      status: "failure",
+      executed_skills: [],
+      p0_failures: [],
+      summary: `subagent returned non-JSON content: ${text.slice(0, 200)}`,
+      _parseError: e.message,
+      _rawContent: text.slice(0, 2000),
+    };
+  }
+}
 
 export class SubagentRunner {
   /**
@@ -82,10 +127,28 @@ export class SubagentRunner {
     ];
 
     const t0 = Date.now();
-    const result = await this._chatWithTimeout(client, messages, {
-      json_mode: true,
-      max_tokens: options.maxTokens || 8000,
-    }, timeoutMs, fallbackClient);
+    let result;
+    try {
+      result = await this._chatWithTimeout(client, messages, {
+        json_mode: true,
+        max_tokens: options.maxTokens || 8000,
+      }, timeoutMs, fallbackClient);
+    } catch (err) {
+      const durationMs = Date.now() - t0;
+      return {
+        status: "failure",
+        mode: "llm",
+        model: client.model,
+        provider: client.provider,
+        fallback: false,
+        executed_skills: [],
+        p0_failures: [],
+        summary: `Subagent LLM call failed: ${err.message}`,
+        output: { status: "failure", executed_skills: [], p0_failures: [], summary: err.message },
+        rawContent: null,
+        durationMs,
+      };
+    }
     const durationMs = Date.now() - t0;
 
     const parsed = this._parseResult(result.content);
@@ -121,49 +184,12 @@ export class SubagentRunner {
     }
   }
 
+  static parseResult(content) {
+    return SubagentRunner.prototype._parseResult.call({}, content);
+  }
+
   _parseResult(content) {
-    if (!content || typeof content !== "string") {
-      return {
-        status: "failure",
-        executed_skills: [],
-        p0_failures: [],
-        summary: "subagent returned empty content",
-      };
-    }
-    let text = content.trim();
-
-    if (text.startsWith("```")) {
-      const m = text.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?```\s*$/);
-      if (m) text = m[1];
-    }
-
-    text = text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
-
-    const jsonStart = text.indexOf("{");
-    const jsonEnd = text.lastIndexOf("}");
-    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
-      text = text.slice(jsonStart, jsonEnd + 1);
-    }
-
-    try {
-      const parsed = JSON.parse(text);
-      if (!parsed.status) {
-        parsed.status = parsed.p0_failures?.length ? "failure" : "success";
-      }
-      if (!Array.isArray(parsed.executed_skills)) parsed.executed_skills = [];
-      if (!Array.isArray(parsed.p0_failures)) parsed.p0_failures = [];
-      if (!parsed.summary) parsed.summary = "";
-      return parsed;
-    } catch (e) {
-      return {
-        status: "failure",
-        executed_skills: [],
-        p0_failures: [],
-        summary: `subagent returned non-JSON content: ${text.slice(0, 200)}`,
-        _parseError: e.message,
-        _rawContent: text.slice(0, 2000),
-      };
-    }
+    return parseSubagentResult(content);
   }
 }
 

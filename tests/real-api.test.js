@@ -97,7 +97,7 @@ describe("Layer 1: Kimi K2.6 — Strategic", () => {
 
     for (const item of plan.items) {
       expect(item.title).toBeDefined();
-      expect(["kimi", "deepseek", "minimax"]).toContain(item.executor);
+      expect(["kimi", "deepseek", "minimax", "zen"]).toContain(item.executor);
     }
   }, 60000);
 

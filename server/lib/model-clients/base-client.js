@@ -66,44 +66,62 @@ class BaseModelClient {
   }
 
   // Chat with automatic fallback to another client
-  async chatWithFallback(messages, options = {}, fallbackClient = null) {
+  // Uses circuit breaker if provided to skip primary when it's known-unhealthy
+  async chatWithFallback(messages, options = {}, fallbackClient = null, circuitBreaker = null) {
+    if (circuitBreaker) {
+      const skipped = circuitBreaker.call(async () => null);
+      if (skipped === null && fallbackClient) {
+        try {
+          const result = await fallbackClient.chat(messages, options);
+          return {
+            content: result,
+            _fallback: true,
+            _fallback_from: this.model,
+            _fallback_to: fallbackClient.model,
+            _fallback_reason: "circuit open",
+            _provider: fallbackClient.provider,
+          };
+        } catch (fallbackErr) {
+          circuitBreaker.recordFailure();
+          throw fallbackErr;
+        }
+      }
+    }
+
     const maxRetries = 3;
 
-    // Primary with retry for 429
     for (let i = 0; i < maxRetries; i++) {
       try {
         const result = await this.chat(messages, options);
+        if (circuitBreaker) circuitBreaker.recordSuccess();
         return {
           content: result,
           _fallback: false,
           _model: this.model,
-          _provider: this.provider
+          _provider: this.provider,
         };
       } catch (err) {
-        // 429: retry with backoff
         if (err.status === 429 && i < maxRetries - 1) {
           await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
           continue;
         }
 
-        console.error(`[${this.constructor.name}] Primary failed:`, err.message);
+        if (circuitBreaker) circuitBreaker.recordFailure();
 
         if (fallbackClient && this.shouldFallback(err)) {
-          console.log(`[Fallback] ${this.model} → ${fallbackClient.model}`);
-
           try {
             const result = await fallbackClient.chat(messages, options);
+            if (circuitBreaker) circuitBreaker.recordSuccess();
             return {
               content: result,
               _fallback: true,
               _fallback_from: this.model,
               _fallback_to: fallbackClient.model,
               _fallback_reason: err.message,
-              _provider: fallbackClient.provider
+              _provider: fallbackClient.provider,
             };
           } catch (fallbackErr) {
-            console.error(`[Fallback] ${fallbackClient.model} also failed:`, fallbackErr.message);
-
+            if (circuitBreaker) circuitBreaker.recordFailure();
             const finalErr = new Error(
               `Both ${this.model} and ${fallbackClient.model} failed. ` +
               `Primary: ${err.message}, Fallback: ${fallbackErr.message}`

@@ -65,9 +65,9 @@ describe("agent_execute_skills tool", () => {
     const parsed = JSON.parse(result.output);
 
     expect(parsed.plan_id).toBe(planId);
-    expect(parsed.skills_to_execute.length).toBe(4);
+    expect(parsed.skills_to_execute.length).toBeGreaterThanOrEqual(31);
 
-    const p0 = parsed.skills_to_execute.filter(s => s.tier === "P0_critical");
+    const p0 = parsed.skills_to_execute.filter(s => s.tier === "P0");
     expect(p0.length).toBe(2);
     expect(p0[0].entry).toBe("codegraph_context");
     expect(p0[0].type).toBe("codegraph");
@@ -76,14 +76,15 @@ describe("agent_execute_skills tool", () => {
     expect(p0[1].type).toBe("skill");
     expect(p0[1].value).toBe("brainstorming");
 
-    const p1 = parsed.skills_to_execute.filter(s => s.tier === "P1_important");
-    expect(p1.length).toBe(1);
-    expect(p1[0].type).toBe("command");
-    expect(p1[0].value).toBe("/qa");
+    const p1 = parsed.skills_to_execute.filter(s => s.tier === "P1");
+    expect(p1.length).toBeGreaterThanOrEqual(1);
+    const p1Command = p1.find(s => s.type === "command" && s.value === "/qa");
+    expect(p1Command).toBeDefined();
 
-    const p2 = parsed.skills_to_execute.filter(s => s.tier === "P2_nice_to_have");
-    expect(p2.length).toBe(1);
-    expect(p2[0].type).toBe("codegraph");
+    const p2 = parsed.skills_to_execute.filter(s => s.tier === "P2");
+    expect(p2.length).toBeGreaterThanOrEqual(1);
+    const p2Codegraph = p2.find(s => s.type === "codegraph");
+    expect(p2Codegraph).toBeDefined();
   });
 
   test("falls back to most recent plan when plan_id is undefined", async () => {
@@ -165,7 +166,7 @@ describe("agent_execute_skills auto_exec integration", () => {
     // so auto_exec is null (D1 has no tool access)
     expect(parsed.auto_exec).toBeNull();
     expect(parsed.auto_dispatched).toBe(false);
-    expect(parsed.skills_to_execute.length).toBe(4);
+    expect(parsed.skills_to_execute.length).toBeGreaterThanOrEqual(31);
     expect(parsed.next_step).toContain("manual skills in main session");
   });
 

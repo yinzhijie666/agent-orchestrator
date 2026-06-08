@@ -106,7 +106,8 @@ describe("Phase 3: API Endpoints", () => {
   let server;
 
   beforeAll(async () => {
-    // Start server for API tests
+    // Start server for API tests on unique port
+    process.env.AGENT_ORCHESTRATOR_PORT = "18765";
     const { server: srv } = await import("../server/index.js");
     server = srv;
     // Wait for server to be ready
@@ -135,7 +136,7 @@ describe("Phase 3: API Endpoints", () => {
     const data = await res.json();
     expect(data.agents).toBeDefined();
     expect(data.agents.deepseek).toBeDefined();
-    expect(data.agents.minimax).toBeDefined();
+    expect(data.agents.zen).toBeDefined();
   });
 
   test("POST /api/plans endpoint exists", async () => {

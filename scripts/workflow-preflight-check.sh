@@ -266,6 +266,9 @@ echo "错误: $ERRORS"
 echo "警告: $WARNINGS"
 echo "检查项: $TOTAL_CHECKS/$TOTAL_CHECKS"
 
+bash "$HOME/.config/opencode/scripts/workflow-phase.sh" 2>/dev/null && \
+  bash "$HOME/.config/opencode/scripts/workflow-phase.sh" --close-gate preflight_ready 2>/dev/null || true
+
 if [ $ERRORS -gt 0 ]; then
   echo ""
   echo "❌ 存在错误，请先修复后再执行完整工作流"
@@ -275,6 +278,7 @@ elif [ $WARNINGS -gt 0 ]; then
   echo "⚠️  存在警告，可继续执行完整工作流（部分功能可能受限）"
   exit 0
 else
+  bash "$HOME/.config/opencode/scripts/workflow-phase.sh" --open-gate preflight_ready 2>/dev/null || true
   echo ""
   echo "✅ 所有检查通过，可以执行完整工作流"
   exit 0

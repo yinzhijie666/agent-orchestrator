@@ -26,7 +26,7 @@ const statusRouter = {
     const configs = {
       kimi: { available: !!(process.env.KIMI_API_KEY || process.env.OPENCODE_API_KEY) },
       deepseek: { available: !!process.env.DEEPSEEK_API_KEY },
-      minimax: { available: !!process.env.MINIMAX_API_KEY }
+      zen: { available: !!process.env.OPENCODE_API_KEY }
     };
 
     return new Response(JSON.stringify({

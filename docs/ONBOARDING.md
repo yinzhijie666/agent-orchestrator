@@ -44,7 +44,7 @@ REST API 层，提供 HTTP 接口。
 **关键文件:**
 - `server/lib/model-clients/kimi-client.js` - Kimi K2.6 客户端（规划层）
 - `server/lib/model-clients/deepseek-client.js` - DeepSeek V4 客户端（执行层）
-- `server/lib/model-clients/minimax-client.js` - MiniMax M3 客户端（查询层）
+- `server/lib/model-clients/zen-client.js` - OpenCode Zen DeepSeek V4 Flash Free 客户端（查询层）
 
 ### 5. Infrastructure Layer (4 个节点)
 基础设施层，提供数据库、事件、WebSocket 支持。
@@ -69,7 +69,7 @@ REST API 层，提供 HTTP 接口。
 ### 三层模型路由
 - **Kimi K2.6**: 规划层，负责任务分析和计划生成
 - **DeepSeek V4**: 执行层，负责代码实现和任务执行
-- **MiniMax M3**: 查询层，负责只读查询和信息检索
+- **OpenCode Zen**: 查询层，负责只读查询和信息检索
 
 ### 自动调度策略
 - **D1**: 直接 LLM API 调用（默认）

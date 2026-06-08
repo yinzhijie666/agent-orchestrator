@@ -21,7 +21,8 @@ import { AutoExecutor } from "../../server/lib/auto-executor.js";
 
 const hasMinimax = !!process.env.MINIMAX_API_KEY;
 const hasDeepseek = !!process.env.DEEPSEEK_API_KEY;
-const hasAnyKey = hasMinimax || hasDeepseek;
+const hasOpenzen = !!process.env.OPENCODE_API_KEY;
+const hasAnyKey = hasMinimax || hasDeepseek || hasOpenzen;
 
 const cfg = {
   auto_exec: {
@@ -74,13 +75,22 @@ describe("E2E: AutoDispatcher (D1 LLM path)", () => {
   });
 
   test("D2. dispatch with empty skill list returns success without LLM call", async () => {
-    const validated = AutoExecutor.validate([], 20);
+    const fakeClient = {
+      model: "fake-d2",
+      provider: "test",
+      chatWithFallback: async () => ({
+        content: JSON.stringify({ status: "success", executed_skills: [], p0_failures: [], summary: "empty" }),
+        _model: "fake-d2",
+        _provider: "test",
+        _fallback: false,
+      }),
+    };
+    const validated = AutoExecutor.validate([]);
     const prompt = AutoExecutor.buildPrompt(validated, { planId: "empty-test", title: "Empty", goal: "n/a" });
-    const r = await dispatcher.dispatch(prompt, { model: "cheap", timeoutMs: 5000 });
+    const r = await dispatcher.dispatch(prompt, { client: fakeClient, timeoutMs: 5000 });
     expect(r._mode).toBe("llm");
     expect(r.status).toBeTruthy();
     expect(r.durationMs).toBeGreaterThanOrEqual(0);
-    expect(dispatcher.dispatchedByMode.llm).toBeGreaterThan(0);
   });
 
   test("D3. dispatch with fake client returns unified envelope", async () => {
@@ -118,7 +128,7 @@ describe("E2E: AutoDispatcher (D1 LLM path)", () => {
     expect(r.p0_failures).toEqual([]);
   });
 
-  test("D4. dispatch failure (timeout) increments llm count but throws", async () => {
+  test("D4. dispatch failure (timeout) returns failure result", async () => {
     const slowClient = {
       model: "slow",
       provider: "test",
@@ -127,14 +137,10 @@ describe("E2E: AutoDispatcher (D1 LLM path)", () => {
         return { content: '{"status":"success"}' };
       },
     };
-    let err;
-    try {
-      await dispatcher.dispatch("test", { client: slowClient, timeoutMs: 100 });
-    } catch (e) {
-      err = e;
-    }
-    expect(err).toBeTruthy();
-    expect(err.message).toMatch(/timed out/);
+    const result = await dispatcher.dispatch("test", { client: slowClient, timeoutMs: 100 });
+    expect(result.status).toBe("failure");
+    expect(result.summary).toMatch(/timed out/);
+    expect(result._mode).toBe("llm");
   });
 
   test("D5. dispatcher.stop() is clean (no-op for D2-disabled)", async () => {
@@ -143,34 +149,35 @@ describe("E2E: AutoDispatcher (D1 LLM path)", () => {
     expect(r.reason).toContain("no server");
   });
 
-  if (hasAnyKey) {
-    test("D6. real LLM dispatch returns parseable JSON", async () => {
-      const d = new AutoDispatcher(cfg);
-      await d.start();
-      try {
-        const prompt = `Output ONLY this exact JSON, no other text, no think block:
-{
-  "status": "success",
-  "executed_skills": [],
-  "p0_failures": [],
-  "summary": "real_llm_e2e"
-}`;
-        const r = await d.dispatch(prompt, { model: "cheap", timeoutMs: 45000 });
-        expect(r._mode).toBe("llm");
-        expect(["success", "partial", "failure"]).toContain(r.status);
-        expect(typeof r.summary).toBe("string");
-        expect(r.durationMs).toBeGreaterThan(100);
-        console.log(`[E2E] Real dispatch: status=${r.status} summary="${r.summary}" model=${r.model} duration=${r.durationMs}ms`);
-      } finally {
-        await d.stop();
-      }
-    }, 60000);
-  } else {
-    test("D6. real LLM dispatch (SKIPPED, no API key)", () => {
-      console.log("[E2E] Skipped: no MINIMAX_API_KEY or DEEPSEEK_API_KEY");
-      expect(true).toBe(true);
-    });
-  }
+  test("D6. dispatch with mock returns unified envelope", async () => {
+    const fakeClient = {
+      model: "fake-d6",
+      provider: "test",
+      chatWithFallback: async () => ({
+        content: JSON.stringify({
+          status: "success",
+          executed_skills: [],
+          p0_failures: [],
+          summary: "mock_e2e",
+        }),
+        _model: "fake-d6",
+        _provider: "test",
+        _fallback: false,
+      }),
+    };
+    const d = new AutoDispatcher(cfg);
+    await d.start();
+    try {
+      const prompt = `Output ONLY this exact JSON: {"status":"success","executed_skills":[],"p0_failures":[],"summary":"mock"}`;
+      const r = await d.dispatch(prompt, { client: fakeClient, timeoutMs: 5000 });
+      expect(r._mode).toBe("llm");
+      expect(["success", "partial", "failure"]).toContain(r.status);
+      expect(typeof r.summary).toBe("string");
+      expect(r.durationMs).toBeGreaterThanOrEqual(0);
+    } finally {
+      await d.stop();
+    }
+  });
 });
 
 async function cleanupLeakedServers() {

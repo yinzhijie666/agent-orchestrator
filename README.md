@@ -69,13 +69,13 @@ export OPENCODE_API_KEY=sk-...
                         │
          ┌──────────────┼──────────────┐
          ▼              ▼              ▼
-    Kimi K2.6   DeepSeek V4    MiniMax M3
+    Kimi K2.6   DeepSeek V4    OpenCode Zen
     (Planning)  (Execution)    (Query)
 ```
 
 ## Features
 
-- **Three-layer routing**: Kimi → DeepSeek → MiniMax based on task type
+- **Three-layer routing**: Kimi → DeepSeek → OpenCode Zen based on task type
 - **Milestone checkpoints**: Every 4 plan items, Kimi reviews before continuing
 - **Real-time dashboard**: WebSocket-powered live monitoring
 - **OpenCode integration**: Native plugin with 4 tools + 1 hook
@@ -97,7 +97,7 @@ export OPENCODE_API_KEY=sk-...
 
 | Tool | Layer | Purpose |
 |------|-------|---------|
-| `agent` | Router | Auto-route every user request. Kimi decides plan mode (analysis) or build mode (DeepSeek/MiniMax execute). |
+| `agent` | Router | Auto-route every user request. Kimi decides plan mode (analysis) or build mode (DeepSeek/Zen execute). |
 | `agent_execute_skills` | Parser | Extract prioritized P0/P1/P2 skills from latest plan and **auto-dispatch** subagent via AutoDispatcher (D1: LLM API / D2: opencode server). |
 | `agent_status` | - | Get orchestration status, plan counts, agent availability. |
 | `agent_checkpoint` | Kimi | Create/verify milestone checkpoints (every 4 completed items). |
@@ -107,12 +107,12 @@ export OPENCODE_API_KEY=sk-...
 ```bash
 KIMI_API_KEY=            # Moonshot API Key (for OpenCode GO package)
 DEEPSEEK_API_KEY=        # DeepSeek API Key
-MINIMAX_API_KEY=         # MiniMax API Key
+MINIMAX_API_KEY=         # MiniMax API Key (legacy, now uses OPENCODE_API_KEY for Zen)
 AGENT_ORCHESTRATOR_PORT=8765      # Optional
 AGENT_ORCHESTRATOR_DB_PATH=       # Optional
 AUTO_EXEC_SKILLS=true    # Enable auto-execute-skills feature (default: true)
 AUTO_EXEC_DISPATCH=false # Disable AutoDispatcher auto-dispatch (default: enabled)
-AUTO_EXEC_MODEL=cheap    # Subagent model: cheap|deepseek|minimax (default: cheap)
+AUTO_EXEC_MODEL=cheap    # Subagent model: cheap|deepseek|opencode-zen (default: cheap)
 ```
 
 ## Auto-Skill-Execution (L3)
@@ -122,7 +122,7 @@ prioritized skill list (`P0_critical` → `P1_important` → `P2_nice_to_have`).
 The dispatch uses **AutoDispatcher** with two paths:
 
 - **D1 (default, active)**: `SubagentRunner` calls a LLM API directly via
-  `BaseModelClient` (DeepSeek → MiniMax fallback chain). Bypasses `opencode run`
+  `BaseModelClient` (DeepSeek → OpenCode Zen fallback chain). Bypasses `opencode run`
   to avoid the `Session not found` bug in opencode 1.15.13.
 - **D2 (preferred, monitoring)**: `OpencodeServer` starts a long-lived
   `opencode serve --pure` process for health/observability. Currently a no-op
@@ -153,7 +153,7 @@ bun run test:models
 
 # Expected output:
 # ✅ DEEPSEEK: Connected (2 models)
-# ✅ MINIMAX: Connected (8 models)
+# ✅ ZEN: Connected (1 model)
 # ✅ KIMI: Connected (N models)  ← Requires valid API key
 ```
 

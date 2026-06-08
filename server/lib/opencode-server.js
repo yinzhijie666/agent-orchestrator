@@ -77,6 +77,9 @@ export class OpencodeServer {
     attachGlobalSignalHandlers();
     if (_serverRegistry.size >= MAX_INSTANCES) {
       const oldest = _serverRegistry.values().next().value;
+      if (oldest.process && oldest.process.exitCode === null) {
+        try { oldest.process.kill("SIGKILL"); } catch {}
+      }
       _serverRegistry.delete(oldest);
     }
     _serverRegistry.add(this);
@@ -113,32 +116,7 @@ export class OpencodeServer {
   }
 
   isHealthy() {
-    if (!this.process || this.process.exitCode !== null || this.url === null) {
-      return false;
-    }
-    return this._cachedProbe();
-  }
-
-  _cachedProbe(ttlMs = 500) {
-    const now = Date.now();
-    if (now - this._healthCache.checkedAt < ttlMs) {
-      return this._healthCache.ok;
-    }
-    let ok = false;
-    try {
-      const res = Bun.spawnSync({
-        cmd: ["curl", "-sS", "-o", "/dev/null", "-w", "%{http_code}", "-m", "1", this.url],
-        env: process.env,
-        stdout: "pipe",
-        stderr: "pipe",
-      });
-      const code = Number(res.stdout.toString().trim());
-      ok = code > 0;
-    } catch {
-      ok = false;
-    }
-    this._healthCache = { ok, checkedAt: now };
-    return ok;
+    return !!(this.process && this.process.exitCode === null && this.process.signalCode === null && !this.process.killed && this.url !== null);
   }
 
   invalidateHealth() {

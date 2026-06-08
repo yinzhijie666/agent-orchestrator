@@ -7,7 +7,7 @@
 // for monitoring/observability but dispatch goes through D1). The D2 path is
 // preserved for when upstream fixes the bug.
 
-import { SubagentRunner } from "./subagent-runner.js";
+import { SubagentRunner, SUBAGENT_SYSTEM_PROMPT, parseSubagentResult } from "./subagent-runner.js";
 import { OpencodeServer } from "./opencode-server.js";
 
 export class AutoDispatcher {
@@ -78,6 +78,7 @@ export class AutoDispatcher {
       return { ok: true, reason: "D2 not required by config (prefer=run/disabled)" };
     }
     if (this.server && this.server.isHealthy()) {
+      this.restartAttempts = 0;
       return { ok: true, restarted: false };
     }
     if (this.restartAttempts >= this._maxRestartAttempts) {
@@ -88,7 +89,7 @@ export class AutoDispatcher {
     this.restartAttempts += 1;
     console.log(`[AutoDispatcher] Server unhealthy, attempting restart ${this.restartAttempts}/${this._maxRestartAttempts}`);
     if (this.server) {
-      try { await this.server.stop({ force: true }); } catch (e) {
+      try { await this.server.stop(); } catch (e) {
         console.warn(`[AutoDispatcher] Old server stop during restart: ${e.message}`);
       }
       this.server = null;
@@ -108,6 +109,62 @@ export class AutoDispatcher {
       this.server = null;
       return { ok: false, error: e.message, restartAttempts: this.restartAttempts };
     }
+  }
+
+  async _dispatchViaServer(prompt, options = {}) {
+    if (!this.server || !this.server.url) {
+      throw new Error("D2 server not available");
+    }
+
+    const messages = [
+      { role: "system", content: SUBAGENT_SYSTEM_PROMPT },
+      { role: "user", content: prompt },
+    ];
+
+    const body = JSON.stringify({
+      model: options.model || "default",
+      messages,
+      stream: false,
+      response_format: { type: "json_object" },
+      max_tokens: options.maxTokens || 8000,
+    });
+
+    const t0 = Date.now();
+    let response;
+    try {
+      response = await fetch(`${this.server.url}/v1/chat/completions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+        signal: AbortSignal.timeout(options.timeoutMs || 60000),
+      });
+    } catch (err) {
+      throw new Error(`D2 HTTP call failed: ${err.message}`);
+    }
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => "");
+      throw new Error(`D2 server returned ${response.status}: ${errText.slice(0, 200)}`);
+    }
+
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content || "";
+    const durationMs = Date.now() - t0;
+    const parsed = parseSubagentResult(content);
+
+    return {
+      status: parsed.status,
+      mode: "server",
+      model: data?.model || "unknown",
+      provider: "opencode-server",
+      fallback: false,
+      executed_skills: parsed.executed_skills || [],
+      p0_failures: parsed.p0_failures || [],
+      summary: parsed.summary || "",
+      output: parsed,
+      rawContent: content,
+      durationMs,
+    };
   }
 
   async stop() {
