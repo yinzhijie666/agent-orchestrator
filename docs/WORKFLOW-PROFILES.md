@@ -35,18 +35,18 @@ Phase 5: 实施 (15 skills)
 
 ## Profile 一览
 
-| Profile  | Phase 1 | Phase 2       | Phase 3  | Phase 4 | Phase 5   | 总步数 | 实际耗时  | 适用场景                               |
-| -------- | ------- | ------------- | -------- | ------- | --------- | ------ | --------- | -------------------------------------- |
-| minimal  | ✅ 4    | ❌ (仅 retro) | ❌ skip  | ✅ 1 项 | ❌ skip   | 6      | 5-10 min  | 日常 commit 前自检                     |
-| standard | ✅ 4    | ✅ 组 1+2     | ❌ skip  | ✅ 2 项 | ❌ skip   | 21     | 15-25 min | 重大功能前（推荐默认）                 |
-| full     | ✅ 4    | ✅ 全部 16    | ✅ 32    | ✅ 2 项 | ✅ 全部   | 69     | 60-90 min | 发版、重大重构                         |
-| audit    | ✅ full | ✅ 全部 16    | ✅ 32    | ✅ 7轮  | ✅ 全部   | 74     | 90-120 min| 审计场景，自动产出 audit-report        |
+| Profile  | Phase 1 | Phase 2      | Phase 3  | Phase 4 | Phase 5   | 总步数 | 实际耗时  | 适用场景                               |
+| -------- | ------- | ------------ | -------- | ------- | --------- | ------ | --------- | -------------------------------------- |
+| minimal  | ✅ 4    | ❌ skip      | ❌ skip  | ✅ 1 项 | ❌ skip   | 5      | 5-10 min  | 日常 commit 前自检                     |
+| standard | ✅ 4    | ✅ 组 1+2    | ❌ skip  | ✅ 2 项 | ❌ skip   | 20     | 15-25 min | 重大功能前（推荐默认）                 |
+| full     | ✅ 4    | ✅ 全部 15   | ✅ 32    | ✅ 2 项 | ✅ 全部   | 68     | 60-90 min | 发版、重大重构                         |
+| audit    | ✅ full | ✅ 全部 15   | ✅ 32    | ✅ 7轮  | ✅ 全部   | 73     | 90-120 min| 审计场景，自动产出 audit-report        |
 
 > 注：minimal 标准不含 retro，仅验证和提交前检查。需要回顾时手动执行 `skill retro`。
 
 ## Profile 详细说明
 
-### minimal（6 步）
+### minimal（5 步）
 
 **触发词**："快速检查" / "commit 前" / "日常自检"
 
@@ -57,31 +57,31 @@ Phase 5: 实施 (15 skills)
 
 **跳过**：Phase 2（分析）、Phase 3（深度分析）、Phase 5（实施）。
 
-### standard（21 步）
+### standard（20 步）
 
 **触发词**："跑标准" / "重大功能前" / 默认
 
-| Phase | 步骤                        | 验证                     |
-| ----- | --------------------------- | ------------------------ |
-| 1     | 4 个知识图谱工具             | 3 份图谱存在              |
-| 2     | 组 1(7) + 组 2(8) = 15 skills | 15 个 `docs/phase2-skills/` |
-| 4     | orchestrator-audit + verify  | 审计通过 + Golden 28     |
+| Phase | 步骤                        | 验证                      |
+| ----- | --------------------------- | ------------------------- |
+| 1     | 4 个知识图谱工具             | 3 份图谱存在               |
+| 2     | 组 1(6) + 组 2(8) = 14 skills | 14 个 `docs/phase2-skills/` |
+| 4     | orchestrator-audit + verify  | 审计通过 + Golden 28      |
 
 **不包含**：Phase 3（深度分析 32 步）、Phase 5（实施 15 skills）。
 
-### full（69 步）
+### full（68 步）
 
 **触发词**："完整工作流" / "full" / "全量"
 
 | Phase | 步骤                           | 验证                          |
 | ----- | ------------------------------ | ----------------------------- |
 | 1     | 4 个知识图谱工具                | 3 份图谱 + MCP 服务器          |
-| 2     | 全部 16 skills                 | 16 个 `docs/phase2-skills/`   |
+| 2     | 全部 15 skills                 | 15 个 `docs/phase2-skills/`   |
 | 3     | 32 步深度分析                  | CodeGraph/Understand/Graphify |
 | 4     | orchestrator 7 轮审计          | 审计报告 + 问题清单            |
 | 5     | 全部 15 skills（基于审计发现）  | 修复代码 + 测试通过 + 文档    |
 
-### audit（74 步）
+### audit（73 步）
 
 **触发词**："audit" / "审计"
 
@@ -95,15 +95,14 @@ Phase 5: 实施 (15 skills)
 Phase 2 = 纯分析 + 报告产出，**不修改代码**。
 
 ```
-组 1 — 分析 (7, 按序)
+组 1 — 分析 (6, 按序)
   andrej-karpathy → brainstorming → plan-eng-review
-  → plan-design-review → plan-ceo-review
-  → design-consultation → office-hours
+  → design-consultation → plan-ceo-review → office-hours
 
 组 2 — 质量验证 (8, 可并行)
-  review → design-review → qa → qa-only
-  → systematic-debugging → verification-before-completion
-  → debug → gstack-upgrade
+  review → design-review (含 plan-design-review 职责)
+  → qa → qa-only → systematic-debugging
+  → verification-before-completion → debug → gstack-upgrade
 
 组 3 — 回顾 (1)
   retro
@@ -117,15 +116,16 @@ Phase 5 = 基于 Phase 4 审计发现实施修复。
 
 ```
 Phase 5.1 — 规划 (2)
-  writing-plans + using-git-worktrees
+  using-git-worktrees → writing-plans
 
-Phase 5.2 — 修复 (6)
-  TDD → executing-plans → verification-before-completion
-  → subagent-driven-development → dispatching-parallel-agents
-  → finishing-a-development-branch
+Phase 5.2 — 修复 (7)
+  subagent-driven-development + dispatching-parallel-agents
+  → TDD → executing-plans → verification-before-completion
+  → browse → finishing-a-development-branch
 
-Phase 5.3 — 文档与发布 (4)
-  document-release → writing-skills → ship → browse
+Phase 5.3 — 文档与发布 (3)
+  document-release → writing-skills (agent-orchestrator-workflow)
+  → ship
 
 Phase 5.4 — 交互收尾 (3)
   requesting-code-review → receiving-code-review
