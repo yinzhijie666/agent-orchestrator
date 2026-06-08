@@ -95,25 +95,23 @@ bun test
 | `using-git-worktrees` | 隔离工作区 | worktree 创建 |
 | `writing-plans` | 基于 Phase 4 bug list 制定修复计划 | `docs/phase5/fix-plan.md` |
 
-### Phase 5.2 — 修复（6 skills）
+### Phase 5.2 — 修复（4 skills）
 
 | Skill | 执行内容 | 验证 |
 |-------|---------|------|
-| `dispatching-parallel-agents` | 并发调度修复任务 | agent 并行结果 |
-| `test-driven-development` | RED: 为每个修复写测试 | `bun test` 新测试失败 |
-| `executing-plans` | GREEN: 实施修复代码 | `bun test` 全部通过 |
-| `verification-before-completion` | ← **从 Phase 2 移来**。验证全部修复无回归 | bun test + verify.sh |
+| `dispatching-parallel-agents` | 并发调度修复任务（子 agent 各自执行 TDD+实现）| agent 并行结果 |
+| `verification-before-completion` | 汇聚子 agent 结果，验证全部修复无回归 | bun test + verify.sh |
 | `browse` | browser 截图验证（仅前端变更时执行）| `docs/phase5/browse.md` + 截图 |
 | `finishing-a-development-branch` | commit 或 PR | commit |
 
-> `subagent-driven-development` 已移除（`dispatching-parallel-agents` 覆盖全部并行场景）。
+> DPA 派发后，子 agent 各自执行 TDD + 实现。主 session 跳过 TDD/executing-plans（已在子 agent 内部完成）。
 
 ### Phase 5.3 — 文档与发布（3 skills）
 
 | Skill | 执行内容 | 产出 |
 |-------|---------|------|
 | `document-release` | 更新 README 等文档 | `docs/phase5/document-release.md` |
-| `writing-skills` | 为项目写 `agent-orchestrator-workflow` skill | 新 SKILL.md |
+| `writing-skills` | 可选。为项目写 `agent-orchestrator-workflow` skill | 新 SKILL.md |
 | `ship` | 发布准备检查 | `docs/phase5/ship.md` |
 
 ### Phase 5.4 — 交互收尾（3 skills，需用户参与）
@@ -164,6 +162,6 @@ bash /home/yin/.config/opencode/scripts/workflow-phase.sh --init full
 |---------|----------|
 | skill 加载失败 | 记录错误，继续下一个 |
 | 测试失败 | 记录失败详情，不阻塞后续 skill |
-| browser 不可用 | 跳过 Phase 5.2 browse + 5.3 ship，标注 |
+| browser 不可用 | 跳过 Phase 5.2 browse，标注 |
 | 服务器未启动 | 跳过 QA/design-review，标注 |
 | 审计发现无代码修复 | writing-plans 产出设计文档 |

@@ -119,13 +119,13 @@ Phase 5 = 基于 Phase 4 审计发现实施修复。
 Phase 5.1 — 规划 (2)
   using-git-worktrees → writing-plans
 
-Phase 5.2 — 修复 (6)
-  dispatching-parallel-agents → TDD → executing-plans
+Phase 5.2 — 修复 (4)
+  dispatching-parallel-agents (子 agent 各自 TDD+实现)
   → verification-before-completion → browse (条件性)
   → finishing-a-development-branch
 
 Phase 5.3 — 文档与发布 (3)
-  document-release → writing-skills (agent-orchestrator-workflow)
+  document-release → writing-skills (可选)
   → ship
 
 Phase 5.4 — 交互收尾 (3)
