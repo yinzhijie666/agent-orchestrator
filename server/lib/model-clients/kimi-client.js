@@ -120,7 +120,7 @@ ${CAPABILITY_LIST}
           idx,
           title: item.title || `Item ${idx + 1}`,
           description: item.description || '',
-          executor: ['kimi', 'deepseek', 'zen', 'minimax'].includes(item.executor) ? item.executor : 'deepseek',
+          executor: ['kimi', 'deepseek', 'zen'].includes(item.executor) ? item.executor : 'deepseek',
           acceptance_criteria: item.acceptance_criteria || '',
           status: 'pending'
         })),

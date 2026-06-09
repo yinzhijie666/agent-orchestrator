@@ -45,7 +45,7 @@ const SAMPLE_PLAN = {
   items: [
     { idx: 0, title: "Item A", description: "First", executor: "kimi" },
     { idx: 1, title: "Item B", description: "Second", executor: "deepseek" },
-    { idx: 2, title: "Item C", description: "Third", executor: "minimax" },
+    { idx: 2, title: "Item C", description: "Third", executor: "zen" },
   ]
 };
 

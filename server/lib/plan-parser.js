@@ -23,7 +23,7 @@ class PlanParser {
 
     plan.items.forEach((item, idx) => {
       if (!item.title) errors.push(`Item ${idx}: missing title`);
-      if (!['kimi', 'deepseek', 'zen', 'minimax'].includes(item.executor)) {
+      if (!['kimi', 'deepseek', 'zen'].includes(item.executor)) {
         errors.push(`Item ${idx}: invalid executor "${item.executor}"`);
       }
     });
@@ -39,7 +39,7 @@ class PlanParser {
   }
 
   static estimateComplexity(plan) {
-    const executorWeights = { kimi: 3, deepseek: 2, zen: 1, minimax: 1 };
+    const executorWeights = { kimi: 3, deepseek: 2, zen: 1 };
     return plan.items.reduce((sum, item) => sum + (executorWeights[item.executor] || 2), 0);
   }
 }

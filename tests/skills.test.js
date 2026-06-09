@@ -86,7 +86,7 @@ describe("formatSuggestedSkills (via executePlanTask output)", () => {
     const client = new KimiClient(mockConfig);
     const raw = JSON.stringify({
       title: "Test",
-      items: [{ title: "Check DB", executor: "minimax", description: "query" }],
+      items: [{ title: "Check DB", executor: "zen", description: "query" }],
       suggested_skills: { P0_critical: ["codegraph_context"], P1_important: [] }
     });
     const plan = client.parsePlan(raw);

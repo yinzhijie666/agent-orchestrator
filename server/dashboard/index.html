@@ -60,7 +60,7 @@
     .log-entry:hover { opacity: 1; background: #1a1a2e; }
     .agent-kimi { color: #ff6b6b; }
     .agent-deepseek { color: #4ecdc4; }
-    .agent-minimax { color: #ffe66d; }
+
     .status-passed { color: #00ff88; }
     .status-failed { color: #ff4444; }
     .status-waiting { color: #ffaa00; }
@@ -149,7 +149,7 @@
       <div id="agent-states">
         <div class="log-entry"><span class="agent-kimi">🧠 Kimi</span> <span id="kimi-status">Unknown</span></div>
         <div class="log-entry"><span class="agent-deepseek">🔧 DeepSeek</span> <span id="deepseek-status">Unknown</span></div>
-        <div class="log-entry"><span class="agent-minimax">⚡ MiniMax</span> <span id="minimax-status">Unknown</span></div>
+
       </div>
     </div>
 
@@ -284,10 +284,8 @@
           const fmt = (avail) => avail ? '✅ Available' : '❌ No API key';
           const kimiEl = document.getElementById('kimi-status');
           const dsEl = document.getElementById('deepseek-status');
-          const mmEl = document.getElementById('minimax-status');
           if (kimiEl) kimiEl.textContent = fmt(data.agents.kimi?.available);
           if (dsEl) dsEl.textContent = fmt(data.agents.deepseek?.available);
-          if (mmEl) mmEl.textContent = fmt(data.agents.minimax?.available);
         }
       } catch (err) {
         // ignore

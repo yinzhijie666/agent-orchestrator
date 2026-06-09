@@ -61,4 +61,9 @@ export const SCHEMA_SQL = `
     details TEXT,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE INDEX IF NOT EXISTS idx_plan_items_plan_id ON plan_items(plan_id);
+  CREATE INDEX IF NOT EXISTS idx_checkpoints_plan_id ON checkpoints(plan_id);
+  CREATE INDEX IF NOT EXISTS idx_activity_log_plan_id ON activity_log(plan_id);
+  CREATE INDEX IF NOT EXISTS idx_plan_items_status ON plan_items(status);
+  CREATE INDEX IF NOT EXISTS idx_plans_status ON plans(status);
 `;

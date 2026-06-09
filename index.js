@@ -91,7 +91,11 @@ ${CAPABILITY_LIST}`
   // Auto-execution pump: execute items sequentially by assigned agent
   const execResults = [];
   for (const item of planDoc.items) {
-    if (item.executor === 'kimi') continue;
+    if (item.executor === 'kimi') {
+      db.logActivity({ plan_id: planId, agent: 'kimi', action: 'item_skipped', details: { idx: item.idx, title: item.title, reason: 'Kimi is planning-only agent, no execution needed' } });
+      execResults.push({ idx: item.idx, executor: 'kimi', status: 'skipped' });
+      continue;
+    }
 
     db.updatePlanItemStatus(planId, item.idx, 'active');
     db.logActivity({ plan_id: planId, agent: item.executor, action: 'item_started', details: { idx: item.idx, title: item.title } });
@@ -105,7 +109,7 @@ ${CAPABILITY_LIST}`
         db.updatePlanItemStatus(planId, item.idx, 'completed', result);
         db.logActivity({ plan_id: planId, agent: 'deepseek', action: 'item_completed', details: { idx: item.idx, title: item.title } });
         emitItemCompleted(planId, item, 'completed');
-      } else if (item.executor === 'zen' || item.executor === 'minimax') {
+      } else if (item.executor === 'zen') {
         const query = `${item.title}: ${item.description || item.acceptance_criteria || ''}`;
         result = await zenClient.searchCode(query, context);
         db.updatePlanItemStatus(planId, item.idx, 'completed', result);

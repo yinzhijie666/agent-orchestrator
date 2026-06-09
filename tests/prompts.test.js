@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach } from "bun:test";
 import KimiClient from "../server/lib/model-clients/kimi-client.js";
 import DeepSeekClient from "../server/lib/model-clients/deepseek-client.js";
-import MiniMaxClient from "../server/lib/model-clients/minimax-client.js";
+
 
 const mockConfig = {
   api_key_env: "TEST_KEY",
@@ -197,52 +197,4 @@ describe("DeepSeek Prompts", () => {
   });
 });
 
-describe("MiniMax Prompts", () => {
-  test("searchCode system prompt is for information retrieval", async () => {
-    const { client, sentMessages } = makeMockClient(MiniMaxClient);
-    await client.searchCode("Find auth code");
-    const systemMsg = sentMessages[0].messages[0].content;
-    expect(systemMsg).toContain("information retrieval agent");
-  });
 
-  test("searchCode caps codebase context at 2000 chars", async () => {
-    const { client, sentMessages } = makeMockClient(MiniMaxClient);
-    const longCodebase = "x".repeat(5000);
-    await client.searchCode("Query", longCodebase);
-    const userMsg = sentMessages[0].messages[1].content;
-    expect(userMsg.length - (userMsg.indexOf("codebase context") >= 0 ? 0 : 0));
-    const codebaseSection = userMsg.split("Codebase context")[1] || "";
-    expect(codebaseSection.length).toBeLessThan(3000);
-  });
-
-  test("readFileSummary includes file path and content", async () => {
-    const { client, sentMessages } = makeMockClient(MiniMaxClient);
-    await client.readFileSummary("src/index.js", "const x = 1;");
-    const userMsg = sentMessages[0].messages[1].content;
-    expect(userMsg).toContain("File: src/index.js");
-    expect(userMsg).toContain("const x = 1;");
-  });
-
-  test("readFileSummary caps content at 4000 chars", async () => {
-    const { client, sentMessages } = makeMockClient(MiniMaxClient);
-    const longContent = "y".repeat(10000);
-    await client.readFileSummary("big.js", longContent);
-    const userMsg = sentMessages[0].messages[1].content;
-    const afterContent = userMsg.split("Content:")[1] || "";
-    expect(afterContent.length).toBeLessThan(5000);
-  });
-
-  test("writeForbidden throws error", () => {
-    const client = new MiniMaxClient(mockConfig);
-    expect(() => client.writeForbidden()).toThrow("MiniMax agent is read-only");
-  });
-
-  test("batchQuery runs multiple searchCode calls", async () => {
-    const { client } = makeMockClient(MiniMaxClient);
-    client.searchCode = async (q) => `result for ${q}`;
-    const results = await client.batchQuery(["q1", "q2", "q3"]);
-    expect(results).toHaveLength(3);
-    expect(results[0]).toBe("result for q1");
-    expect(results[2]).toBe("result for q3");
-  });
-});

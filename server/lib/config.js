@@ -7,6 +7,7 @@ export const config = {
   },
   milestone: {
     interval: rawConfig.milestone?.interval || 4,
+    verification_timeout_ms: rawConfig.milestone?.verification_timeout_ms || 300000,
   },
   models: rawConfig.models || {},
   auto_exec: {
@@ -14,5 +15,6 @@ export const config = {
     max_skills: rawConfig.auto_exec?.max_skills || 20,
     model: rawConfig.auto_exec?.model || "cheap",
     timeout_ms: rawConfig.auto_exec?.timeout_ms || 90000,
+    dispatcher: rawConfig.auto_exec?.dispatcher || { prefer: "run" },
   },
 };

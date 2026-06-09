@@ -62,7 +62,7 @@ describe("events module (PR3: Stage 6.1)", () => {
   });
 
   test("emitItemCompleted broadcasts item.completed with status (success/failed)", () => {
-    emitItemCompleted("p1", { idx: 0, title: "T", executor: "minimax" }, "failed");
+    emitItemCompleted("p1", { idx: 0, title: "T", executor: "deepseek" }, "failed");
     const last = received[received.length - 1];
     expect(last.type).toBe("item.completed");
     expect(last.payload.status).toBe("failed");

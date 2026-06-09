@@ -54,7 +54,7 @@ describe("Phase 2: Core Libraries", () => {
       title: "Test Plan",
       items: [
         { title: "Item 1", executor: "deepseek", description: "desc" },
-        { title: "Item 2", executor: "minimax", description: "desc" }
+        { title: "Item 2", executor: "zen", description: "desc" }
       ]
     };
     

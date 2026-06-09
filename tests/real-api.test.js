@@ -4,7 +4,6 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import KimiClient from "../server/lib/model-clients/kimi-client.js";
 import DeepSeekClient from "../server/lib/model-clients/deepseek-client.js";
-import MiniMaxClient from "../server/lib/model-clients/minimax-client.js";
 import config from "../server/config/default.json" with { type: "json" };
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -38,11 +37,9 @@ function isRealKey(key) {
   return key && key.startsWith("sk-") && key.length > 10;
 }
 
-// Map client names to config keys (handles renames like minimax -> opencode-zen)
 const CONFIG_KEY_MAP = {
   kimi: "kimi",
   deepseek: "deepseek",
-  minimax: "opencode-zen",
   "opencode-zen": "opencode-zen",
 };
 
@@ -61,7 +58,6 @@ const skipOrTest = (clientName) => shouldSkip(clientName) ? test.skip : test;
 
 const kimiClient = new KimiClient(config.models.kimi);
 const deepseekClient = new DeepSeekClient(config.models.deepseek);
-const minimaxClient = new MiniMaxClient(config.models["opencode-zen"]);
 
 describe("Layer 1: Kimi K2.6 — Strategic", () => {
   beforeAll(() => {
@@ -97,7 +93,7 @@ describe("Layer 1: Kimi K2.6 — Strategic", () => {
 
     for (const item of plan.items) {
       expect(item.title).toBeDefined();
-      expect(["kimi", "deepseek", "minimax", "zen"]).toContain(item.executor);
+      expect(["kimi", "deepseek", "zen"]).toContain(item.executor);
     }
   }, 60000);
 
@@ -162,63 +158,7 @@ describe("Layer 2: DeepSeek V4 Flash — Tactical", () => {
   }, 30000);
 });
 
-describe("Layer 3: MiniMax M3 — Operational", () => {
-  beforeAll(() => {
-    loadEnvFile(join(__dirname, "..", ".env"));
-  });
 
-  const it = skipOrTest("minimax");
-
-  it("searchCode returns informative text", async () => {
-    const result = await minimaxClient.searchCode(
-      "How to validate email addresses in JavaScript"
-    );
-    expect(result).toBeDefined();
-    expect(typeof result).toBe("string");
-    expect(result.length).toBeGreaterThan(20);
-  }, 30000);
-
-  it("readFileSummary returns concise summary", async () => {
-    const result = await minimaxClient.readFileSummary(
-      "src/auth.js",
-      `
-const jwt = require('jsonwebtoken');
-function verifyToken(token) {
-  return jwt.verify(token, process.env.SECRET);
-}
-function generateToken(user) {
-  return jwt.sign({ id: user.id, email: user.email }, process.env.SECRET, { expiresIn: '1h' });
-}
-module.exports = { verifyToken, generateToken };
-      `.trim()
-    );
-    expect(result).toBeDefined();
-    expect(typeof result).toBe("string");
-    expect(result.length).toBeGreaterThan(10);
-  }, 30000);
-
-  it("searchCode can handle codebase context", async () => {
-    const result = await minimaxClient.searchCode(
-      "Find authentication-related code patterns",
-      "const express = require('express'); const bcrypt = require('bcrypt');"
-    );
-    expect(result).toBeDefined();
-    expect(typeof result).toBe("string");
-    expect(result.length).toBeGreaterThan(20);
-  }, 30000);
-
-  it("batchQuery runs multiple queries", async () => {
-    const results = await minimaxClient.batchQuery([
-      "What is Node.js Event Loop?",
-      "JavaScript Promise vs async/await",
-    ]);
-    expect(results).toHaveLength(2);
-    for (const r of results) {
-      expect(typeof r).toBe("string");
-      expect(r.length).toBeGreaterThan(10);
-    }
-  }, 60000);
-});
 
 describe("Three-Layer Chain — Full Orchestration Simulation", () => {
   beforeAll(() => {
@@ -227,7 +167,7 @@ describe("Three-Layer Chain — Full Orchestration Simulation", () => {
 
   const it = skipOrTest("kimi");
 
-  it("complete chain: Kimi plan → DeepSeek execute → MiniMax search → Kimi review", async () => {
+  it("complete chain: Kimi plan → DeepSeek execute → Kimi review", async () => {
     const plan = await kimiClient.generatePlan(
       "Write a function to check if a number is prime",
       "JavaScript only, keep plan to max 3 items"
@@ -241,11 +181,6 @@ describe("Three-Layer Chain — Full Orchestration Simulation", () => {
         const result = await deepseekClient.executeTask(item, "Node.js");
         execResults.push({ idx: item.idx, agent: "deepseek", status: result.status });
         expect(result.status).toBe("completed");
-      } else if (item.executor === "minimax") {
-        const query = `${item.title}: ${item.description || ""}`;
-        const result = await minimaxClient.searchCode(query);
-        execResults.push({ idx: item.idx, agent: "minimax", status: "completed", result });
-        expect(result.length).toBeGreaterThan(0);
       }
     }
     expect(execResults.length).toBeGreaterThan(0);

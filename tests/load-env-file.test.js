@@ -10,7 +10,7 @@ let loadEnvFile;
 function extractLoadEnvFile() {
   if (loadEnvFile) return loadEnvFile;
   const lines = readFileSync(join(__dirname, '..', 'index.js'), 'utf-8').split('\n');
-  const fnSrc = lines.slice(202, 223).join('\n');
+  const fnSrc = lines.slice(206, 227).join('\n');
   loadEnvFile = new Function('readFileSync', fnSrc + '\nreturn loadEnvFile;')(readFileSync);
   return loadEnvFile;
 }

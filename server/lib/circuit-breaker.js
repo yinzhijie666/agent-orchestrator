@@ -76,6 +76,10 @@ export class CircuitBreaker {
     return Date.now() - this.lastFailureTime >= this.resetTimeoutMs;
   }
 
+  isOpen() {
+    return this.state === STATE.OPEN;
+  }
+
   getStatus() {
     return {
       name: this.name,

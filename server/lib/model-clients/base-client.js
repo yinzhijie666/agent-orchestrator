@@ -68,23 +68,20 @@ class BaseModelClient {
   // Chat with automatic fallback to another client
   // Uses circuit breaker if provided to skip primary when it's known-unhealthy
   async chatWithFallback(messages, options = {}, fallbackClient = null, circuitBreaker = null) {
-    if (circuitBreaker) {
-      const skipped = circuitBreaker.call(async () => null);
-      if (skipped === null && fallbackClient) {
-        try {
-          const result = await fallbackClient.chat(messages, options);
-          return {
-            content: result,
-            _fallback: true,
-            _fallback_from: this.model,
-            _fallback_to: fallbackClient.model,
-            _fallback_reason: "circuit open",
-            _provider: fallbackClient.provider,
-          };
-        } catch (fallbackErr) {
-          circuitBreaker.recordFailure();
-          throw fallbackErr;
-        }
+    if (circuitBreaker && circuitBreaker.isOpen() && fallbackClient) {
+      try {
+        const result = await fallbackClient.chat(messages, options);
+        return {
+          content: result,
+          _fallback: true,
+          _fallback_from: this.model,
+          _fallback_to: fallbackClient.model,
+          _fallback_reason: "circuit open",
+          _provider: fallbackClient.provider,
+        };
+      } catch (fallbackErr) {
+        circuitBreaker.recordFailure();
+        throw fallbackErr;
       }
     }
 
