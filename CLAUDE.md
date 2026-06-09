@@ -74,6 +74,12 @@ After any `agent` tool call, you MUST:
 
 ---
 
+## 变更卫生
+
+- **删除前 grep 全量引用**：删除文件/功能前，grep 整个项目确认引用深度，包括源码、测试、dashboard
+- **改前跑测试建立基线**：修改前先跑全量测试记录当前 pass/fail，改完后对比确保不引入回归
+- **避免测试硬编码行号**：测试中通过固定行号提取函数/代码时，用函数名搜索或 AST 解析替代，避免编辑后移位
+
 ## 项目审计 checklist
 
 以下 checklist 针对 agent-orchestrator 项目，Phase 4 审计时必须执行。

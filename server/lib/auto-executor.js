@@ -80,7 +80,7 @@ export class AutoExecutor {
 
     for (const s of skills) {
       const skillName = s.value || s.entry;
-      const classification = classifier.classify(skillName, classifier.skillEntries.find(e => e.name === skillName)?.path || '');
+      const classification = classifier.classify(skillName, classifier.skillEntries.find(e => e.name === skillName)?.path || '', s.type);
       const enriched = { ...s, category: classification.category };
 
       if (classification.category === 'AUTO') {

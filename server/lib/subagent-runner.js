@@ -27,6 +27,7 @@ Execution rules:
 - P2 items: optional, may skip.
 - Do NOT call \`agent\` or \`agent_execute_skills\` (recursion prevention).
 - If a skill requires an external tool you do not have, report it as skipped with reason.
+- If a skill is type "memory" (oh-my-memory search), skip it: "skipped (memory search requires MCP tool access in main session)".
 
 Output schema (strict JSON, no markdown fencing):
 {

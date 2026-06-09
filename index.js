@@ -665,7 +665,8 @@ After every \`agent\` call:
    - \`skill X\` → call \`skill X\`
    - \`/command\` → run that slash command
    - \`codegraph_X\` → call the codegraph tool
-   - \`oh-my-memory search\` → search memory vault
+   - \`oh-my-memory search ...\` → search memory vault (call MCP \`memory_search\` tool with query=..., report results)
+   - \`memory\` type skills → execute in main session using MCP memory tools
 
 4. **Never** silently ignore \`suggested_skills\`. They are part of the plan output.
 
@@ -687,10 +688,10 @@ When \`manual_instructions[]\` is non-empty:
 - INTERACTIVE skills will prompt the user for input (Q&A, approval, choices)
 - TOOL_REQUIRED skills will need bash/browse tools
 - Record each skill's execution result
-  - \`command\` → run the slash command
-  - \`codegraph\` → call the codegraph MCP tool
-  - \`memory\` → search oh-my-memory
-- If a skill execution fails, log the error and continue to the next skill
+   - \`command\` → run the slash command
+   - \`codegraph\` → call the codegraph MCP tool
+   - \`memory\` → search oh-my-memory via MCP \`memory_search\` tool (query=value, scope=user, limit=10), report results
+   - If a skill execution fails, log the error and continue to the next skill
 - Report all results at the end
 - P0 must succeed; P1/P2 may be skipped
 

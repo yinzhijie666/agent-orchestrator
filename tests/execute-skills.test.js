@@ -17,6 +17,9 @@ function parseSkillAction(entry) {
   if (entry.startsWith("skill ")) return { type: "skill", value: entry.slice(6).trim() };
   if (entry.startsWith("/")) return { type: "command", value: entry };
   if (entry.startsWith("codegraph_")) return { type: "codegraph", value: entry };
+  if (entry.includes("oh-my-memory") || entry.includes("search memory")) {
+    return { type: "memory", value: entry };
+  }
   return { type: "unknown", value: entry };
 }
 

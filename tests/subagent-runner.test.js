@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { SubagentRunner } from "../server/lib/subagent-runner.js";
+import { SubagentRunner, SUBAGENT_SYSTEM_PROMPT } from "../server/lib/subagent-runner.js";
 
 const cfg = {
   models: {
@@ -10,6 +10,12 @@ const cfg = {
 };
 
 describe("SubagentRunner", () => {
+  test("SUBAGENT_SYSTEM_PROMPT mentions memory skip instruction", () => {
+    expect(SUBAGENT_SYSTEM_PROMPT).toContain("memory");
+    expect(SUBAGENT_SYSTEM_PROMPT).toContain("MCP tool access");
+    expect(SUBAGENT_SYSTEM_PROMPT).toContain("skip");
+  });
+
   test("constructor reads timeout from config", () => {
     const r = new SubagentRunner(cfg);
     expect(r.defaultTimeoutMs).toBe(5000);

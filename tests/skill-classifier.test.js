@@ -65,4 +65,15 @@ describe("SkillClassifier", () => {
     const auto = classifier.getByCategory('AUTO');
     expect(interactive.length + toolRequired.length + auto.length).toBe(31);
   });
+
+  test("memory type is classified as TOOL_REQUIRED", () => {
+    const result = classifier.classify("oh-my-memory search patterns", "", "memory");
+    expect(result.category).toBe("TOOL_REQUIRED");
+    expect(result.reason).toContain("memory type requires MCP tool access");
+  });
+
+  test("unknown type without SKILL.md defaults to AUTO", () => {
+    const result = classifier.classify("some-random-skill", "/nonexistent/path/SKILL.md");
+    expect(result.category).toBe("AUTO");
+  });
 });

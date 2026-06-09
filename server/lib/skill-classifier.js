@@ -67,8 +67,12 @@ export class SkillClassifier {
     this.cache = {};
   }
 
-  classify(skillName, skillPath) {
+  classify(skillName, skillPath, skillType) {
     if (this.cache[skillName]) return this.cache[skillName];
+
+    if (skillType === 'memory') {
+      return { category: 'TOOL_REQUIRED', reason: 'memory type requires MCP tool access' };
+    }
 
     if (!existsSync(skillPath)) {
       return { category: 'AUTO', reason: 'SKILL.md not found, defaulting to AUTO', scores: {} };
