@@ -58,6 +58,14 @@ const checkpointRouter = {
 
     try {
       verifyResult = await this.kimiClient.reviewCheckpoint(fetchedCheckpoint, this.deepseekClient);
+      if (verifyResult._fallback) {
+        db.logActivity({
+          plan_id: fetchedCheckpoint?.plan_id,
+          agent: 'system',
+          action: 'checkpoint_fallback',
+          details: { checkpoint_id: params.id, reason: verifyResult._fallback_reason || 'silent fallback to DeepSeek' },
+        });
+      }
     } catch (err) {
       console.error('[Fallback] Kimi review failed:', err.message);
       

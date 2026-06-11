@@ -71,6 +71,7 @@ class BaseModelClient {
     if (circuitBreaker && circuitBreaker.isOpen() && fallbackClient) {
       try {
         const result = await fallbackClient.chat(messages, options);
+        options.onFallback?.({ from: this.model, to: fallbackClient.model, reason: 'circuit open' });
         return {
           content: result,
           _fallback: true,
@@ -81,6 +82,7 @@ class BaseModelClient {
         };
       } catch (fallbackErr) {
         circuitBreaker.recordFailure();
+        options.onFallback?.({ from: this.model, to: fallbackClient.model, reason: `circuit+fallback failed: ${fallbackErr.message}` });
         throw fallbackErr;
       }
     }
@@ -109,6 +111,7 @@ class BaseModelClient {
           try {
             const result = await fallbackClient.chat(messages, options);
             if (circuitBreaker) circuitBreaker.recordSuccess();
+            options.onFallback?.({ from: this.model, to: fallbackClient.model, reason: err.message });
             return {
               content: result,
               _fallback: true,
@@ -119,6 +122,7 @@ class BaseModelClient {
             };
           } catch (fallbackErr) {
             if (circuitBreaker) circuitBreaker.recordFailure();
+            options.onFallback?.({ from: this.model, to: fallbackClient.model, reason: `both failed: ${fallbackErr.message}` });
             const finalErr = new Error(
               `Both ${this.model} and ${fallbackClient.model} failed. ` +
               `Primary: ${err.message}, Fallback: ${fallbackErr.message}`

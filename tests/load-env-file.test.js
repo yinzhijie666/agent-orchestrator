@@ -9,9 +9,10 @@ let loadEnvFile;
 
 function extractLoadEnvFile() {
   if (loadEnvFile) return loadEnvFile;
-  const lines = readFileSync(join(__dirname, '..', 'index.js'), 'utf-8').split('\n');
-  const fnSrc = lines.slice(206, 227).join('\n');
-  loadEnvFile = new Function('readFileSync', fnSrc + '\nreturn loadEnvFile;')(readFileSync);
+  const source = readFileSync(join(__dirname, '..', 'index.js'), 'utf-8');
+  const fnMatch = source.match(/(function loadEnvFile\([^)]+\) \{[\s\S]*?^\})/m);
+  if (!fnMatch) throw new Error('Could not find loadEnvFile function in index.js');
+  loadEnvFile = new Function('readFileSync', fnMatch[1] + '\nreturn loadEnvFile;')(readFileSync);
   return loadEnvFile;
 }
 

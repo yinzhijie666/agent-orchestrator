@@ -101,13 +101,14 @@ describe("Phase 2: Core Libraries", () => {
 });
 
 describe("Phase 3: API Endpoints", () => {
-  const baseUrl = "http://127.0.0.1:8765";
+  let baseUrl;
   let planId;
   let server;
 
   beforeAll(async () => {
     // Start server for API tests on unique port
     process.env.AGENT_ORCHESTRATOR_PORT = "18765";
+    baseUrl = `http://127.0.0.1:${process.env.AGENT_ORCHESTRATOR_PORT}`;
     const { server: srv } = await import("../server/index.js");
     server = srv;
     // Wait for server to be ready

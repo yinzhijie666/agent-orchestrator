@@ -1,217 +1,87 @@
 #!/bin/bash
 # ==============================================================
-# OpenCode 重启 + 更新脚本
-#   - 停止所有 OpenCode 和 CodeGraph 服务
-#   - 更新 OpenCode 和 CodeGraph 到最新版本
-#   - 重启服务
-#   - 验证服务状态
+# OpenCode 安全重启脚本
+# 依赖 systemd Restart=always 自动重启
 # ==============================================================
 
 set -e
 
-# 颜色输出
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-log_info() {
-    echo -e "${GREEN}[INFO]${NC} $1"
-}
-
-log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
+log_info()  { echo -e "${GREEN}[INFO]${NC} $1"; }
+log_warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 # ==============================================================
-# 步骤 1: 停止服务
+# 前置检查
 # ==============================================================
-echo ""
-echo "=== 步骤 1: 停止 OpenCode 服务 ==="
-
-# 停止 OpenCode 主服务
-if pgrep -f "opencode serve" > /dev/null; then
-    log_info "停止 OpenCode 主服务..."
-    pkill -f "opencode serve" || true
-    sleep 2
-else
-    log_info "OpenCode 主服务未运行"
-fi
-
-# 停止 CodeGraph MCP 服务
-if pgrep -f "codegraph serve" > /dev/null; then
-    log_info "停止 CodeGraph MCP 服务..."
-    pkill -f "codegraph serve" || true
-    sleep 2
-else
-    log_info "CodeGraph MCP 服务未运行"
-fi
-
-# 验证进程已停止
-REMAINING=$(ps aux | grep -E "opencode|codegraph" | grep -v grep | wc -l)
-if [ "$REMAINING" -gt 0 ]; then
-    log_warn "仍有 $REMAINING 个相关进程运行:"
-    ps aux | grep -E "opencode|codegraph" | grep -v grep
-    log_info "强制停止..."
-    pkill -9 -f "opencode serve" 2>/dev/null || true
-    pkill -9 -f "codegraph serve" 2>/dev/null || true
-    sleep 1
-fi
-
-log_info "所有服务已停止"
-
-# ==============================================================
-# 步骤 2: 更新 OpenCode
-# ==============================================================
-echo ""
-echo "=== 步骤 2: 更新 OpenCode ==="
-
-OPENCODE_BEFORE=$(opencode --version 2>/dev/null || echo "unknown")
-log_info "当前版本: $OPENCODE_BEFORE"
-
-log_info "更新 OpenCode..."
-if npm update -g @opencode-ai/opencode 2>/dev/null; then
-    OPENCODE_AFTER=$(opencode --version 2>/dev/null || echo "unknown")
-    if [ "$OPENCODE_BEFORE" != "$OPENCODE_AFTER" ]; then
-        log_info "✅ OpenCode 已更新: $OPENCODE_BEFORE -> $OPENCODE_AFTER"
-    else
-        log_info "✅ OpenCode 已是最新版本: $OPENCODE_AFTER"
-    fi
-else
-    log_warn "⚠️ OpenCode 更新失败，使用当前版本继续"
-fi
-
-# ==============================================================
-# 步骤 3: 更新 CodeGraph
-# ==============================================================
-echo ""
-echo "=== 步骤 3: 更新 CodeGraph ==="
-
-CODEGRAPH_BEFORE=$(codegraph --version 2>/dev/null || echo "unknown")
-log_info "当前版本: $CODEGRAPH_BEFORE"
-
-log_info "更新 CodeGraph..."
-if bun update -g @colbymchenry/codegraph 2>/dev/null; then
-    CODEGRAPH_AFTER=$(codegraph --version 2>/dev/null || echo "unknown")
-    if [ "$CODEGRAPH_BEFORE" != "$CODEGRAPH_AFTER" ]; then
-        log_info "✅ CodeGraph 已更新: $CODEGRAPH_BEFORE -> $CODEGRAPH_AFTER"
-    else
-        log_info "✅ CodeGraph 已是最新版本: $CODEGRAPH_AFTER"
-    fi
-else
-    log_warn "⚠️ CodeGraph 更新失败，使用当前版本继续"
-fi
-
-# ==============================================================
-# 步骤 4: 重启服务
-# ==============================================================
-echo ""
-echo "=== 步骤 4: 重启服务 ==="
-
-# 启动 OpenCode 主服务
-log_info "启动 OpenCode 主服务 (端口 4096)..."
-nohup opencode serve --hostname 0.0.0.0 --port 4096 > /tmp/opencode.log 2>&1 &
-OPENCODE_PID=$!
-log_info "OpenCode PID: $OPENCODE_PID"
-
-# 等待 OpenCode 启动
-sleep 3
-
-# 检查 OpenCode 是否启动成功
-if kill -0 $OPENCODE_PID 2>/dev/null; then
-    log_info "✅ OpenCode 主服务已启动"
-else
-    log_error "❌ OpenCode 主服务启动失败"
-    log_error "查看日志: cat /tmp/opencode.log"
+if ! sudo systemctl is-active --quiet opencode; then
+    log_error "opencode 服务未运行"
     exit 1
 fi
 
-# 启动 CodeGraph MCP 服务
-log_info "启动 CodeGraph MCP 服务..."
-nohup codegraph serve --mcp > /tmp/codegraph.log 2>&1 &
-CODEGRAPH_PID=$!
-log_info "CodeGraph PID: $CODEGRAPH_PID"
-
-# 等待 CodeGraph 启动
-sleep 2
-
-# 检查 CodeGraph 是否启动成功
-if kill -0 $CODEGRAPH_PID 2>/dev/null; then
-    log_info "✅ CodeGraph MCP 服务已启动"
-else
-    log_warn "⚠️ CodeGraph MCP 服务启动失败（非致命）"
-fi
+MAIN_PID=$(sudo systemctl show --property=MainPID --value opencode)
+log_info "OpenCode 主进程 PID: $MAIN_PID"
+log_info "当前 shell 位于 opencode cgroup 中，脚本将在重启前退出"
 
 # ==============================================================
-# 步骤 5: 验证服务状态
+# 警告 + 3 秒倒计时
 # ==============================================================
 echo ""
-echo "=== 步骤 5: 验证服务状态 ==="
-
-# 检查进程
-log_info "运行中的服务:"
-ps aux | grep -E "opencode|codegraph" | grep -v grep | awk '{print "  PID " $2 ": " $11 " " $12 " " $13}'
-
-# 检查端口
-log_info "端口监听状态:"
-if ss -tlnp | grep 4096 > /dev/null 2>&1; then
-    log_info "✅ 端口 4096 已监听"
-else
-    log_warn "⚠️ 端口 4096 未监听（可能需要更多时间启动）"
-fi
-
-# 健康检查
-log_info "OpenCode 健康检查:"
-HEALTH_RESULT=$(curl -s http://localhost:4096/health 2>/dev/null || echo "failed")
-if echo "$HEALTH_RESULT" | grep -q "ok\|healthy\|success"; then
-    log_info "✅ OpenCode 健康检查通过"
-else
-    log_warn "⚠️ 健康检查返回: $HEALTH_RESULT"
-fi
-
-# ==============================================================
-# 步骤 6: 验证 agent-orchestrator
-# ==============================================================
+log_warn "即将重启 OpenCode 服务"
+log_warn "当前 CLI 会话将在约 6 秒后断开，请保存工作"
 echo ""
-echo "=== 步骤 6: 验证 agent-orchestrator ==="
+for i in 3 2 1; do
+    echo -ne "   ${i}...\r"
+    sleep 1
+done
+echo ""
 
-if [ -d "$HOME/agent-orchestrator" ]; then
-    cd "$HOME/agent-orchestrator"
-
-    # 运行 verify.sh
-    if [ -f "scripts/workflow-preflight-check.sh" ]; then
-        log_info "运行前置检查..."
-        bash scripts/workflow-preflight-check.sh 2>&1 | tail -10
+# ==============================================================
+# 步骤 1: 停止 CodeGraph（独立 systemd 服务）
+# ==============================================================
+if sudo systemctl is-active --quiet codegraph 2>/dev/null; then
+    log_info "优雅停止 codegraph..."
+    sudo systemctl stop codegraph
+    sleep 2
+    if sudo systemctl is-active --quiet codegraph 2>/dev/null; then
+        log_warn "codegraph 未响应 SIGTERM，强制停止..."
+        sudo systemctl kill -s KILL codegraph 2>/dev/null || true
+        sleep 1
     fi
-
-    # 运行快速测试
-    log_info "运行单元测试..."
-    timeout 60 bun test $(ls tests/*.test.js | grep -v real-api | grep -v skills) 2>&1 | tail -5
+    log_info "✅ codegraph 已停止"
 else
-    log_warn "agent-orchestrator 目录不存在"
+    log_info "codegraph 未运行，跳过"
 fi
 
 # ==============================================================
-# 完成
+# 步骤 2: 延迟重启 OpenCode
 # ==============================================================
 echo ""
-echo "=== 重启完成 ==="
+echo "--- 重启 OpenCode ---"
+
+log_info "将在 3 秒后发送 SIGTERM..."
 echo ""
-echo "服务状态:"
-echo "  - OpenCode: http://localhost:4096"
-echo "  - OpenCode 版本: $(opencode --version 2>/dev/null || echo 'unknown')"
-echo "  - CodeGraph 版本: $(codegraph --version 2>/dev/null || echo 'unknown')"
+
+# 后台进程与脚本在不同 session 但仍在同一 cgroup
+# 当 systemd 发送 SIGTERM 到 cgroup 时，此进程也会被杀
+# 但 D-Bus 消息已在此之前发送给 systemd，重启不受影响
+setsid bash -c '
+    sleep 3
+    sudo systemctl kill -s TERM opencode
+' & disown
+
 echo ""
-echo "日志文件:"
-echo "  - OpenCode: /tmp/opencode.log"
-echo "  - CodeGraph: /tmp/codegraph.log"
+log_info "✅ 重启指令已提交"
+log_info ""
+log_info "流程:"
+log_info "  1. 3s → systemd 向 cgroup 发 SIGTERM"
+log_info "  2. 旧进程（含当前会话）终止"
+log_info "  3. systemd RestartSec=10 → 自动拉起新进程"
 echo ""
-echo "常用命令:"
-echo "  - 查看日志: tail -f /tmp/opencode.log"
-echo "  - 检查状态: curl http://localhost:4096/health"
-echo "  - 停止服务: pkill -f 'opencode serve'"
+log_info "查看状态: sudo systemctl status opencode"
+log_info "查看日志: sudo journalctl -u opencode -n 20 --no-pager"
+
+sleep 1
 echo ""
+log_info "脚本将在 2 秒后退出..."
+sleep 2

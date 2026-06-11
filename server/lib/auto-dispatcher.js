@@ -11,9 +11,10 @@ import { SubagentRunner, SUBAGENT_SYSTEM_PROMPT, parseSubagentResult } from "./s
 import { OpencodeServer } from "./opencode-server.js";
 
 export class AutoDispatcher {
-  constructor(config) {
+  constructor(config, eventBus) {
     this.config = config;
-    this.runner = new SubagentRunner(config);
+    this.eventBus = eventBus || null;
+    this.runner = new SubagentRunner(config, this.eventBus);
     this.server = null;
     this.d2Enabled = false;
     this.dispatchedTotal = 0;
@@ -48,7 +49,10 @@ export class AutoDispatcher {
   async dispatch(prompt, options = {}) {
     this.dispatchedTotal += 1;
 
+    const planId = options.planContext?.planId || null;
+
     if (!this.d2Enabled) {
+      this.eventBus?.emit('dispatch_d1', { plan_id: planId, model: options.model || 'cheap' });
       const result = await this.runner.run(prompt, options);
       this.dispatchedByMode.llm += 1;
       return { ...result, _mode: "llm" };
@@ -57,6 +61,7 @@ export class AutoDispatcher {
     const health = await this.ensureHealthy();
     if (health.ok && this.server && this.server.isHealthy()) {
       try {
+        this.eventBus?.emit('dispatch_d2', { plan_id: planId, url: this.server.url });
         const result = await this._dispatchViaServer(prompt, options);
         if (result.status !== "failure") {
           this.dispatchedByMode.server += 1;
@@ -68,6 +73,7 @@ export class AutoDispatcher {
       }
     }
 
+    this.eventBus?.emit('dispatch_d2_fallback', { plan_id: planId, reason: health.ok ? 'D2 returned failure' : `D2 unhealthy: ${health.error || 'unknown'}` });
     this.dispatchedByMode.fallback += 1;
     const result = await this.runner.run(prompt, options);
     return { ...result, _mode: "llm", _fell_back_from_d2: true };

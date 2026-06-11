@@ -25,6 +25,7 @@ import { PlanOrchestrator } from './server/lib/plan-orchestrator.js';
 import { AutoExecutor } from './server/lib/auto-executor.js';
 import { AutoDispatcher } from './server/lib/auto-dispatcher.js';
 import { WorkflowValidator, ALL_REQUIRED_SKILLS } from './server/lib/workflow-validator.js';
+import { EventBus } from './server/lib/event-bus.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MILESTONE_INTERVAL = config.milestone?.interval || 4;
@@ -39,9 +40,15 @@ async function executePlanTask(task, context, kimiClient, deepseekClient, zenCli
   let modeAnalysis;
   try {
     modeAnalysis = await kimiClient.analyzeTaskMode(task, context, deepseekClient);
+    if (db) {
+      db.logActivity({ plan_id: null, agent: 'kimi', action: 'mode_analysis', details: { mode: modeAnalysis.mode, reason: modeAnalysis.reason, fallback: modeAnalysis._fallback || false } });
+    }
   } catch (err) {
     console.error('[AgentOrchestrator] Mode analysis failed, defaulting to build:', err.message);
     modeAnalysis = { mode: 'build', reason: `Fallback: ${err.message}` };
+    if (db) {
+      db.logActivity({ plan_id: null, agent: 'system', action: 'mode_analysis_failed', details: { error: err.message, fallbackMode: 'build' } });
+    }
   }
 
   if (modeAnalysis.mode === 'plan') {
@@ -61,10 +68,16 @@ ${CAPABILITY_LIST}`
         }
       ], { max_tokens: 4000 }, deepseekClient);
       analysis = analysisResult.content || analysisResult;
+      if (db) {
+        db.logActivity({ plan_id: null, agent: 'kimi', action: 'plan_analysis', details: { task_length: task.length, recs_count: 0 } });
+      }
     } catch (err) {
       analysis = `分析失败: ${err.message}`;
+      if (db) {
+        db.logActivity({ plan_id: null, agent: 'system', action: 'plan_analysis_failed', details: { error: err.message } });
+      }
     }
-    const recommendations = await generateRecommendations(task, kimiClient, deepseekClient);
+    const recommendations = await generateRecommendations(task, kimiClient, deepseekClient, eventBus);
     return { mode: 'plan', analysis, reason: modeAnalysis.reason, recommendations, suggested_skills: modeAnalysis.suggested_skills || {} };
   }
 
@@ -80,6 +93,9 @@ ${CAPABILITY_LIST}`
   });
 
   emitPlanCreated(planId, planDoc);
+  if (db) {
+    db.logActivity({ plan_id: planId, agent: 'kimi', action: 'plan_generated', details: { title: planDoc.title, items_count: planDoc.items.length, fallback: fallbackUsed } });
+  }
   if (fallbackUsed) {
     emitModelFallback('kimi', 'deepseek', 'plan_generation');
   }
@@ -138,7 +154,7 @@ ${CAPABILITY_LIST}`
     details: { completed: completedCount, failed: failedCount, status: finalStatus },
   });
   emitPlanCompleted(planId, finalStatus);
-  const recommendations = await generateRecommendations(planDoc, kimiClient, deepseekClient);
+  const recommendations = await generateRecommendations(planDoc, kimiClient, deepseekClient, eventBus);
 
   const items = planDoc.items.map(i =>
     `${i.idx + 1}. [${i.executor}] ${i.title}${i.description ? ': ' + i.description : ''}`
@@ -151,7 +167,8 @@ ${CAPABILITY_LIST}`
   return { mode: 'build', planId, title: planDoc.title, items, itemCount: planDoc.items.length, execSummary, completedCount, failedCount, fallback: fallbackUsed, recommendations, suggested_skills: planDoc.suggested_skills || {} };
 }
 
-async function generateRecommendations(planOrTask, kimiClient, deepseekClient) {
+async function generateRecommendations(planOrTask, kimiClient, deepseekClient, eventBus) {
+  const phase = typeof planOrTask === 'string' ? 'plan_mode' : 'build_mode';
   try {
     const recs = await kimiClient.chatWithFallback([
       {
@@ -167,9 +184,11 @@ ${CAPABILITY_LIST}
         content: `Task: ${typeof planOrTask === 'string' ? planOrTask : JSON.stringify({ title: planOrTask.title, items: planOrTask.items.map(i => ({ title: i.title, description: i.description })) })}\n\n列出建议。`
       }
     ], { max_tokens: 1500 }, deepseekClient);
+    eventBus?.emit('recommendations_completed', { phase, success: true });
     return recs?.content || recs;
   } catch (err) {
     console.error('[AgentOrchestrator] Recommendation generation failed:', err.message);
+    eventBus?.emit('recommendations_completed', { phase, success: false, error: err.message });
     return null;
   }
 }
@@ -245,13 +264,31 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
     console.warn('[AgentOrchestrator] DB initialization failed, stateful tools will return errors:', e.message);
   }
 
+  const eventBus = new EventBus();
+  if (db) {
+    const log = (action, details) => db.logActivity({
+      plan_id: details.plan_id || null,
+      agent: details.agent || 'system',
+      action,
+      details: { ...details, timestamp: new Date().toISOString() },
+    });
+    eventBus.on('model_fallback', (d) => log('model_fallback', { agent: 'system', from: d.from, to: d.to, reason: d.reason }));
+    eventBus.on('subagent_started', (d) => log('subagent_started', { agent: 'subagent', plan_id: d.plan_id, skills_count: d.skills_count, model: d.model }));
+    eventBus.on('subagent_completed', (d) => log('subagent_completed', { agent: 'subagent', plan_id: d.plan_id, status: d.status, skills_executed: d.skills_executed, duration_ms: d.duration_ms }));
+    eventBus.on('subagent_failed', (d) => log('subagent_failed', { agent: 'subagent', plan_id: d.plan_id, error: d.error, duration_ms: d.duration_ms }));
+    eventBus.on('dispatch_d1', (d) => log('dispatch_d1', { agent: 'dispatcher', plan_id: d.plan_id, model: d.model }));
+    eventBus.on('dispatch_d2', (d) => log('dispatch_d2', { agent: 'dispatcher', plan_id: d.plan_id, url: d.url }));
+    eventBus.on('dispatch_d2_fallback', (d) => log('dispatch_d2_fallback', { agent: 'dispatcher', plan_id: d.plan_id, reason: d.reason }));
+    eventBus.on('recommendations_completed', (d) => log('recommendations_completed', { agent: 'kimi', phase: d.phase, success: d.success, error: d.error }));
+  }
+
   let autoDispatcher = null;
   try {
     const autoDispatchDisabled = process.env.AUTO_EXEC_DISPATCH === 'false' || process.env.AUTO_EXEC_DISABLED === 'true';
     if (autoDispatchDisabled) {
       console.log('[AgentOrchestrator] AutoDispatcher disabled by env (AUTO_EXEC_DISPATCH=false)');
     } else {
-      autoDispatcher = new AutoDispatcher(config);
+      autoDispatcher = new AutoDispatcher(config, eventBus);
       const startResult = await autoDispatcher.start();
       if (startResult.started) {
         console.log('[AgentOrchestrator] AutoDispatcher started: D2 url=' + startResult.url);
@@ -368,6 +405,24 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
               }
             }
 
+            // Activity log summary
+            const activityByAgent = db.db.prepare(
+              "SELECT agent, action, COUNT(*) as count FROM activity_log GROUP BY agent, action ORDER BY agent, count DESC"
+            ).all();
+            if (activityByAgent.length > 0) {
+              output += `\nActivity Log Summary:\n`;
+              for (const row of activityByAgent) {
+                const agentLabel = row.agent === 'kimi' ? '🧠' : row.agent === 'system' ? '⚙️' : '🔧';
+                output += `  ${agentLabel} ${row.agent}.${row.action}: ${row.count}\n`;
+              }
+              const fallbackCount = db.db.prepare(
+                "SELECT COUNT(*) as count FROM activity_log WHERE action = 'model_fallback'"
+              ).get();
+              if (fallbackCount.count > 0) {
+                output += `  🔁 model_fallback total: ${fallbackCount.count}\n`;
+              }
+            }
+
             output += `\nAgent Availability:\n`;
             output += `  🧠 Kimi:     ${kimiOk ? '✅' : '❌'}\n`;
             output += `  🔧 DeepSeek: ${deepseekOk ? '✅' : '❌'}\n`;
@@ -417,7 +472,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 verification_status: 'pending',
               });
 
-              db.logActivity({
+              if (db) db.logActivity({
                 plan_id,
                 agent: 'system',
                 action: 'checkpoint_created',
@@ -454,7 +509,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                   feedback: `Auto-passed: Kimi unavailable (${err.message})`,
                 };
                 fallbackUsed = true;
-                db.logActivity({
+                if (db) db.logActivity({
                   plan_id,
                   agent: 'system',
                   action: 'checkpoint_auto_passed',
@@ -481,7 +536,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 ).run(plan_id);
               }
 
-              db.logActivity({
+              if (db) db.logActivity({
                 plan_id,
                 agent: 'kimi',
                 action: 'checkpoint_verified',

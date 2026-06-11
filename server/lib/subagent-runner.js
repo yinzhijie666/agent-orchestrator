@@ -97,8 +97,9 @@ export class SubagentRunner {
    * @param {Object} config.auto_exec - Auto-execution settings
    * @param {Object} config.models - Model configurations
    */
-  constructor(config) {
+  constructor(config, eventBus) {
     this.config = config;
+    this.eventBus = eventBus || null;
     this.defaultTimeoutMs = config?.auto_exec?.timeout_ms || 90000;
     this.deepseekClient = new DeepSeekClient(config.models.deepseek);
   }
@@ -118,6 +119,7 @@ export class SubagentRunner {
     const modelName = options.model || this.config?.auto_exec?.model || "cheap";
     const client = options.client || pickClient(this.config, modelName);
     const timeoutMs = options.timeoutMs || this.defaultTimeoutMs;
+    const planContext = options.planContext || {};
 
     const fallbackClient = options.fallbackClient
       || (client.provider === "opencode-zen" ? this.deepseekClient : null);
@@ -127,15 +129,27 @@ export class SubagentRunner {
       { role: "user", content: prompt },
     ];
 
+    this.eventBus?.emit('subagent_started', {
+      plan_id: planContext.planId || null,
+      skills_count: 0,
+      model: modelName,
+    });
+
     const t0 = Date.now();
     let result;
     try {
       result = await this._chatWithTimeout(client, messages, {
         json_mode: true,
         max_tokens: options.maxTokens || 8000,
+        onFallback: (fb) => this.eventBus?.emit('model_fallback', { ...fb, plan_id: planContext.planId || null }),
       }, timeoutMs, fallbackClient);
     } catch (err) {
       const durationMs = Date.now() - t0;
+      this.eventBus?.emit('subagent_failed', {
+        plan_id: planContext.planId || null,
+        error: err.message,
+        duration_ms: durationMs,
+      });
       return {
         status: "failure",
         mode: "llm",
@@ -153,6 +167,13 @@ export class SubagentRunner {
     const durationMs = Date.now() - t0;
 
     const parsed = this._parseResult(result.content);
+
+    this.eventBus?.emit('subagent_completed', {
+      plan_id: planContext.planId || null,
+      status: parsed.status,
+      skills_executed: parsed.executed_skills?.length || 0,
+      duration_ms: durationMs,
+    });
 
     return {
       status: parsed.status,
