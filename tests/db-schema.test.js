@@ -3,7 +3,7 @@ import { Database } from "bun:sqlite";
 import { SCHEMA_SQL } from "../server/lib/db-schema.js";
 
 describe("SCHEMA_SQL single source of truth", () => {
-  test("contains all 6 expected tables", () => {
+  test("contains all 7 expected tables", () => {
     const db = new Database(":memory:");
     db.exec(SCHEMA_SQL);
     const tables = db
@@ -14,6 +14,7 @@ describe("SCHEMA_SQL single source of truth", () => {
     expect(tables).toContain("agent_threads");
     expect(tables).toContain("checkpoints");
     expect(tables).toContain("messages");
+    expect(tables).toContain("model_stats");
     expect(tables).toContain("plan_items");
     expect(tables).toContain("plans");
     db.close();

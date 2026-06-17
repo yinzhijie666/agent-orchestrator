@@ -11,10 +11,11 @@ import { SubagentRunner, SUBAGENT_SYSTEM_PROMPT, parseSubagentResult } from "./s
 import { OpencodeServer } from "./opencode-server.js";
 
 export class AutoDispatcher {
-  constructor(config, eventBus) {
+  constructor(config, eventBus, onCall) {
     this.config = config;
     this.eventBus = eventBus || null;
-    this.runner = new SubagentRunner(config, this.eventBus);
+    this.onCall = onCall || null;
+    this.runner = new SubagentRunner(config, this.eventBus, this.onCall);
     this.server = null;
     this.d2Enabled = false;
     this.dispatchedTotal = 0;

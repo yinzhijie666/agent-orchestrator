@@ -160,6 +160,30 @@ class DB {
     return this.db.prepare("SELECT * FROM activity_log WHERE plan_id = ? ORDER BY timestamp DESC LIMIT ?").all(planId, limit);
   }
 
+  // Model Stats
+  logModelCall(model, provider, durationMs, success) {
+    const stmt = this.db.prepare(
+      "INSERT INTO model_stats (model, provider, duration_ms, success) VALUES (?, ?, ?, ?)"
+    );
+    stmt.run(model, provider, durationMs, success ? 1 : 0);
+  }
+
+  getModelCallCounts() {
+    return this.db.prepare(
+      "SELECT model, provider, COUNT(*) as total, SUM(success) as success, SUM(CASE WHEN success=0 THEN 1 ELSE 0 END) as failed, ROUND(AVG(duration_ms)) as avg_duration_ms FROM model_stats GROUP BY model ORDER BY model"
+    ).all();
+  }
+
+  getModelCallCountsByProvider() {
+    return this.db.prepare(
+      "SELECT model, provider, COUNT(*) as total, SUM(success) as success, ROUND(AVG(duration_ms)) as avg_duration_ms FROM model_stats GROUP BY model, provider ORDER BY model, provider"
+    ).all();
+  }
+
+  clearModelStats() {
+    this.db.prepare("DELETE FROM model_stats").run();
+  }
+
   cleanupActivityLog(days = 30) {
     const cutoff = new Date(Date.now() - days * 86400000).toISOString();
     return this.db.prepare("DELETE FROM activity_log WHERE timestamp < ?").run(cutoff);

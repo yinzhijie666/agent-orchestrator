@@ -63,6 +63,15 @@ export const SCHEMA_SQL = `
   );
   CREATE INDEX IF NOT EXISTS idx_plan_items_plan_id ON plan_items(plan_id);
   CREATE INDEX IF NOT EXISTS idx_checkpoints_plan_id ON checkpoints(plan_id);
+  CREATE TABLE IF NOT EXISTS model_stats (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    model TEXT NOT NULL,
+    provider TEXT NOT NULL,
+    duration_ms INTEGER,
+    success INTEGER DEFAULT 1,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_model_stats_model ON model_stats(model);
   CREATE INDEX IF NOT EXISTS idx_activity_log_plan_id ON activity_log(plan_id);
   CREATE INDEX IF NOT EXISTS idx_plan_items_status ON plan_items(status);
   CREATE INDEX IF NOT EXISTS idx_plans_status ON plans(status);

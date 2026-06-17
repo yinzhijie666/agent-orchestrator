@@ -109,7 +109,7 @@ const router = {
   async completePlan(req, params) {
     let body = {};
     try { body = await req.json(); } catch {}
-    const VALID_STATUSES = ['completed', 'completed_with_errors', 'failed', 'cancelled'];
+    const VALID_STATUSES = ['completed', 'completed_with_errors', 'failed', 'cancelled', 'partial', 'partial_with_errors'];
     const status = VALID_STATUSES.includes(body.status) ? body.status : 'completed';
     const plan = db.updatePlanStatus(params.id, status);
     if (!plan) {

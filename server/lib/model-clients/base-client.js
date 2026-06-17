@@ -9,6 +9,11 @@ class BaseModelClient {
     this.provider = config.provider || 'unknown';
     this.thinking = config.thinking;
     this.reasoningEffort = config.reasoning_effort;
+    this._onCall = null;
+  }
+
+  set onCall(fn) {
+    this._onCall = fn;
   }
 
   async chat(messages, options = {}) {
@@ -16,33 +21,44 @@ class BaseModelClient {
       throw new Error(`API key not found: ${this.constructor.name} requires env var`);
     }
 
-    const response = await fetch(`${this.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: this.model,
-        messages,
-        max_tokens: options.max_tokens || this.maxTokens,
-        temperature: this.temperature,
-        response_format: options.json_mode ? { type: 'json_object' } : undefined,
-        ...(this.thinking && { thinking: this.thinking }),
-        ...(this.reasoningEffort && { reasoning_effort: this.reasoningEffort }),
-      }),
-    });
+    const t0 = Date.now();
+    let success = true;
 
-    if (!response.ok) {
-      const error = await response.text();
-      const err = new Error(`${this.constructor.name} API error: ${response.status} - ${error}`);
-      err.status = response.status;
-      err.code = `HTTP_${response.status}`;
+    try {
+      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages,
+          max_tokens: options.max_tokens || this.maxTokens,
+          temperature: this.temperature,
+          response_format: options.json_mode ? { type: 'json_object' } : undefined,
+          ...(this.thinking && { thinking: this.thinking }),
+          ...(this.reasoningEffort && { reasoning_effort: this.reasoningEffort }),
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        const err = new Error(`${this.constructor.name} API error: ${response.status} - ${error}`);
+        err.status = response.status;
+        err.code = `HTTP_${response.status}`;
+        throw err;
+      }
+
+      const data = await response.json();
+      const durationMs = Date.now() - t0;
+      this._onCall?.({ model: this.model, provider: this.provider, durationMs, success: true });
+      return data.choices[0].message.content;
+    } catch (err) {
+      const durationMs = Date.now() - t0;
+      this._onCall?.({ model: this.model, provider: this.provider, durationMs, success: false });
       throw err;
     }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
   }
 
   // Check if error should trigger fallback

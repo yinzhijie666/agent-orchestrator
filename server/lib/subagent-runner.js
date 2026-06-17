@@ -12,9 +12,11 @@ const MODEL_MAP = {
   default: (config) => new DeepSeekClient(config.models["opencode-zen"]),          // DeepSeek V4 Flash Free via OpenCode Zen
 };
 
-function pickClient(config, modelName) {
+function pickClient(config, modelName, onCall) {
   const factory = MODEL_MAP[modelName] || MODEL_MAP.default;
-  return factory(config);
+  const client = factory(config);
+  if (onCall) client.onCall = onCall;
+  return client;
 }
 
 export const SUBAGENT_SYSTEM_PROMPT = `You are a subagent executing a list of skills. The orchestrator has already
@@ -97,11 +99,13 @@ export class SubagentRunner {
    * @param {Object} config.auto_exec - Auto-execution settings
    * @param {Object} config.models - Model configurations
    */
-  constructor(config, eventBus) {
+  constructor(config, eventBus, onCall) {
     this.config = config;
     this.eventBus = eventBus || null;
+    this.onCall = onCall || null;
     this.defaultTimeoutMs = config?.auto_exec?.timeout_ms || 90000;
     this.deepseekClient = new DeepSeekClient(config.models.deepseek);
+    if (this.onCall) this.deepseekClient.onCall = this.onCall;
   }
 
   /**
@@ -117,7 +121,7 @@ export class SubagentRunner {
    */
   async run(prompt, options = {}) {
     const modelName = options.model || this.config?.auto_exec?.model || "cheap";
-    const client = options.client || pickClient(this.config, modelName);
+    const client = options.client || pickClient(this.config, modelName, this.onCall);
     const timeoutMs = options.timeoutMs || this.defaultTimeoutMs;
     const planContext = options.planContext || {};
 

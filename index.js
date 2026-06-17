@@ -26,6 +26,7 @@ import { AutoExecutor } from './server/lib/auto-executor.js';
 import { AutoDispatcher } from './server/lib/auto-dispatcher.js';
 import { WorkflowValidator, ALL_REQUIRED_SKILLS } from './server/lib/workflow-validator.js';
 import { EventBus } from './server/lib/event-bus.js';
+import { ServerManager } from './server/lib/server-manager.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MILESTONE_INTERVAL = config.milestone?.interval || 4;
@@ -144,14 +145,21 @@ ${CAPABILITY_LIST}`
 
   const completedCount = execResults.filter(r => r.status === 'completed').length;
   const failedCount = execResults.filter(r => r.status === 'failed').length;
+  const unprocessedCount = planDoc.items.length - execResults.length;
 
-  const finalStatus = failedCount > 0 ? 'completed_with_errors' : 'completed';
+  let finalStatus;
+  if (unprocessedCount > 0) {
+    finalStatus = failedCount > 0 ? 'partial_with_errors' : 'partial';
+  } else {
+    finalStatus = failedCount > 0 ? 'completed_with_errors' : 'completed';
+  }
+
   db.updatePlanStatus(planId, finalStatus);
   db.logActivity({
     plan_id: planId,
     agent: 'system',
     action: 'plan_completed',
-    details: { completed: completedCount, failed: failedCount, status: finalStatus },
+    details: { completed: completedCount, failed: failedCount, unprocessed: unprocessedCount, total: planDoc.items.length, status: finalStatus },
   });
   emitPlanCompleted(planId, finalStatus);
   const recommendations = await generateRecommendations(planDoc, kimiClient, deepseekClient, eventBus);
@@ -161,10 +169,14 @@ ${CAPABILITY_LIST}`
   ).join('\n');
 
   const execSummary = execResults.map(r =>
-    `  ${r.status === 'completed' ? '✅' : '❌'} [${r.executor}] Item ${r.idx + 1}${r.error ? ': ' + r.error : ''}`
+    `  ${r.status === 'completed' ? '✅' : r.status === 'failed' ? '❌' : '⏭️'} [${r.executor}] Item ${r.idx + 1}${r.error ? ': ' + r.error : ''}`
   ).join('\n');
 
-  return { mode: 'build', planId, title: planDoc.title, items, itemCount: planDoc.items.length, execSummary, completedCount, failedCount, fallback: fallbackUsed, recommendations, suggested_skills: planDoc.suggested_skills || {} };
+  const unprocessedItems = planDoc.items
+    .filter(item => item.executor !== 'kimi' && !execResults.some(r => r.idx === item.idx))
+    .map(item => ({ idx: item.idx, executor: item.executor, title: item.title }));
+
+  return { mode: 'build', planId, title: planDoc.title, items, itemCount: planDoc.items.length, execSummary, completedCount, failedCount, unprocessedCount, unprocessedItems, fallback: fallbackUsed, recommendations, suggested_skills: planDoc.suggested_skills || {} };
 }
 
 async function generateRecommendations(planOrTask, kimiClient, deepseekClient, eventBus) {
@@ -282,13 +294,23 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
     eventBus.on('recommendations_completed', (d) => log('recommendations_completed', { agent: 'kimi', phase: d.phase, success: d.success, error: d.error }));
   }
 
+  const onModelCall = ({ model, provider, durationMs, success }) => {
+    if (db) {
+      try {
+        db.logModelCall(model, provider, durationMs, success);
+      } catch (e) {
+        console.warn('[AgentOrchestrator] Failed to log model call:', e.message);
+      }
+    }
+  };
+
   let autoDispatcher = null;
   try {
     const autoDispatchDisabled = process.env.AUTO_EXEC_DISPATCH === 'false' || process.env.AUTO_EXEC_DISABLED === 'true';
     if (autoDispatchDisabled) {
       console.log('[AgentOrchestrator] AutoDispatcher disabled by env (AUTO_EXEC_DISPATCH=false)');
     } else {
-      autoDispatcher = new AutoDispatcher(config, eventBus);
+      autoDispatcher = new AutoDispatcher(config, eventBus, onModelCall);
       const startResult = await autoDispatcher.start();
       if (startResult.started) {
         console.log('[AgentOrchestrator] AutoDispatcher started: D2 url=' + startResult.url);
@@ -304,9 +326,26 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
     }
     autoDispatcher = null;
   }
+
+  let serverManager = null;
+  try {
+    const autoStartEnabled = process.env.AGENT_ORCHESTRATOR_AUTO_START !== 'false';
+    if (autoStartEnabled) {
+      serverManager = new ServerManager({ port: config.server?.port });
+      const info = await serverManager.start();
+      console.log(`[AgentOrchestrator] Coordinator server started: pid=${info.pid} url=${info.url}`);
+    }
+  } catch (e) {
+    console.warn('[AgentOrchestrator] Coordinator server auto-start failed:', e.message);
+  }
+
   const kimiClient = new KimiClient(config.models.kimi);
   const deepseekClient = new DeepSeekClient(config.models.deepseek);
   const zenClient = new ZenClient(config.models["opencode-zen"]);
+
+  kimiClient.onCall = onModelCall;
+  deepseekClient.onCall = onModelCall;
+  zenClient.onCall = onModelCall;
 
   return {
     tool: {
@@ -331,7 +370,15 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             } else {
               output = `🔧 [Build Mode] ${result.reason || ''}\n\n📋 Plan: ${result.title}\n\nID: \`${result.planId}\`\nItems (${result.itemCount}):\n${result.items}`;
               if (result.execSummary) {
-                output += `\n\nExecution Results (✅ ${result.completedCount}/${result.itemCount}):\n${result.execSummary}`;
+                const completedLabel = `${result.completedCount}/${result.itemCount}`;
+                const unprocessedLabel = result.unprocessedCount > 0 ? `, ${result.unprocessedCount} unprocessed` : '';
+                output += `\n\nExecution Results (✅ ${completedLabel}${unprocessedLabel}):\n${result.execSummary}`;
+                if (result.unprocessedCount > 0 && result.unprocessedItems?.length) {
+                  const pendingList = result.unprocessedItems
+                    .map(i => `    ⏳ [${i.executor}] Item ${i.idx + 1}: ${i.title}`)
+                    .join('\n');
+                  output += `\n⚠️ ${result.unprocessedCount} items not processed (timeout prevented full execution):\n${pendingList}`;
+                }
               }
               if (result.fallback) {
                 output += '\n\n⚠️ Note: Kimi was unavailable, plan created by DeepSeek (fallback).';
@@ -393,6 +440,8 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             if (counts.active) output += `, ${counts.active} active`;
             if (counts.completed) output += `, ${counts.completed} completed`;
             if (counts.completed_with_errors) output += `, ${counts.completed_with_errors} with errors`;
+            if (counts.partial) output += `, ${counts.partial} partial`;
+            if (counts.partial_with_errors) output += `, ${counts.partial_with_errors} partial with errors`;
             if (counts.pending) output += `, ${counts.pending} pending`;
             output += `\nItems: ${totalItems.count} total, ${completedItems.count} completed`;
             output += `\nPending Checkpoints: ${pendingCheckpoints.count}`;
@@ -400,7 +449,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             if (recentPlans.length > 0) {
               output += `\n\nRecent Plans:\n`;
               for (const p of recentPlans) {
-                const icon = p.status === 'active' ? '▶' : p.status === 'completed' ? '✅' : p.status === 'completed_with_errors' ? '⚠️' : '📋';
+                const icon = p.status === 'active' ? '▶' : p.status === 'completed' ? '✅' : p.status === 'completed_with_errors' ? '⚠️' : p.status === 'partial' ? '⏳' : p.status === 'partial_with_errors' ? '⚠️⏳' : '📋';
                 output += `  ${icon} ${p.title} (\`${p.id.slice(0, 8)}…\`) - ${p.status}\n`;
               }
             }
@@ -427,6 +476,25 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
             output += `  🧠 Kimi:     ${kimiOk ? '✅' : '❌'}\n`;
             output += `  🔧 DeepSeek: ${deepseekOk ? '✅' : '❌'}\n`;
             output += `  ⚡ Zen:      ${zenOk ? '✅' : '❌'}\n`;
+
+            // Model API call statistics
+            try {
+              const modelStats = db.db.prepare(
+                "SELECT model, COUNT(*) as total, SUM(CASE WHEN success=1 THEN 1 ELSE 0 END) as success, SUM(CASE WHEN success=0 THEN 1 ELSE 0 END) as failed, ROUND(AVG(duration_ms)) as avg_duration_ms FROM model_stats GROUP BY model ORDER BY model"
+              ).all();
+              if (modelStats.length > 0) {
+                output += `\nModel API Calls:\n`;
+                const totalCalls = modelStats.reduce((s, r) => s + r.total, 0);
+                for (const row of modelStats) {
+                  const icon = row.model === 'kimi' ? '🧠' : row.model === 'deepseek' ? '🔧' : '⚡';
+                  output += `  ${icon} ${row.model}: ${row.total} calls (${row.success} ok, ${row.failed} failed, avg ${row.avg_duration_ms || 0}ms)\n`;
+                }
+                output += `  ── Total: ${totalCalls} API calls\n`;
+              }
+            } catch (e) {
+              // non-critical
+            }
+
             return { output };
           } catch (err) {
             return { output: `Error: ${err.message}` };
@@ -760,6 +828,12 @@ When Kimi (planning model) is unavailable:
     },
 
     dispose: async () => {
+      if (serverManager) {
+        try { await serverManager.stop(); } catch (e) {
+          console.warn('[AgentOrchestrator] server stop error during dispose:', e.message);
+        }
+        serverManager = null;
+      }
       if (db) db.close();
       if (autoDispatcher) {
         try { await autoDispatcher.stop(); } catch (e) {
