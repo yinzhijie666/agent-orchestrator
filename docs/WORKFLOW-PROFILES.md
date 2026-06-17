@@ -166,3 +166,30 @@ bash scripts/test-baseline.sh --verify
 | "跑标准"                   | standard     |
 | "日常自检" / "commit 前"   | minimal      |
 | "审计"                     | audit        |
+
+---
+
+## 附录: Prompts 设计原则
+
+### 多执行器选择标准
+
+提示词中列出多个选项（executor、model、action type 等）时，
+必须在枚举后立即注明每个选项的适用条件，
+否则 LLM 会默认选第一个或最常见的选项，忽略其他。
+
+**错误示例:**
+```
+executor: one of ['kimi', 'deepseek', 'zen']
+```
+→ LLM 永远选 `deepseek`，因为不知道 `zen` 是做什么的
+
+**正确示例:**
+```
+executor: one of ['kimi', 'deepseek', 'zen']
+  - 'kimi': 规划/分析/审查 (无需执行)
+  - 'deepseek': 编码、测试、文件修改 (实现任务)
+  - 'zen': 搜索、研究、信息收集 (只读分析)
+```
+
+**audit check:** 工作流 Phase 4 审计时，检查所有 system prompt 中的枚举选项，
+是否有选择标准说明。缺少的视为 prompt bug（P2）。

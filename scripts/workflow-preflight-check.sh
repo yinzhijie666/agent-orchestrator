@@ -141,15 +141,19 @@ else
   WARNINGS=$((WARNINGS+1))
 fi
 
-# 7. 检查知识图谱新鲜度（24h 校验）
+# 7. 检查知识图谱新鲜度（24h/48h 三级校验）
 echo "[7/$TOTAL_CHECKS] 检查知识图谱新鲜度..."
 GRAPH_FILE="graphify-out/graph.json"
 if [ -f "$GRAPH_FILE" ]; then
   AGE_SECONDS=$(( $(date +%s) - $(stat -c %Y "$GRAPH_FILE") ))
   AGE_HOURS=$(( AGE_SECONDS / 3600 ))
-  if [ $AGE_HOURS -gt 24 ]; then
-    echo "  ⚠️  graph.json 超过 24h (${AGE_HOURS}h 前)"
-    echo "     建议: 重新执行 graphify . 获取最新图谱"
+  if [ $AGE_HOURS -gt 48 ]; then
+    echo "  ❌ graph.json 超过 48h (${AGE_HOURS}h 前, 已过期)"
+    echo "     必须先执行: graphify . 重建图谱"
+    ERRORS=$((ERRORS+1))
+  elif [ $AGE_HOURS -gt 24 ]; then
+    echo "  ⚠️  graph.json 超过 24h (${AGE_HOURS}h 前, 建议刷新)"
+    echo "     建议: graphify . 获取最新图谱"
     WARNINGS=$((WARNINGS+1))
   elif [ $AGE_HOURS -gt 1 ]; then
     echo "  ⚠️  graph.json ${AGE_HOURS}h 前 (在 24h 内, 仍可用)"
@@ -273,13 +277,14 @@ fi
 # 13. 端口可用性
 echo "[13/$TOTAL_CHECKS] 检查端口可用性..."
 if command -v netstat &>/dev/null; then
-  PORT=18765
-  if netstat -tln 2>/dev/null | grep -q ":$PORT "; then
-    echo "  ⚠️  默认端口 $PORT 已被占用（测试服务可能冲突）"
-    WARNINGS=$((WARNINGS+1))
-  else
-    echo "  ✅ 端口 $PORT 可用"
-  fi
+  for PORT in 18765 8765; do
+    if netstat -tln 2>/dev/null | grep -q ":$PORT "; then
+      echo "  ⚠️  端口 $PORT 已被占用（服务运行中，测试可能冲突）"
+      WARNINGS=$((WARNINGS+1))
+    else
+      echo "  ✅ 端口 $PORT 可用"
+    fi
+  done
 else
   echo "  ⚠️  无法检查端口（netstat 不可用）"
   WARNINGS=$((WARNINGS+1))
