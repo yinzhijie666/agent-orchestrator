@@ -1,6 +1,6 @@
 {
   "name": "agent-orchestrator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Three-layer agent orchestration: Kimi plans, DeepSeek builds, OpenCode Zen queries",
   "type": "module",
   "main": "index.js",
