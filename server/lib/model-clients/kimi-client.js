@@ -1,5 +1,8 @@
 import BaseModelClient from "./base-client.js";
 
+// CAPABILITIES.md defines 11 conceptual capabilities (AI行为准则, Understand, Graphify, CodeGraph,
+// Superpowers, GStack, Shell, DCP, 表格格式化, Karpathy, Skills管理).
+// This list is tool-oriented, covering the 55+ concrete tools available across those capabilities.
 const CAPABILITY_LIST = `云端[76类]: frontend backend cloud security ai-ml testing database mobile devops
 Superpowers[14]: brainstorming writing-plans executing-plans test-driven-development systematic-debugging subagent-driven-development verification-before-completion requesting-code-review receiving-code-review dispatching-parallel-agents finishing-a-development-branch using-git-worktrees using-superpowers writing-skills
 GStack[16]: /qa /review /browse /ship /design-review /debug /retro /document-release /plan-eng-review /design-consultation /office-hours /plan-ceo-review /plan-design-review /qa-only /setup-browser-cookies /gstack-upgrade
@@ -23,6 +26,9 @@ Each plan item must have:
 - title: concise task title (max 100 chars)
 - description: detailed task description
 - executor: one of ['kimi', 'deepseek', 'zen']
+  - 'kimi': planning/analysis/review only (no execution needed)
+  - 'deepseek': coding, testing, file modification, implementation tasks
+  - 'zen': search, research, documentation, information gathering, read-only analysis
 - acceptance_criteria: how to verify this item is complete
 
 可用能力（按 P0/P1/P2 优先级推荐 5-8 项到 "suggested_skills"）:

@@ -5,7 +5,7 @@ class ZenClient extends BaseModelClient {
     super(config);
   }
 
-  // Read-only operations only
+  // Read-only operations
   async searchCode(query, codebase = '') {
     const messages = [
       {
@@ -37,12 +37,52 @@ class ZenClient extends BaseModelClient {
   }
 
   async batchQuery(queries) {
-    // Process multiple queries in parallel
     const promises = queries.map(q => this.searchCode(q));
     return await Promise.all(promises);
   }
 
-  // Zen agent is read-only - no write operations
+  // Full task execution (read-only analysis, search, documentation, research)
+  async executeTask(task, context = '') {
+    const messages = [
+      {
+        role: 'system',
+        content: `You are an expert research and analysis agent. Execute tasks precisely and report results in JSON format.
+
+Your response must be valid JSON with these fields:
+- status: "completed" | "failed"
+- result: detailed output of what was found or analyzed
+- notes: any caveats or limitations
+
+Focus on: research, analysis, information gathering, documentation, and search.
+Do NOT modify code or the filesystem.`
+      },
+      {
+        role: 'user',
+        content: `Task: ${task.title}\nDescription: ${task.description}\nAcceptance Criteria: ${task.acceptance_criteria}\n\nContext: ${context}\n\nExecute this research/analysis task and report results.`
+      }
+    ];
+
+    const response = await this.chat(messages, { json_mode: true, max_tokens: 12000 });
+    return this.parseExecutionResult(response);
+  }
+
+  parseExecutionResult(response) {
+    try {
+      const result = JSON.parse(response);
+      return {
+        status: result.status || 'completed',
+        result: result.result || response,
+        notes: result.notes || []
+      };
+    } catch {
+      return {
+        status: 'completed',
+        result: response,
+        notes: []
+      };
+    }
+  }
+
   static isReadOnly() {
     return true;
   }

@@ -127,8 +127,8 @@ ${CAPABILITY_LIST}`
         db.logActivity({ plan_id: planId, agent: 'deepseek', action: 'item_completed', details: { idx: item.idx, title: item.title } });
         emitItemCompleted(planId, item, 'completed');
       } else if (item.executor === 'zen') {
-        const query = `${item.title}: ${item.description || item.acceptance_criteria || ''}`;
-        result = await zenClient.searchCode(query, context);
+        const res = await zenClient.executeTask(item, context);
+        result = res.result || res.status;
         db.updatePlanItemStatus(planId, item.idx, 'completed', result);
         db.logActivity({ plan_id: planId, agent: 'zen', action: 'item_completed', details: { idx: item.idx, title: item.title } });
         emitItemCompleted(planId, item, 'completed');
@@ -738,7 +738,7 @@ export const AgentOrchestratorPlugin = async ({ directory }) => {
                 auto_dispatched: autoDispatched,
                 dispatcher_status: autoDispatcher ? autoDispatcher.getStatus() : null,
                 next_step: autoDispatched
-                  ? `Auto-exec prompt built — ready to dispatch subagent via D2 server. ${autoExecPrompt ? 'auto_exec.prompt available.' : ''}`
+                  ? `Auto-exec prompt built — dispatching via D1 (D2 reserved for future opencode run --attach support). ${autoExecPrompt ? 'auto_exec.prompt available.' : ''}`
                   : (manualInstructions.length > 0
                     ? `Execute ${manualInstructions.length} manual skills in main session (P0 → P1 → P2): ${manualInstructions.map(s => s.name).join(', ')}`
                     : (autoExecEnabled
@@ -801,8 +801,9 @@ When \`agent_execute_skills\` returns, it contains THREE groups:
 
 **Execution order:**
 1. If \`auto_exec.prompt\` exists → call \`task\` with subagent_type="general" to execute AUTO skills
-2. Read \`manual_instructions[]\` → execute each INTERACTIVE/TOOL_REQUIRED skill in main session
-3. Present combined results to user
+2. After dispatch, verify completedSkills contains all P0 items (check p0_failures for any failures)
+3. Read \`manual_instructions[]\` → execute each INTERACTIVE/TOOL_REQUIRED skill in main session
+4. Present combined results to user
 
 ### Manual Skill Execution (INTERACTIVE + TOOL_REQUIRED)
 When \`manual_instructions[]\` is non-empty:
